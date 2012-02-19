@@ -181,6 +181,24 @@ Exhibit.Importer.prototype._loadURL = function(url, database, callback) {
         $(document).trigger("error.exhibit", [e, msg]);
     };
 
+    var fragmentStart=url.indexOf('#');
+    if ((fragmentStart >= 0) && (fragmentStart < url.length-1)) {
+	var callbackOrig=callback;
+	var fragmentId=url.substring(fragmentStart);
+	url=url.substring(0,fragmentStart);
+
+	callback=function(data, status, jqXHR) {
+	    var fragment=$(data).find(fragmentId).andSelf().filter(fragmentId);
+	    if (fragment.length<1) {
+		msg = Exhibit._("%import.missingFragment", url);
+		$(document).trigger("error.exhibit", [new Error(),msg]);
+	    }
+	    else {
+		callbackOrig(fragment.text(), status, jqXHR);
+	    }
+	}
+    }
+
     $.ajax({
         "url": url,
         "dataType": "text",
