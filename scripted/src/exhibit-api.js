@@ -66,7 +66,7 @@ var Exhibit = {
      * Settable parameters within the query string of loading this file.
      */
     params: {
-        bundle: false,
+        bundle: true,
         autoCreate: true,
         safe: false,
         babel: undefined,
