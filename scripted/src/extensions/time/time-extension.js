@@ -35,7 +35,7 @@
     /**
      * Ugly polling hack #1.
      */
-    setTimeout(function() {
+  //  setTimeout(function() {
         var loader;
         if (typeof jQuery === "undefined") {
             loadTimeExtension();
@@ -50,8 +50,8 @@
 
                 Exhibit.TimeExtension = {
                     "params": {
-                        "bundle": true,
-                        "timelinePrefix": "http://api.simile-widgets.org",
+                        "bundle": false,
+                        "timelinePrefix": "../../simile_widgets_api1",
                         "timelineVersion": "2.3.1"
                     },
                     "urlPrefix": null,
@@ -76,7 +76,7 @@
                     "timelinePrefix": String,
                     "timelineVersion": String
                 };
-                
+
                 if (typeof Exhibit_TimeExtension_urlPrefix === "string") {
                     Exhibit.TimeExtension.urlPrefix = Exhibit_TimeExtension_urlPrefix;
                     if (typeof Exhibit_TimeExtension_parameters !== "undefined") {
@@ -91,13 +91,13 @@
                         return;
                     }
                     Exhibit.TimeExtension.urlPrefix = url.substr(0, url.indexOf("time-extension.js"));
-                    
+
                     Exhibit.parseURLParameters(url, Exhibit.TimeExtension.params, paramTypes);
                 }
-                
+
                 scriptURLs = [];
                 cssURLs = [];
-                
+
                 if (typeof SimileAjax === "undefined") {
                     /**
                      * Ugly SimileAjax hack.  See load-simile-ajax.js.
@@ -107,7 +107,7 @@
                 if (typeof Timeline === "undefined") {
                     scriptURLs.push(Exhibit.TimeExtension.params.timelinePrefix + "/timeline/" + Exhibit.TimeExtension.params.timelineVersion + "/timeline-api.js?bundle=true");
                 }
-                
+
                 if (Exhibit.TimeExtension.params.bundle) {
                     scriptURLs.push(Exhibit.TimeExtension.urlPrefix + "time-extension-bundle.js");
                     cssURLs.push(Exhibit.TimeExtension.urlPrefix + "time-extension-bundle.css");
@@ -115,7 +115,7 @@
                     Exhibit.prefixURLs(scriptURLs, Exhibit.TimeExtension.urlPrefix + "scripts/", javascriptFiles);
                     Exhibit.prefixURLs(cssURLs, Exhibit.TimeExtension.urlPrefix + "styles/", cssFiles);
                 }
-                
+
                 localesToLoad = Exhibit.Localization.getLoadableLocales(Exhibit.TimeExtension.locales);
                 for (i = 0; i < localesToLoad.length; i++) {
                     scriptURLs.push(Exhibit.TimeExtension.urlPrefix + "locales/" + localesToLoad[i] + "/locale.js");
@@ -144,5 +144,5 @@
                 $(document).one("loadExtensions.exhibit", loader);
             }
         }
-    }, 500);
+//    }, 500);
 }());
