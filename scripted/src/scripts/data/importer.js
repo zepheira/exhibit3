@@ -11,7 +11,7 @@
  * @param {String} label
  * @param {Function} parse
  */
-Exhibit.Importer = function(mimeType, loadType, parse) {
+Exhibit.Importer = function (mimeType, loadType, parse) {
     if (typeof mimeType === "string") {
         this._mimeTypes = [mimeType];
     } else {
@@ -37,7 +37,7 @@ Exhibit.Importer._registry = null;
  * @static
  * @param {Exhibit._Impl} ex
  */
-Exhibit.Importer._registerComponent = function(evt, reg) {
+Exhibit.Importer._registerComponent = function (evt, reg) {
     Exhibit.Importer._registry = reg;
     if (!reg.hasRegistry(Exhibit.Importer._registryKey)) {
         reg.createRegistry(Exhibit.Importer._registryKey);
@@ -50,7 +50,7 @@ Exhibit.Importer._registerComponent = function(evt, reg) {
  * @param {String} mimeType
  * @returns {Exhibit.Importer}
  */
-Exhibit.Importer.getImporter = function(mimeType) {
+Exhibit.Importer.getImporter = function (mimeType) {
     return Exhibit.Importer._registry.get(
         Exhibit.Importer._registryKey,
         mimeType
@@ -62,14 +62,14 @@ Exhibit.Importer.getImporter = function(mimeType) {
  * @string {String} url
  * @returns {Boolean}
  */
-Exhibit.Importer.checkFileURL = function(url) {
+Exhibit.Importer.checkFileURL = function (url) {
     return url.startsWith("file:");
 };
 
 /**
  * @returns {Boolean}
  */
-Exhibit.Importer.prototype.register = function() {
+Exhibit.Importer.prototype.register = function () {
     var reg, i, registered;
     reg = Exhibit.Importer._registry;
     registered = false;
@@ -94,7 +94,7 @@ Exhibit.Importer.prototype.register = function() {
 /**
  *
  */
-Exhibit.Importer.prototype.dispose = function() {
+Exhibit.Importer.prototype.dispose = function () {
     var i;
     for (i = 0; i < this._mimeTypes.length; i++) {
         Exhibit.Importer._registry.unregister(
@@ -107,7 +107,7 @@ Exhibit.Importer.prototype.dispose = function() {
 /**
  * @returns {Boolean}
  */
-Exhibit.Importer.prototype.isRegistered = function() {
+Exhibit.Importer.prototype.isRegistered = function () {
     return this._registered;
 };
 
@@ -117,7 +117,7 @@ Exhibit.Importer.prototype.isRegistered = function() {
  * @param {Exhibit.Database} database
  * @param {Function} callback
  */
-Exhibit.Importer.prototype.load = function(link, database, callback) {
+Exhibit.Importer.prototype.load = function (link, database, callback) {
     var resolver, url, postLoad, postParse, self;
     url = typeof link === "string" ? link : $(link).attr("href");
     url = Exhibit.Persistence.resolveURL(url);
@@ -134,7 +134,7 @@ Exhibit.Importer.prototype.load = function(link, database, callback) {
         break;
     }
 
-    postParse = function(o) {
+    postParse = function (o) {
         try {
             database.loadData(o, Exhibit.Persistence.getBaseURL(url));
         } catch(e) {
@@ -148,7 +148,7 @@ Exhibit.Importer.prototype.load = function(link, database, callback) {
     };
 
     self = this;
-    postLoad = function(s, textStatus, jqxhr) {
+    postLoad = function (s, textStatus, jqxhr) {
         Exhibit.UI.hideBusyIndicator();
         try {
             self._parse(url, s, postParse);
@@ -167,11 +167,11 @@ Exhibit.Importer.prototype.load = function(link, database, callback) {
  * @param {Function} callback
  */
 Exhibit.Importer.prototype._loadURL = function(url, database, callback) {
-    var fError, self;
+    var fError, self, fragmentStart, fragmentId, callbackOrig;
 
     self = this;
 
-    fError = function(jqxhr, textStatus, e) {
+    fError = function (jqxhr, textStatus, e) {
         var msg;
         if (Exhibit.Importer.checkFileURL(url) && jqxhr.status === 404) {
             msg = Exhibit._("%import.missingOrFilesystem", url);
@@ -180,6 +180,23 @@ Exhibit.Importer.prototype._loadURL = function(url, database, callback) {
         }
         $(document).trigger("error.exhibit", [e, msg]);
     };
+
+    fragmentStart = url.indexOf('#');
+    if ((fragmentStart >= 0) && (fragmentStart < url.length - 1)) {
+        callbackOrig = callback;
+        fragmentId = url.substring(fragmentStart);
+        url = url.substring(0, fragmentStart);
+
+        callback = function(data, status, jqXHR) {
+            var msg, fragment = $(data).find(fragmentId).andSelf().filter(fragmentId);
+            if (fragment.length < 1) {
+                msg = Exhibit._("%import.missingFragment", url);
+                $(document).trigger("error.exhibit", [new Error(), msg]);
+            } else {
+                callbackOrig(fragment.text(), status, jqXHR);
+            }
+        };
+    }
 
     $.ajax({
         "url": url,
@@ -196,7 +213,7 @@ Exhibit.Importer.prototype._loadURL = function(url, database, callback) {
  * @param {Element} link
  */
 Exhibit.Importer.prototype._loadJSONP = function(url, database, callback, link) {
-    var charset, convertType, jsonpCallback, converter, fDone, ajaxArgs;
+    var charset, convertType, jsonpCallback, converter, fDone, fError, ajaxArgs;
 
     if (typeof link !== "string") {
         convertType = Exhibit.getAttribute(link, "converter");
@@ -213,11 +230,11 @@ Exhibit.Importer.prototype._loadJSONP = function(url, database, callback, link) 
         url = converter.preprocessURL(url);
     }
     
-    fDone = function(s, textStatus, jqxhr) {
+    fDone = function (s, textStatus, jqxhr) {
         callback(converter.transformJSON(s), textStatus, jqxhr);
     };
 
-    fError = function(jqxhr, textStatus, e) {
+    fError = function (jqxhr, textStatus, e) {
         var msg;
         msg = Exhibit._(
             "%import.failedAccess",
@@ -251,7 +268,7 @@ Exhibit.Importer.prototype._loadJSONP = function(url, database, callback, link) 
  * @param {Function} callback
  * @param {Element} link
  */
-Exhibit.Importer.prototype._loadBabel = function(url, database, callback, link) {
+Exhibit.Importer.prototype._loadBabel = function (url, database, callback, link) {
     var mimeType = null;
     if (typeof link !== "string") {
         mimeType = $(link).attr("type");
