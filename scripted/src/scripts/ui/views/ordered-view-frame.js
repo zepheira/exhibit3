@@ -1006,8 +1006,11 @@ Exhibit.OrderedViewFrame.renderPageLinks = function(parentElmt, page, pageCount,
             .attr("class", "exhibit-collectionView-pagingControls-page");
         $(parentElmt).append(elmt);
         
-        a = $("<a>")
-            .html(label)
+        a = $("<a>");
+	//don't chain; if Exhibit.ViewUtil...(index) returns
+	//undefined, then attr will act is if it has no second arg
+	//and return the value of the attribute, not the dom element
+	a.html(label)
             .attr("href", "#")
             .attr("title", Exhibit.ViewUtilities.makePagingLinkTooltip(index));
         elmt.append(a);
