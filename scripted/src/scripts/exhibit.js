@@ -377,7 +377,7 @@ Exhibit._Impl.prototype.configureFromDOM = function(root) {
 
     if (controlPanelElmts.length === 0) {
         panel = Exhibit.ControlPanel.createFromDOM(
-            $("<div>").prependTo(document.body),
+            $("<div>").prependTo(document.body).get(0),
             null,
             uiContext
         );
