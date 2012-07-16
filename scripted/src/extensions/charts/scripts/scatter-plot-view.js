@@ -434,7 +434,8 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
 		// initialize it as false since there are no popUps at the beginning
 		var pop = false;
 		
-		$('body').click(function(e) {
+
+		$(container).click(function(e) {
 			
 			// if there's popUp
 			//close the existing popUp if the user has clicked outside the popUp
@@ -507,7 +508,7 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
 		      	title: yAxisTitle,
 		        ticks : yAxis,            // Set Y-Axis ticks
 				min : yAxisMin,
-				max : yAxisMax,              // Maximum value along Y-Axis
+				max : yAxisMax              // Maximum value along Y-Axis
 		      },
 			grid : {
 				backgroundColor : {
