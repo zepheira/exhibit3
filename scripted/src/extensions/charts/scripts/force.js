@@ -125,45 +125,9 @@ Exhibit.ForceDirectedView.prototype._initializeUI = function() {
     this._dom.plotContainer.className = "exhibit-ForceDirectedView-plotContainer";
     this._dom.plotContainer.style.height = this._settings.plotHeight + "px";
     this._dom.plotContainer.style.width = this._settings.plotWidth + "px";
-    //console.log(this._dom.plotContainer.style.width);
     self._initializeViewUI();
     this._reconstruct();
 };
-
-
-
-
-
-
-
-var labelType, useGradients, nativeTextSupport, animate;
-
-(function() {
-  var ua = navigator.userAgent,
-      iStuff = ua.match(/iPhone/i) || ua.match(/iPad/i),
-      typeOfCanvas = typeof HTMLCanvasElement,
-      nativeCanvasSupport = (typeOfCanvas == 'object' || typeOfCanvas == 'function'),
-      textSupport = nativeCanvasSupport 
-        && (typeof document.createElement('canvas').getContext('2d').fillText == 'function');
-  //I'm setting this based on the fact that ExCanvas provides text support for IE
-  //and that as of today iPhone/iPad current text support is lame
-  labelType = (!nativeCanvasSupport || (textSupport && !iStuff))? 'Native' : 'HTML';
-  nativeTextSupport = labelType == 'Native';
-  useGradients = nativeCanvasSupport;
-  animate = !(iStuff || !nativeCanvasSupport);
-})();
-
-
-var Log = {
-  elem: false,
-  write: function(text){
-    if (!this.elem) 
-      this.elem = document.getElementById('log');
-    this.elem.innerHTML = text;
-    this.elem.style.left = (500 - this.elem.offsetWidth / 2) + 'px';
-  }
-};
-
 
 Exhibit.ForceDirectedView.prototype._reconstruct = function (){
     var database = this.getUIContext().getDatabase();
@@ -172,6 +136,8 @@ Exhibit.ForceDirectedView.prototype._reconstruct = function (){
     //json is the list of data that we pass to the jit graph constructor
     var json = []
     currentSet = this.getUIContext().getCollection().getRestrictedItems();
+    currentSetIds = currentSet.toArray(); // list of ids of all the elements in the current set. 
+    
     currentSet.visit(function(itemID){
         //ob is the data item.
         var ob = {};
@@ -181,34 +147,68 @@ Exhibit.ForceDirectedView.prototype._reconstruct = function (){
         
         //adjList is a list of adj edges
         var adjList = []
-        for (key in adj){
-            adjList.push(adj[key]);
-        }
         
+        //push the edges to the adjList only if the end vertex is in the currentList of selected items
+        for (key in adj){
+            for (i in currentSetIds){
+                if (currentSetIds[i] == adj[key]){
+                    adjList.push({"nodeTo" : adj[key], "nodeFrom": itemID }); 
+                    break;
+                }
+            }
+        }
+        console.log(adjList);
         ob["adjacencies"]=adjList;
         ob["data"] = database.getObject(itemID, "data");
-        ob["id"] = database.getObject(itemID, "name");
-        ob["name"] = database.getObject(itemID, "name");
+        ob["id"] = itemID;
+        ob["name"] = itemID;
         json.push(ob);
     })
-    console.log(json);
     
+    
+    
+    this._dom.plotContainer.innerHTML = "";
     var container = document.createElement("div");
     container.id = "ForceDirectedContainer";
-    container.style.height = "100%";
-    container.style.width = "100%";
-    container.style.backgroundColor = "black";
     this._dom.plotContainer.appendChild(container);
-    //console.log(this._dom.plotContainer.style.width);
     
     this._createJitFD(container.id, json);
    
 };
 
 Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
-      // init ForceDirected
-  var fd = new $jit.ForceDirected({
-    //id of the visualization container
+    var labelType, useGradients, nativeTextSupport, animate;
+
+    (function() {
+      var ua = navigator.userAgent,
+          iStuff = ua.match(/iPhone/i) || ua.match(/iPad/i),
+          typeOfCanvas = typeof HTMLCanvasElement,
+          nativeCanvasSupport = (typeOfCanvas == 'object' || typeOfCanvas == 'function'),
+          textSupport = nativeCanvasSupport 
+            && (typeof document.createElement('canvas').getContext('2d').fillText == 'function');
+      //I'm setting this based on the fact that ExCanvas provides text support for IE
+      //and that as of today iPhone/iPad current text support is lame
+      labelType = (!nativeCanvasSupport || (textSupport && !iStuff))? 'Native' : 'HTML';
+      nativeTextSupport = labelType == 'Native';
+      useGradients = nativeCanvasSupport;
+      animate = !(iStuff || !nativeCanvasSupport);
+    })();
+    
+    
+    var Log = {
+      elem: false,
+      write: function(text){
+        if (!this.elem) 
+          this.elem = document.getElementById('log');
+        this.elem.innerHTML = text;
+        this.elem.style.left = (500 - this.elem.offsetWidth / 2) + 'px';
+      }
+    };
+    
+        
+    // init ForceDirected
+    var fd = new $jit.ForceDirected({
+        //id of the visualization container
     injectInto: id,
     //Enable zooming and panning
     //by scrolling and DnD
@@ -307,14 +307,14 @@ Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
       style.left = (left - w / 2) + 'px';
       style.top = (top + 10) + 'px';
       style.display = '';
-    }
-  });
-  // load JSON data.
-  fd.loadJSON(json);
-  // compute positions incrementally and animate.
-  fd.computeIncremental({
-    iter: 40,
-    property: 'end',
+        }
+      });
+      // load JSON data.
+      fd.loadJSON(json);
+      // compute positions incrementally and animate.
+      fd.computeIncremental({
+        iter: 40,
+        property: 'end',
     onStep: function(perc){
       Log.write(perc + '% loaded...');
     },
@@ -322,11 +322,11 @@ Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
       //Log.write('done');
       fd.animate({
         modes: ['linear'],
-        transition: $jit.Trans.Elastic.easeOut,
-        duration: 2500
+            transition: $jit.Trans.Elastic.easeOut,
+            duration: 2500
+          });
+        }
       });
-    }
-  });
-  // end
+      // end
 };
 
