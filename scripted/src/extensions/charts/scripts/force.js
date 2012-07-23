@@ -186,7 +186,7 @@ Exhibit.ForceDirectedView.prototype._reconstruct = function (){
         ob["adjacencies"]=adjList;
         var colors = Exhibit.ForceDirectedView._colors;
         if (typeof color == "undefined"){
-            ob["data"] = {"$color": colors[colorInd%2],"$type": "circle","$dim": 8};
+            ob["data"] = {"$color": colors[colorInd%5],"$type": "circle","$dim": 11};
         }else{
             ob["data"] = {"$color": color,"$type": "circle","$dim": 8};
         }        
@@ -257,16 +257,16 @@ Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
     },
     Edge: {
       overridable: true,
-      //color: '#b5b5b5 ',
-      color:'#C7C7C7',
-      lineWidth: 1.5
+      color: '#23A4FF ',
+      //color:'#C7C7C7',
+      lineWidth: 0.4
     },
     //Native canvas text styling
     Label: {
       type: labelType, //Native or HTML
       size: 11,
       style: 'bold',
-      color:'black'
+      color:'white'
       //color:'#878787',
       //color: '#E6550D',
       //color: '#878787'
@@ -364,7 +364,7 @@ Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
 };
 //dark green, light green, dark orange, light orange, dark red, purple, pink
 //'#2CA25F', '#ADDD8E','#D95F0E','#FEC44F', '#756BB1', '#C51B8A'
-Exhibit.ForceDirectedView._colors = ['#FEC44F', '#D95F0E'];
+Exhibit.ForceDirectedView._colors = ['#557EAA', '#83548B','#909291','#416D9C','#C74243'];
 
 
 
