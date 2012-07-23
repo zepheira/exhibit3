@@ -32,14 +32,9 @@ Exhibit.ForceDirectedView = function(containerElmt, uiContext) {
 };
 
 Exhibit.ForceDirectedView._settingSpecs = {
-        "plotHeight" : {
-        type : "int",
-        defaultValue : 400
-    },
-        "plotWidth" : {
-        type : "int",
-        defaultValue : 600
-    },
+        "plotHeight" : {type : "int", defaultValue : 400},
+        "plotWidth" : {type : "int", defaultValue : 600},
+        "color" : {type : "text"},
 };
 Exhibit.ForceDirectedView._accessorSpecs = [];
 
@@ -165,7 +160,7 @@ Exhibit.ForceDirectedView.prototype._reconstruct = function (){
     currentSet = this.getUIContext().getCollection().getRestrictedItems();
     currentSetIds = currentSet.toArray(); // list of ids of all the elements in the current set. 
     
-    var colors = Exhibit.ForceDirectedView._colors;
+    var color = this._settings.color;
     colorInd = 0;
     currentSet.visit(function(itemID){
         //ob is the data item.
@@ -176,8 +171,8 @@ Exhibit.ForceDirectedView.prototype._reconstruct = function (){
         
         //adjList is a list of adj edges
         var adjList = []
-        
-        console.log(adj);
+   
+        //console.log(adj);
         
         //push the edges to the adjList only if the end vertex is in the currentList of selected items
         for (key in adj){
@@ -189,21 +184,22 @@ Exhibit.ForceDirectedView.prototype._reconstruct = function (){
             }
         }
         ob["adjacencies"]=adjList;
-        ob["data"] = {"$color": '#2C7FB8',"$type": "circle","$dim": 8};
-        //ob["data"] = {"$color": '#FEC44F'colors[colorInd%2],"$type": "circle","$dim": 8};
+        var colors = Exhibit.ForceDirectedView._colors;
+        if (typeof color == "undefined"){
+            ob["data"] = {"$color": colors[colorInd%2],"$type": "circle","$dim": 8};
+        }else{
+            ob["data"] = {"$color": color,"$type": "circle","$dim": 8};
+        }        
         ob["id"] = itemID;
         ob["name"] = itemID;
+        colorInd++;
         json.push(ob);
-        colorInd+=1;
-    })
-    
-    
+    })   
     
     this._dom.plotContainer.innerHTML = "";
     var container = document.createElement("div");
     container.id = "ForceDirectedContainer";
     this._dom.plotContainer.appendChild(container);
-    
     this._createJitFD(container.id, json);
    
 };
@@ -270,7 +266,8 @@ Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
       type: labelType, //Native or HTML
       size: 11,
       style: 'bold',
-      color:'#878787',
+      color:'black'
+      //color:'#878787',
       //color: '#E6550D',
       //color: '#878787'
     },
@@ -367,4 +364,9 @@ Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
 };
 //dark green, light green, dark orange, light orange, dark red, purple, pink
 //'#2CA25F', '#ADDD8E','#D95F0E','#FEC44F', '#756BB1', '#C51B8A'
-Exhibit.ForceDirectedView._colors = [];
+Exhibit.ForceDirectedView._colors = ['#FEC44F', '#D95F0E'];
+
+
+
+//["dark green", "light green", "orange", "yellow", "light blue", "dark blue", "black", "brown", "red", "magenta", "purple"]
+//var colors = {"dark green": "#006400", "light green": "#00FF00", "orange": "#FF6600", "yellow": "#FFFF00", "light blue": "#00FFFF", "dark blue": "#0000CD", "black": "#000000", "brown": "#5E2605", "red": "#CD0000", "magenta": "#FF00FF" , "purple": "#800080"};
