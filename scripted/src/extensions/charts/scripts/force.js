@@ -129,6 +129,33 @@ Exhibit.ForceDirectedView.prototype._initializeUI = function() {
     this._reconstruct();
 };
 
+
+//Each data input item in jit needs to be in this format:
+/*
+ *   {
+        "adjacencies": [{"nodeTo": "graphnode1","nodeFrom": "graphnode0","data": {"$color": "#557EAA"}},
+                        {"nodeTo": "graphnode2","nodeFrom": "graphnode0","data": {"$color": "#557EAA"}}],
+                        "data": {"$color": "#EBB056","$type": "circle","$dim": 11},
+                        "id": "graphnode1",
+                        "name":"graphnode1"
+      }
+      
+      But our users are going to put it in this format:
+      
+      {   
+        "adjacencies": {"0":"graphnode1","1":"graphnode2"},
+                        "data": {"$color": "#EBB056","$type": "circle","$dim": 11},
+                        "label": "graphnode0",
+                        "genre" : "rock",
+                        "rating": "good"
+      }
+      
+      Wanted to map adjacencies to a list. However exhibit doesn't parse the list correctly.
+      When adjacencies maps to ["graphnode1","graphnode2"], database.getObject(itemID, "adjacencies") only returns
+      the first node in the list. 
+ */
+
+
 Exhibit.ForceDirectedView.prototype._reconstruct = function (){
     var database = this.getUIContext().getDatabase();
     var jitData = this.getUIContext().getCollection()._database._spo;
@@ -138,6 +165,8 @@ Exhibit.ForceDirectedView.prototype._reconstruct = function (){
     currentSet = this.getUIContext().getCollection().getRestrictedItems();
     currentSetIds = currentSet.toArray(); // list of ids of all the elements in the current set. 
     
+    var colors = Exhibit.ForceDirectedView._colors;
+    colorInd = 0;
     currentSet.visit(function(itemID){
         //ob is the data item.
         var ob = {};
@@ -148,6 +177,8 @@ Exhibit.ForceDirectedView.prototype._reconstruct = function (){
         //adjList is a list of adj edges
         var adjList = []
         
+        console.log(adj);
+        
         //push the edges to the adjList only if the end vertex is in the currentList of selected items
         for (key in adj){
             for (i in currentSetIds){
@@ -157,12 +188,13 @@ Exhibit.ForceDirectedView.prototype._reconstruct = function (){
                 }
             }
         }
-        console.log(adjList);
         ob["adjacencies"]=adjList;
-        ob["data"] = database.getObject(itemID, "data");
+        ob["data"] = {"$color": '#2C7FB8',"$type": "circle","$dim": 8};
+        //ob["data"] = {"$color": '#FEC44F'colors[colorInd%2],"$type": "circle","$dim": 8};
         ob["id"] = itemID;
         ob["name"] = itemID;
         json.push(ob);
+        colorInd+=1;
     })
     
     
@@ -229,14 +261,18 @@ Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
     },
     Edge: {
       overridable: true,
-      color: '#23A4FF',
-      lineWidth: 0.4
+      //color: '#b5b5b5 ',
+      color:'#C7C7C7',
+      lineWidth: 1.5
     },
     //Native canvas text styling
     Label: {
       type: labelType, //Native or HTML
-      size: 10,
-      style: 'bold'
+      size: 11,
+      style: 'bold',
+      color:'#878787',
+      //color: '#E6550D',
+      //color: '#878787'
     },
     //Add Tips
     Tips: {
@@ -329,4 +365,6 @@ Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
       });
       // end
 };
-
+//dark green, light green, dark orange, light orange, dark red, purple, pink
+//'#2CA25F', '#ADDD8E','#D95F0E','#FEC44F', '#756BB1', '#C51B8A'
+Exhibit.ForceDirectedView._colors = [];
