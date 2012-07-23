@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel='stylesheet' href='http://www.simile-widgets.org/styles/common.css' type='text/css' />
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
+        <!-- Replace the URL here with http://api.simile-widgets.org/exhibit/2.2.0/exhibit-api.js -->
+        <script src="../../src/exhibit-api.js?bundle=false"></script>
+
+        <!-- Jit stuff-->
+        <link type="text/css" href="../../../../../Jit/Examples/css/base.css" rel="stylesheet" />
+        <link type="text/css" href="../../../../../Jit/Examples/css/ForceDirected.css" rel="stylesheet" />
+        <script language="javascript" type="text/javascript" src="../../../../../Jit/jit.js"></script>
+        <link href="data.js" type="application/json" rel="exhibit-data" />
+
+        <!--script src="http://ajax.googleapis.com/ajax/libs/dojo/1.7.2/dojo/dojo.js"
+        data-dojo-config="async: true, gfxRenderer: 'svg,silverlight,vml,canvas'"></script>
+        <!-- Replace the URL here with http://api.simile-widgets.org/exhibit/2.2.0/extensions/chart/chart-extension.js -->
+        <script src="../../src/extensions/charts/chart-extension.js" type="text/javascript"></script>
+        <style>
+            body{
+                text-align:left;
+            }
+            #top {
+                background-color: #888;
+                color: white;
+                font-size: 100%;
+                font-family: Arial;
+                border: 1px solid #aaa;
+                margin-bottom: 20px;
+                padding-left: 10px;
+            }
+            .exhibit-facet-body{
+                background-color: #DE8D57;
+                background-color: #FCAD48;
+                background-color: #FFF7BC;
+                background-color: pink;
+                margin-right: 10px;
+            }
+            #ForceDirectedContainer{
+                background-color: #FFF7BC;
+                background-color: #EFEDF5;
+                background-color: black;
+            }
+            #leftContainer{
+                height: 40em;
+                background-color: pink;
+                color:black;
+                padding: 10px 10px;
+            }
+        </style>
+        <title>Music Graph - Music Genome Project</title>
+    </head>
+    <body>
+        <ul id="path">
+          <li><a href="/">SIMILE Widgets</a></li>
+          <li><a href="/exhibit/">Exhibit</a></li>
+          <li><span>Examples: Music Graph</span></li>
+        </ul>
+        <div id="header">
+          <h1>Music Graph - Music Genome Project</h1>
+        </div>
+        <div id="content">
+            <table width="100%">
+                <tr width="100%">
+                    <td width="20%">
+                        <div id="leftContainer">
+                            <div id="title">Music Graph</div>
+                            <span>You can see how different bands are related to each other...</span>
+                        </div>
+                        
+                    </td>
+                    <td>
+                        <div ex:role="viewPanel">
+                             <div ex:role="view"
+                             ex:viewClass="Exhibit.ForceDirectedView"
+                             ex:label="ForceDirected"> 
+                              <div id="log"></div>
+                             </div>   
+                        </div>
+                    </td>
+                    <td width="20%">
+                        <div ex:role="facet" 
+                            ex:expression=".rating" 
+                            ex:facetLabel="Rating"
+                            ex:height="10em"></div>
+                    
+                    
+                        <div ex:role="facet" 
+                            ex:expression=".genre" 
+                            ex:facetLabel="Genre"
+                            ex:height="10em"></div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </body>
+</html>
