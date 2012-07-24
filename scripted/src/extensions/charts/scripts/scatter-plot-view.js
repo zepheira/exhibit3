@@ -235,6 +235,8 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
     this._dom.legendWidget.clear();
     if (currentSize > 0) {
         var currentSet = collection.getRestrictedItems();
+        console.log(currentSet);
+        console.log(currentSet.toArray());
         var hasColorKey = (this._accessors.getColorKey != null);
         
         var xyToData = {};
@@ -243,31 +245,37 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
         var yAxisMin = settings.yAxisMin;
         var yAxisMax = settings.yAxisMax;
         
+
         /*
          *  Iterate through all items, collecting min and max on both axes
          */
-        var i =0;
+        var i = 0;
         currentSet.visit(function(itemID) {
-            var xys = [];
-            
+            var xys = []; //xys contains coordinate of an Item
+
             /*
              * Note: xy = ['x','y'] where x is birthrate and y is deathrate
-             * 
+             *
              */
-          
-            self._getXY(itemID, database, function(xy) { if ("x" in xy && "y" in xy) xys.push(xy); });
-            //SimileAjax.Debug.log(SimileAjax.Debug.objectToString(xys));
+
+            self._getXY(itemID, database, function(xy) {
+                if ("x" in xy && "y" in xy)
+                    xys.push(xy);
+            });
+            
             if (xys.length > 0) {
                 var colorKeys = null;
                 if (hasColorKey) {
                     colorKeys = new Exhibit.Set();
-                    accessors.getColorKey(itemID, database, function(v) { colorKeys.add(v); });
+                    accessors.getColorKey(itemID, database, function(v) {
+                        colorKeys.add(v);
+                    });
                 }
-                
+
                 for (var i = 0; i < xys.length; i++) {
                     var xy = xys[i];
                     var xyKey = xy.x + "," + xy.y;
-                    if (xyKey in xyToData) {
+                    if ( xyKey in xyToData) {
                         var xyData = xyToData[xyKey];
                         xyData.items.push(itemID);
                         if (hasColorKey) {
@@ -281,29 +289,31 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
                                 continue;
                             }
                         } catch (e) {
-                            continue; // ignore the point since we can't scale it, e.g., log(0)
+                            continue;
+                            // ignore the point since we can't scale it, e.g., log(0)
                         }
-                        
+
                         var xyData = {
-                            xy:         xy,
-                            items:      [ itemID ]
+                            xy : xy,
+                            items : [itemID]
                         };
                         if (hasColorKey) {
                             xyData.colorKeys = colorKeys;
                         }
                         xyToData[xyKey] = xyData;
-                        
+
                         xAxisMin = Math.min(xAxisMin, xy.scaledX);
                         xAxisMax = Math.max(xAxisMax, xy.scaledX);
                         yAxisMin = Math.min(yAxisMin, xy.scaledY);
                         yAxisMax = Math.max(yAxisMax, xy.scaledY);
                     }
                 }
+
             } else {
                 unplottableItems.push(itemID);
             }
         });
-        
+
         /*
          *  Figure out scales, mins, and maxes for both axes
          */
@@ -423,7 +433,6 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
 				callbacks : {						
 					'flotr:hit' : function(e) {
 						hitEvt = e; //making the x,y coords from e accessible
-						//console.log(e);
 					}
 				}
 				});
@@ -441,7 +450,6 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
 			//close the existing popUp if the user has clicked outside the popUp
 			if (pop) {
 				if (!$(e.target).closest('.simileAjax-bubble-container *').length) {
-					console.log("yes!!");
 					pop = false;
 					$('.simileAjax-bubble-container').hide();
 				};
@@ -453,7 +461,6 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
 				var disY = Math.abs(e.pageY - hitEvt.absY);
 				var distance = Math.sqrt(disX * disX + disY * disY);
 
-				//console.log(distance);
 				if (distance < 10) {
 					var key = hitEvt.x + "," + hitEvt.y;
 					var items = xyToData[key].items;
@@ -461,16 +468,7 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
 					Exhibit.ViewUtilities.openBubbleWithCoords(e.pageX, e.pageY, items, self.getUIContext());
 				}
 			}
-		});
-
-/*
-		$(container).click(function(e) {
-
-		});
-*/
-
-
-		
+		});	
 	
   		
         (function () {
@@ -489,10 +487,6 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
         		return id + ": " + xAxisTitle + ' = ' + x +', '+ yAxisTitle + ' = ' + y;
          	}
          	
-  
-
-
-	   
 		  // Draw the graph
 		  var graph = Flotr.draw(container, 
 		  	[{data: dataToBePlotted, label : "y=x", points : { show : true }, lines : {show:false}}], //bracket very imp!!
@@ -528,30 +522,32 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
       		});
 		})(document.getElementById("editor-render-0"));
 
+  
         if (hasColorKey) {
             var legendWidget = this._dom.legendWidget;
             var colorCoder = this._colorCoder;
             var keys = colorCodingFlags.keys.toArray().sort();
-if(this._colorCoder._gradientPoints != null) {
-				legendWidget.addGradient(this._colorCoder._gradientPoints);
-			} else {
-	            for (var k = 0; k < keys.length; k++) {
-	                var key = keys[k];
-	                var color = colorCoder.translate(key);
-	                legendWidget.addEntry(color, key);
-	            }
-			}
-			
-			if (colorCodingFlags.others) {
-				legendWidget.addEntry(colorCoder.getOthersColor(), colorCoder.getOthersLabel());
-			}
-			if (colorCodingFlags.mixed) {
-				legendWidget.addEntry(colorCoder.getMixedColor(), colorCoder.getMixedLabel());
-			}
-			if (colorCodingFlags.missing) {
-				legendWidget.addEntry(colorCoder.getMissingColor(), colorCoder.getMissingLabel());
-			}
+            if (this._colorCoder._gradientPoints != null) {
+                legendWidget.addGradient(this._colorCoder._gradientPoints);
+            } else {
+                for (var k = 0; k < keys.length; k++) {
+                    var key = keys[k];
+                    var color = colorCoder.translate(key);
+                    legendWidget.addEntry(color, key);
+                }
+            }
+
+            if (colorCodingFlags.others) {
+                legendWidget.addEntry(colorCoder.getOthersColor(), colorCoder.getOthersLabel());
+            }
+            if (colorCodingFlags.mixed) {
+                legendWidget.addEntry(colorCoder.getMixedColor(), colorCoder.getMixedLabel());
+            }
+            if (colorCodingFlags.missing) {
+                legendWidget.addEntry(colorCoder.getMissingColor(), colorCoder.getMissingLabel());
+            }
         }
     }
+
     this._dom.setUnplottableMessage(currentSize, unplottableItems);
 };
