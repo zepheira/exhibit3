@@ -722,7 +722,7 @@ Exhibit.BarChartView.prototype._reconstruct = function() {
 			// initialize it as false since there are no popUps at the beginning
 			var pop = false;
 			
-			$('body').click(function(e) {
+			$(container).click(function(e) {
 				console.log("access", accessClosest);
 				// if there's popUp
 				//close the existing popUp if the user has clicked outside the popUp
