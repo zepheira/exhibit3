@@ -40,6 +40,10 @@ Exhibit.ForceDirectedView._accessorSpecs = [
     {   "accessorName":   "getName",
         "attributeName":  "name",
         "type":           "text"
+    },    
+    {   "accessorName":   "getEdge",
+        "attributeName":  "edge",
+        "type":           "text"
     }
 ];
 
@@ -129,6 +133,9 @@ Exhibit.ForceDirectedView.prototype._initializeUI = function() {
     this._reconstruct();
 };
 
+Exhibit.ScatterPlotView.evaluateSingle = function(expression, itemID, database) {
+    return expression.evaluateSingleOnItem(itemID, database).value;
+}
 
 //Each data input item in jit needs to be in this format:
 /*
@@ -199,6 +206,7 @@ Exhibit.ForceDirectedView.prototype._reconstruct = function (){
         
         ob["id"] = itemID;
         accessors.getName(itemID, database, function(key){ob["name"] = key;});
+        
         colorInd++;
         json.push(ob);
     })   
