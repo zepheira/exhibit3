@@ -11,7 +11,7 @@ Exhibit.ForceDirectedView = function(containerElmt, uiContext) {
     this.addSettingSpecs(Exhibit.ForceDirectedView._settingSpecs);
     
     this._accessors = {
-        "getPointLabel":  function(itemID, database, visitor) { visitor(database.getObject(itemID, "label"));},
+        //"getPointLabel":  function(itemID, database, visitor) { visitor(database.getObject(itemID, "label"));},
         "getProxy":       function(itemID, database, visitor) { visitor(itemID); },
         "getColorKey":    null
     };
@@ -36,7 +36,12 @@ Exhibit.ForceDirectedView._settingSpecs = {
         "plotWidth" : {type : "int", defaultValue : 600},
         "color" : {type : "text"},
 };
-Exhibit.ForceDirectedView._accessorSpecs = [];
+Exhibit.ForceDirectedView._accessorSpecs = [
+    {   "accessorName":   "getName",
+        "attributeName":  "name",
+        "type":           "text"
+    }
+];
 
 Exhibit.ForceDirectedView.create = function(configuration, containerElmt, uiContext) {
     var view = new Exhibit.ForceDirectedView(
@@ -152,6 +157,7 @@ Exhibit.ForceDirectedView.prototype._initializeUI = function() {
 
 
 Exhibit.ForceDirectedView.prototype._reconstruct = function (){
+    var accessors = this._accessors;
     var database = this.getUIContext().getDatabase();
     var jitData = this.getUIContext().getCollection()._database._spo;
     
@@ -189,9 +195,10 @@ Exhibit.ForceDirectedView.prototype._reconstruct = function (){
             ob["data"] = {"$color": colors[colorInd%5],"$type": "circle","$dim": 11};
         }else{
             ob["data"] = {"$color": color,"$type": "circle","$dim": 8};
-        }        
+        }  
+        
         ob["id"] = itemID;
-        ob["name"] = itemID;
+        accessors.getName(itemID, database, function(key){ob["name"] = key;});
         colorInd++;
         json.push(ob);
     })   
