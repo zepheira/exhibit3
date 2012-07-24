@@ -18,6 +18,7 @@ Exhibit.ForceDirectedView = function(containerElmt, uiContext) {
 
     this._colorKeyCache = new Object();
     this._maxColor = 0;
+    this._edgeExpression = null;
     
     this._onItemsChanged = function(){
         view._reconstruct(); 
@@ -69,6 +70,9 @@ Exhibit.ForceDirectedView.createFromDOM = function(configElmt, containerElmt, ui
     Exhibit.SettingsUtilities.createAccessorsFromDOM(configElmt, Exhibit.ForceDirectedView._accessorSpecs, view._accessors);
     Exhibit.SettingsUtilities.collectSettingsFromDOM(configElmt, view.getSettingSpecs(), view._settings);
     Exhibit.ForceDirectedView._configure(view, configuration);
+         
+    var edge = Exhibit.getAttribute(configElmt, "edge");
+    view._edgeExpression = Exhibit.ExpressionParser.parse(edge);
     
     view._internalValidate();
     view._initializeUI();
@@ -133,9 +137,6 @@ Exhibit.ForceDirectedView.prototype._initializeUI = function() {
     this._reconstruct();
 };
 
-Exhibit.ScatterPlotView.evaluateSingle = function(expression, itemID, database) {
-    return expression.evaluateSingleOnItem(itemID, database).value;
-}
 
 //Each data input item in jit needs to be in this format:
 /*
@@ -144,17 +145,14 @@ Exhibit.ScatterPlotView.evaluateSingle = function(expression, itemID, database) 
                         {"nodeTo": "graphnode2","nodeFrom": "graphnode0","data": {"$color": "#557EAA"}}],
                         "data": {"$color": "#EBB056","$type": "circle","$dim": 11},
                         "id": "graphnode1",
-                        "name":"graphnode1"
+                        "name":"Harry"
       }
       
       But our users are going to put it in this format:
       
       {   
-        "adjacencies": {"0":"graphnode1","1":"graphnode2"},
-                        "data": {"$color": "#EBB056","$type": "circle","$dim": 11},
-                        "label": "graphnode0",
-                        "genre" : "rock",
-                        "rating": "good"
+        "label": "graphnode0"
+        "name": "Harry"
       }
       
       Wanted to map adjacencies to a list. However exhibit doesn't parse the list correctly.
@@ -166,38 +164,40 @@ Exhibit.ScatterPlotView.evaluateSingle = function(expression, itemID, database) 
 Exhibit.ForceDirectedView.prototype._reconstruct = function (){
     var accessors = this._accessors;
     var database = this.getUIContext().getDatabase();
-    var jitData = this.getUIContext().getCollection()._database._spo;
+    var edgeExpr = this._edgeExpression;
     
     //json is the list of data that we pass to the jit graph constructor
     var json = []
     currentSet = this.getUIContext().getCollection().getRestrictedItems();
     currentSetIds = currentSet.toArray(); // list of ids of all the elements in the current set. 
     
-    var color = this._settings.color;
-    colorInd = 0;
+    var color = this._settings.color; // need to take care of this
+    var colorInd = 0;
     currentSet.visit(function(itemID){
-        //ob is the data item.
-        var ob = {};
+        /**
+         * ob : data item that will be fed to jit
+         */
+        var ob = {}, edgeObj, edgeList = [], colors;
+        colors = Exhibit.ForceDirectedView._colors;
         
-        //adj gives us all the adjacent edges from the database
-        var adj = database.getObject(itemID, "adjacencies");
+        edgeObj = edgeExpr.evaluate(
+                        { "value" : itemID }, 
+                        { "value" : "item" }, 
+                        "value",
+                        database
+                    );
         
-        //adjList is a list of adj edges
-        var adjList = []
-   
-        //console.log(adj);
-        
-        //push the edges to the adjList only if the end vertex is in the currentList of selected items
-        for (key in adj){
+        //edgeList is a list of adj edges for each item     
+        edgeObj.values.visit(function(edge){
             for (i in currentSetIds){
-                if (currentSetIds[i] == adj[key]){
-                    adjList.push({"nodeTo" : adj[key], "nodeFrom": itemID }); 
+                if (currentSetIds[i] == edge){
+                    edgeList.push({"nodeTo" : edge, "nodeFrom": itemID }); 
                     break;
                 }
             }
-        }
-        ob["adjacencies"]=adjList;
-        var colors = Exhibit.ForceDirectedView._colors;
+        });
+        
+        ob["adjacencies"] = edgeList;
         if (typeof color == "undefined"){
             ob["data"] = {"$color": colors[colorInd%5],"$type": "circle","$dim": 11};
         }else{
