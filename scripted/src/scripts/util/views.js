@@ -34,7 +34,6 @@ Exhibit.ViewUtilities.openBubbleWithCoords = function(x,y, arrayOfItemIDs, uiCon
         uiContext.getSetting("bubbleWidth"), // px
         uiContext.getSetting("bubbleHeight") // px
     );
-	console.log(arrayOfItemIDs);
     Exhibit.ViewUtilities.fillBubbleWithItems(bubble.content, arrayOfItemIDs, uiContext);
 }
 
@@ -47,6 +46,7 @@ Exhibit.ViewUtilities.openBubbleWithCoords = function(x,y, arrayOfItemIDs, uiCon
  * @returns {Element}
  */
 Exhibit.ViewUtilities.fillBubbleWithItems = function(bubbleElmt, arrayOfItemIDs, uiContext) {
+    console.log("inside");
     var ul, i, itemLensDiv, itemLens;
     if (typeof bubbleElmt === "undefined" || bubbleElmt === null) {
         bubbleElmt = $("<div>");
