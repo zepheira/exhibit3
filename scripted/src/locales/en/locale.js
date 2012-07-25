@@ -24,6 +24,7 @@ Exhibit.Localization.importLocale("en", {
     "%general.error.lensSelectorNotFunction": "lensSelector is not a function",
     "%general.error.lensSelectorExpressionNotFunction": "lensSelector expression %1$s is not a function",
     "%general.error.badLensSelectorExpression": "Bad lensSelector expression: %1$s",
+    "%general.error.unloadableScript": "Unable to load script of type %1$s",
 
     "%lens.error.unknownLensType": "Unknown lens type: %1$s",
     "%lens.error.failedToLoad": "Failed to load view template from %1$s\n%2$s",

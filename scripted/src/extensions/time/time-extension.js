@@ -126,5 +126,7 @@
         finishedLoading();
     };
 
-    Exhibit.jQuery(document).one("loadExtensions.exhibit", loader);
+    Exhibit.includeScript(function() {
+	    jQuery(document).one("loadExtensions.exhibit", loader);
+	});
 }());
