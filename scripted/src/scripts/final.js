@@ -72,7 +72,7 @@ Exhibit.jQuery(document).ready(function() {
         Exhibit.loader.script(Exhibit.jQuery(el).attr("href"));
     });
 
-    Exhibit.loader.wait(function() {
+    Exhibit.includeScript(function() {
         Exhibit.jQuery(document).trigger("registerLocalization.exhibit", Exhibit.staticRegistry);
     });
 });
