@@ -15,6 +15,7 @@ Exhibit.ForceDirectedView = function(containerElmt, uiContext) {
         "getProxy":       function(itemID, database, visitor) { visitor(itemID); },
         "getColorKey":    null
     };
+    this._colorCoder = null;
 
     this._colorKeyCache = new Object();
     this._maxColor = 0;
@@ -36,6 +37,8 @@ Exhibit.ForceDirectedView._settingSpecs = {
         "plotHeight" : {type : "int", defaultValue : 400},
         "plotWidth" : {type : "int", defaultValue : 600},
         "color" : {type : "text"},
+        "colorCoder" : {type : "text", defaultValue : null},
+        "edgeColor" : {type : "text", defaultValue : '#23A4FF'},
         "bubbleWidth":  { type: "int",   defaultValue: 400 },
         "bubbleHeight": { type: "int",   defaultValue: 300 }
 };
@@ -46,6 +49,10 @@ Exhibit.ForceDirectedView._accessorSpecs = [
     },    
     {   "accessorName":   "getEdge",
         "attributeName":  "edge",
+        "type":           "text"
+    },
+    {   "accessorName":   "getColorKey",
+        "attributeName":  "colorKey",
         "type":           "text"
     }
 ];
@@ -84,8 +91,6 @@ Exhibit.ForceDirectedView.createFromDOM = function(configElmt, containerElmt, ui
 Exhibit.ForceDirectedView._configure = function(view, configuration) {
     Exhibit.SettingsUtilities.createAccessors(configuration, Exhibit.ForceDirectedView._accessorSpecs, view._accessors);
     Exhibit.SettingsUtilities.collectSettings(configuration, view.getSettingSpecs(), view._settings);
-    
-    var accessors = view._accessors;
 };
 
 Exhibit.ForceDirectedView.evaluateSingle = function(expression, itemID, database) {
@@ -164,18 +169,45 @@ Exhibit.ForceDirectedView.prototype._initializeUI = function() {
 
 
 Exhibit.ForceDirectedView.prototype._reconstruct = function (){
+    self = this;
+    var colorCoder = this._colorCoder;
+    var colorCodingFlags = {
+        mixed : false,
+        missing : false,
+        others : false,
+        keys : new Exhibit.Set()
+    };
     var accessors = this._accessors;
     var database = this.getUIContext().getDatabase();
+    var edgeToData = {};
     var edgeExpr = this._edgeExpression;
+    var hasColorKey = (this._accessors.getColorKey != null);
     
     //json is the list of data that we pass to the jit graph constructor
     var json = []
     currentSet = this.getUIContext().getCollection().getRestrictedItems();
     currentSetIds = currentSet.toArray(); // list of ids of all the elements in the current set. 
     
-    var color = this._settings.color; // need to take care of this
     var colorInd = 0;
+    color = self._settings.color;
     currentSet.visit(function(itemID){
+            var group = [];
+                if (hasColorKey){
+                accessors.getColorKey(itemID, database, function(item) {
+                        group.push(item);
+                });
+            }
+            if (group.length > 0) {
+                var colorKeys = null;
+                
+                if (hasColorKey) {
+                    colorKeys = new Exhibit.Set();
+                    accessors.getColorKey(itemID, database, function(v) {
+                        colorKeys.add(v);
+                    });
+                    color = self._colorCoder.translateSet(colorKeys, colorCodingFlags);
+                }
+            }
         /**
          * ob : data item that will be fed to jit
          */
@@ -200,8 +232,11 @@ Exhibit.ForceDirectedView.prototype._reconstruct = function (){
         });
         
         ob["adjacencies"] = edgeList;
+        
         if (typeof color == "undefined"){
+            console.log(colorInd);
             ob["data"] = {"$color": colors[colorInd%5],"$type": "circle","$dim": 11};
+            //ob["data"] = {"$color": color,"$type": "circle","$dim": 11};
         }else{
             ob["data"] = {"$color": color,"$type": "circle","$dim": 8};
         }  
@@ -222,7 +257,7 @@ Exhibit.ForceDirectedView.prototype._reconstruct = function (){
 };
 
 Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
-    var self = this;
+    self = this;
     var labelType, useGradients, nativeTextSupport, animate;
 
     (function() {
@@ -251,7 +286,7 @@ Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
       }
     };
     
-    var _pos, _items, _node;
+    var _pos, _items, _node;    
     // init ForceDirected
     var fd = new $jit.ForceDirected({
         //id of the visualization container
@@ -275,7 +310,7 @@ Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
     },
     Edge: {
       overridable: true,
-      color: '#23A4FF ',
+      color: self._settings.edgeColor,
       //color:'#C7C7C7',
       lineWidth: 0.4
     },
@@ -355,7 +390,6 @@ Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
       style.display = '';
         }
       });
-            
       // load JSON data.
       fd.loadJSON(json);
       // compute positions incrementally and animate.
