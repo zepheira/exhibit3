@@ -36,6 +36,8 @@ Exhibit.ForceDirectedView._settingSpecs = {
         "plotHeight" : {type : "int", defaultValue : 400},
         "plotWidth" : {type : "int", defaultValue : 600},
         "color" : {type : "text"},
+        "bubbleWidth":  { type: "int",   defaultValue: 400 },
+        "bubbleHeight": { type: "int",   defaultValue: 300 }
 };
 Exhibit.ForceDirectedView._accessorSpecs = [
     {   "accessorName":   "getName",
@@ -220,6 +222,7 @@ Exhibit.ForceDirectedView.prototype._reconstruct = function (){
 };
 
 Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
+    var self = this;
     var labelType, useGradients, nativeTextSupport, animate;
 
     (function() {
@@ -248,7 +251,7 @@ Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
       }
     };
     
-        
+    var _pos, _items, _node;
     // init ForceDirected
     var fd = new $jit.ForceDirected({
         //id of the visualization container
@@ -320,17 +323,12 @@ Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
         this.onDragMove(node, eventInfo, e);
       },
       //Add also a click handler to nodes
-      onClick: function(node) {
-        if(!node) return;
-        // Build the right column relations list.
-        // This is done by traversing the clicked node connections.
-        var html = "<h4>" + node.name + "</h4><b> connections:</b><ul><li>",
-            list = [];
-        node.eachAdjacency(function(adj){
-          list.push(adj.nodeTo.name);
-        });
-        //append connections information
-        $jit.id('inner-details').innerHTML = html + list.join("</li><li>") + "</li></ul>";
+      onClick: function(node,eventInfo, e) {
+        _pos = eventInfo.getPos();
+        _items = [node.id];
+        _node = node;
+        
+        console.log(_pos, e);
       }
     },
     //Number of iterations for the FD algorithm
@@ -357,6 +355,7 @@ Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
       style.display = '';
         }
       });
+            
       // load JSON data.
       fd.loadJSON(json);
       // compute positions incrementally and animate.
@@ -376,6 +375,26 @@ Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
         }
       });
       // end
+      
+         var pop = false;
+      $("body").click(function(e){
+          if (!$(e.target).closest('#ForceDirectedContainer').length){
+              _node = null;
+          }
+         if (pop){
+             if (!$(e.target).closest('.simileAjax-bubble-container *').length) {
+                    pop = false;
+                    $('.simileAjax-bubble-container').hide();
+             }
+        }
+        if (!pop){
+            if (_node){
+                console.log("popup not present");
+                pop = true;
+                Exhibit.ViewUtilities.openBubbleWithCoords(e.pageX, e.pageY, _items, self.getUIContext());
+            }   
+        }
+      });
 };
 //dark green, light green, dark orange, light orange, dark red, purple, pink
 //'#2CA25F', '#ADDD8E','#D95F0E','#FEC44F', '#756BB1', '#C51B8A'
