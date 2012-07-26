@@ -20,7 +20,8 @@ Exhibit.ScatterPlotView = function(containerElmt, uiContext) {
     // Function maps that allow for other axis scales (logarithmic, etc.), defaults to identity/linear
     this._axisFuncs = { x: function (x) { return x; }, y: function (y) { return y; } };
     this._axisInverseFuncs = { x: function (x) { return x; }, y: function (y) { return y; } };
-
+    
+    this._colorCoder = null;
     this._colorKeyCache = new Object();
     this._maxColor = 0;
     
@@ -162,13 +163,10 @@ Exhibit.ScatterPlotView._colors = [
     "29447B",
     "543C1C"
 ];
+
 Exhibit.ScatterPlotView._mixColor = "FFFFFF";
 
-Exhibit.ScatterPlotView.evaluateSingle = function(expression, itemID, database) {
-    return expression.evaluateSingleOnItem(itemID, database).value;
-}
 
-//Note:come back to this later and remove the redundant objects
 Exhibit.ScatterPlotView.prototype.dispose = function() {
 	$(this.getUIContext().getCollection().getElement()).unbind(
 		"onItemsChanged.exhibit",
@@ -221,6 +219,9 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
     var database = this.getUIContext().getDatabase();
     var settings = this._settings;
     var accessors = this._accessors;
+    var colorCoder = this._colorCoder;
+    var colorCodingFlags = { mixed: false, missing: false, others: false, keys: new Exhibit.Set() };
+    var hasColorKey = (this._accessors.getColorKey != null);
     
     this._dom.plotContainer.innerHTML = "";
     
@@ -235,8 +236,6 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
     this._dom.legendWidget.clear();
     if (currentSize > 0) {
         var currentSet = collection.getRestrictedItems();
-        console.log(currentSet);
-        console.log(currentSet.toArray());
         var hasColorKey = (this._accessors.getColorKey != null);
         
         var xyToData = {};
@@ -250,6 +249,7 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
          *  Iterate through all items, collecting min and max on both axes
          */
         var i = 0;
+        var dataToPlot = []
         currentSet.visit(function(itemID) {
             var xys = []; //xys contains coordinate of an Item
 
@@ -259,8 +259,10 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
              */
 
             self._getXY(itemID, database, function(xy) {
-                if ("x" in xy && "y" in xy)
+                if ("x" in xy && "y" in xy){
+                    dataToPlot.push([xy.x, xy.y]);
                     xys.push(xy);
+                }
             });
             
             if (xys.length > 0) {
@@ -270,7 +272,9 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
                     accessors.getColorKey(itemID, database, function(v) {
                         colorKeys.add(v);
                     });
+                    color = self._colorCoder.translateSet(xyData.colorKeys, colorCodingFlags);
                 }
+
 
                 for (var i = 0; i < xys.length; i++) {
                     var xy = xys[i];
@@ -363,67 +367,6 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
 		container.className = "scatterplotViewContainer";
 		container.style.height = "100%"
 		this._dom.plotContainer.appendChild(container);      
-		
-        
-         /*
-         *  Calculate the points for the axis
-         * @param xAxis : all the labeled points in the X-Axis
-         * @param yAxis : all the labeled points in the Y-Axis
-         */
-        
-        var makeMakeLabel = function(interval, unscale) {
-            // Intelligently deal with non-linear scales
-            if (interval >= 1000000) {
-                return function (n) { return Math.floor(unscale(n) / 1000000) + "M"; };
-            } else if (interval >= 1000) {
-                return function (n) { return Math.floor(unscale(n) / 1000) + "K"; };
-            } else {
-                return function (n) { return unscale(n); };
-            }
-        };
-        var makeLabelX = makeMakeLabel(xInterval, unscaleX);
-        var makeLabelY = makeMakeLabel(yInterval, unscaleY);
-
-        var xAxis = [];
-        for (var x = xAxisMin + xInterval; x < xAxisMax; x += xInterval) {            
-            xAxis.push(makeLabelX(x));
-        }
-            
-        var yAxis = [];
-        for (var y = yAxisMin + yInterval; y < yAxisMax; y += yInterval) {
-			yAxis.push(makeLabelY(y));
-        }
-        
-		xAxisTitle = settings.xLabel;
-		yAxisTitle = settings.yLabel;
-		
-        
-        /*
-         * getting all the data points for the scatterPlot
-         * @param: dataToBePlotted = list of the data points
-         * 
-         */
-        
-        var colorCodingFlags = { mixed: false, missing: false, others: false, keys: new Exhibit.Set() };
-        
-        var dataToBePlotted = new Array(); 
-        var count = 0;
-
-		for (xyKey in xyToData) {
-			var xyData = xyToData[xyKey];
-
-			var items = xyData.items;
-
-			var color = settings.color;
-			if (hasColorKey) {
-				color = self._colorCoder.translateSet(xyData.colorKeys, colorCodingFlags);
-			}
-
-			var xy = xyData.xy;
-			dataToBePlotted.push([xy.x, xy.y]);
-
-		}
-
               
         /*replacing the original scatter plot with a new scatterplot*/
                	
@@ -437,16 +380,9 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
 				}
 				});
 			})();		
-		
 
-		//pop is a boolean which tells you whether the PopUp is open or not
-		// initialize it as false since there are no popUps at the beginning
 		var pop = false;
-		
-
-		$(container).click(function(e) {
-			
-			// if there's popUp
+		$("body").bind("click", function(e) {
 			//close the existing popUp if the user has clicked outside the popUp
 			if (pop) {
 				if (!$(e.target).closest('.simileAjax-bubble-container *').length) {
@@ -455,7 +391,6 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
 				};
 			}
 			
-			//if there is no popup, open the popUp
 			if (!pop) {
 				var disX = Math.abs(e.pageX - hitEvt.absX);
 				var disY = Math.abs(e.pageY - hitEvt.absY);
@@ -468,9 +403,8 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
 					Exhibit.ViewUtilities.openBubbleWithCoords(e.pageX, e.pageY, items, self.getUIContext());
 				}
 			}
-		});	
-	
-  		
+		});			
+
         (function () {
         	
         	//shows the data info when the point is hovered over
@@ -484,23 +418,23 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
         			var id = xyToData[key].items[0];
         		}
         		
-        		return id + ": " + xAxisTitle + ' = ' + x +', '+ yAxisTitle + ' = ' + y;
+        		return id + ": " + settings.xLabel + ' = ' + x +', '+ settings.yLabel + ' = ' + y;
          	}
          	
 		  // Draw the graph
 		  var graph = Flotr.draw(container, 
-		  	[{data: dataToBePlotted, label : "y=x", points : { show : true }, lines : {show:false}}], //bracket very imp!!
+		  	[{data: dataToPlot, label : "y=x", points : { show : true }, lines : {show:false}}], //bracket very imp!!
 		   {
 		   	colors : [color],	
 			xaxis : {
-				title: xAxisTitle,
-		        ticks : xAxis,              
+				title: settings.xLabel,
+		        //ticks : xAxis,              
 				min : xAxisMin,                  // Part of the series is not displayed.
 				max : xAxisMax                 // Part of the series is not displayed.
 		      }, 
 			yaxis : {
-		      	title: yAxisTitle,
-		        ticks : yAxis,            // Set Y-Axis ticks
+		      	title: settings.yLabel,
+		        //ticks : yAxis,            // Set Y-Axis ticks
 				min : yAxisMin,
 				max : yAxisMax              // Maximum value along Y-Axis
 		      },
