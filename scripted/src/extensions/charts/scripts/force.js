@@ -1,5 +1,6 @@
 /**
  * @author Baiaboo
+ * @author Zhi 
  */
 Exhibit.ForceDirectedView = function(containerElmt, uiContext) {
     var view = this;
@@ -45,10 +46,6 @@ Exhibit.ForceDirectedView._settingSpecs = {
 Exhibit.ForceDirectedView._accessorSpecs = [
     {   "accessorName":   "getName",
         "attributeName":  "name",
-        "type":           "text"
-    },    
-    {   "accessorName":   "getEdge",
-        "attributeName":  "edge",
         "type":           "text"
     },
     {   "accessorName":   "getColorKey",
@@ -410,7 +407,7 @@ Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
       });
       // end
       
-         var pop = false;
+      var pop = false;
       $("body").click(function(e){
           if (!$(e.target).closest('#ForceDirectedContainer').length){
               _node = null;
@@ -430,11 +427,5 @@ Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
         }
       });
 };
-//dark green, light green, dark orange, light orange, dark red, purple, pink
-//'#2CA25F', '#ADDD8E','#D95F0E','#FEC44F', '#756BB1', '#C51B8A'
+
 Exhibit.ForceDirectedView._colors = ['#557EAA', '#83548B','#909291','#416D9C','#C74243'];
-
-
-
-//["dark green", "light green", "orange", "yellow", "light blue", "dark blue", "black", "brown", "red", "magenta", "purple"]
-//var colors = {"dark green": "#006400", "light green": "#00FF00", "orange": "#FF6600", "yellow": "#FFFF00", "light blue": "#00FFFF", "dark blue": "#0000CD", "black": "#000000", "brown": "#5E2605", "red": "#CD0000", "magenta": "#FF00FF" , "purple": "#800080"};
