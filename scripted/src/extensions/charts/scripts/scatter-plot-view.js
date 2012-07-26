@@ -364,98 +364,106 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
         var yScale =  364/ (yAxisMax - yAxisMin);
         
         var container = document.createElement("div");
-		container.className = "scatterplotViewContainer";
+		container.id = "scatterplotViewContainer";
 		container.style.height = "100%"
 		this._dom.plotContainer.appendChild(container);      
-              
-        /*replacing the original scatter plot with a new scatterplot*/
-               	
-		var hitEvt;
-		(function() {
-				Flotr.addPlugin('clickHit', {
-				callbacks : {						
-					'flotr:hit' : function(e) {
-						hitEvt = e; //making the x,y coords from e accessible
-					}
-				}
-				});
-			})();		
+    } 
+    this._dom.setUnplottableMessage(currentSize, unplottableItems);
+    this._clickHandler(xyToData);
+    this._createFlotrScatter(container, dataToPlot, xAxisMin, xAxisMax, yAxisMin, yAxisMax, xyToData);
+}
 
-		var pop = false;
-		$("body").bind("click", function(e) {
-			//close the existing popUp if the user has clicked outside the popUp
-			if (pop) {
-				if (!$(e.target).closest('.simileAjax-bubble-container *').length) {
-					pop = false;
-					$('.simileAjax-bubble-container').hide();
-				};
+Exhibit.ScatterPlotView.prototype._clickHandler = function(xyToData){
+    var hitEvt;
+        (function() {
+                Flotr.addPlugin('clickHit', {
+                callbacks : {                       
+                    'flotr:hit' : function(e) {
+                        hitEvt = e; //making the x,y coords from e accessible
+                    }
+                }
+                });
+            })();       
+
+        var pop = false;
+        $("body").bind("click", function(e) {
+            //close the existing popUp if the user has clicked outside the popUp
+            if (pop) {
+                if (!$(e.target).closest('.simileAjax-bubble-container *').length) {
+                    pop = false;
+                    $('.simileAjax-bubble-container').hide();
+                };
+            }
+            
+            if (!pop) {
+                var disX = Math.abs(e.pageX - hitEvt.absX);
+                var disY = Math.abs(e.pageY - hitEvt.absY);
+                var distance = Math.sqrt(disX * disX + disY * disY);
+
+                if (distance < 10) {
+                    var key = hitEvt.x + "," + hitEvt.y;
+                    var items = xyToData[key].items;
+                    pop = true;
+                    Exhibit.ViewUtilities.openBubbleWithCoords(e.pageX, e.pageY, items, self.getUIContext());
+                }
+            }
+        }); 
+}
+
+Exhibit.ScatterPlotView.prototype._createFlotrScatter = function(container, dataToPlot, xAxisMin, xAxisMax, yAxisMin, yAxisMax, xyToData){  
+    self = this;             			
+
+    (function () {
+    	
+    	//shows the data info when the point is hovered over
+    	var trackFn = function(o){
+    		//to get rid of the padded 0's        		
+    		var x = eval(o.x);
+    		var y = eval(o.y);
+    		
+    		var key = x + "," + y;
+    		if (key in xyToData){
+    			var id = xyToData[key].items[0];
+    		}
+    		
+    		return id + ": " + self._settings.xLabel + ' = ' + x +', '+ self._settings.yLabel + ' = ' + y;
+     	}
+     	
+	  // Draw the graph
+	  var graph = Flotr.draw(container, 
+	  	[{data: dataToPlot, label : "y=x", points : { show : true }, lines : {show:false}}], //bracket very imp!!
+	   {
+	   	colors : [self._settings.color],	
+		xaxis : {
+			title: self._settings.xLabel,
+	        //ticks : xAxis,              
+			min : xAxisMin,                  // Part of the series is not displayed.
+			max : xAxisMax                 // Part of the series is not displayed.
+	      }, 
+		yaxis : {
+	      	title: self._settings.yLabel,
+	        //ticks : yAxis,            // Set Y-Axis ticks
+			min : yAxisMin,
+			max : yAxisMax              // Maximum value along Y-Axis
+	      },
+		grid : {
+			backgroundColor : {
+				colors : [[0,'#fff'], [1,'#eee']],
+				start : 'top',
+				end : 'bottom'
+				}
+			},
+		mouse : {
+		 	track : true,
+		 	sensibility : 3,
+		 	relative        : true,
+		 	position        : 'ne',
+		 	trackDecimals   : 2,
+		 	trackFormatter  : trackFn
 			}
-			
-			if (!pop) {
-				var disX = Math.abs(e.pageX - hitEvt.absX);
-				var disY = Math.abs(e.pageY - hitEvt.absY);
-				var distance = Math.sqrt(disX * disX + disY * disY);
-
-				if (distance < 10) {
-					var key = hitEvt.x + "," + hitEvt.y;
-					var items = xyToData[key].items;
-					pop = true;
-					Exhibit.ViewUtilities.openBubbleWithCoords(e.pageX, e.pageY, items, self.getUIContext());
-				}
-			}
-		});			
-
-        (function () {
-        	
-        	//shows the data info when the point is hovered over
-        	var trackFn = function(o){
-        		//to get rid of the padded 0's        		
-        		var x = eval(o.x);
-        		var y = eval(o.y);
-        		
-        		var key = x + "," + y;
-        		if (key in xyToData){
-        			var id = xyToData[key].items[0];
-        		}
-        		
-        		return id + ": " + settings.xLabel + ' = ' + x +', '+ settings.yLabel + ' = ' + y;
-         	}
-         	
-		  // Draw the graph
-		  var graph = Flotr.draw(container, 
-		  	[{data: dataToPlot, label : "y=x", points : { show : true }, lines : {show:false}}], //bracket very imp!!
-		   {
-		   	colors : [color],	
-			xaxis : {
-				title: settings.xLabel,
-		        //ticks : xAxis,              
-				min : xAxisMin,                  // Part of the series is not displayed.
-				max : xAxisMax                 // Part of the series is not displayed.
-		      }, 
-			yaxis : {
-		      	title: settings.yLabel,
-		        //ticks : yAxis,            // Set Y-Axis ticks
-				min : yAxisMin,
-				max : yAxisMax              // Maximum value along Y-Axis
-		      },
-			grid : {
-				backgroundColor : {
-					colors : [[0,'#fff'], [1,'#eee']],
-					start : 'top',
-					end : 'bottom'
-					}
-				},
-			mouse : {
-			 	track : true,
-			 	sensibility : 3,
-			 	relative        : true,
-			 	position        : 'ne',
-			 	trackDecimals   : 2,
-			 	trackFormatter  : trackFn
-				}
-      		});
-		})(document.getElementById("editor-render-0"));
-
+  		});
+	})(document.getElementById("editor-render-0"));
+/*
   
         if (hasColorKey) {
             var legendWidget = this._dom.legendWidget;
@@ -479,9 +487,7 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
             }
             if (colorCodingFlags.missing) {
                 legendWidget.addEntry(colorCoder.getMissingColor(), colorCoder.getMissingLabel());
-            }
-        }
-    }
+            }*/
 
-    this._dom.setUnplottableMessage(currentSize, unplottableItems);
 };
+
