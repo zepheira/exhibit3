@@ -3,15 +3,15 @@
  *==================================================
  */
 Exhibit.ScatterPlotView = function(containerElmt, uiContext) {
-	var view = this;
-	$.extend(this, new Exhibit.View(
-		"scatter",
-		containerElmt,
-		uiContext
-	));
-	this.addSettingSpecs(Exhibit.ScatterPlotView._settingSpecs);
-	
-	this._accessors = {
+    var view = this;
+    $.extend(this, new Exhibit.View(
+        "scatter",
+        containerElmt,
+        uiContext
+    ));
+    this.addSettingSpecs(Exhibit.ScatterPlotView._settingSpecs);
+    
+    this._accessors = {
         "getPointLabel":  function(itemID, database, visitor) { visitor(database.getObject(itemID, "label")); },
         "getProxy":       function(itemID, database, visitor) { visitor(itemID); },
         "getColorKey":    null
@@ -26,12 +26,12 @@ Exhibit.ScatterPlotView = function(containerElmt, uiContext) {
     this._maxColor = 0;
     
     this._onItemsChanged = function(){
-    	view._reconstruct(); 
+        view._reconstruct(); 
     };
     
     $(uiContext.getCollection().getElement()).bind(
-    	"onItemsChanged.exhibit",
-    	view._onItemsChanged
+        "onItemsChanged.exhibit",
+        view._onItemsChanged
     );
     
     this.register();
@@ -168,11 +168,11 @@ Exhibit.ScatterPlotView._mixColor = "FFFFFF";
 
 
 Exhibit.ScatterPlotView.prototype.dispose = function() {
-	$(this.getUIContext().getCollection().getElement()).unbind(
-		"onItemsChanged.exhibit",
-		this._onItemsChanged
-	);
-	
+    $(this.getUIContext().getCollection().getElement()).unbind(
+        "onItemsChanged.exhibit",
+        this._onItemsChanged
+    );
+    
     
     this._dom.dispose();
     this._dom = null;
@@ -194,7 +194,7 @@ Exhibit.ScatterPlotView.prototype._internalValidate = function() {
 
 Exhibit.ScatterPlotView.prototype._initializeUI = function() {
     var self = this;
-	var legendWidgetSettings="_gradientPoints" in this._colorCoder ? "gradient" : {}
+    var legendWidgetSettings="_gradientPoints" in this._colorCoder ? "gradient" : {}
 
     this._dom = Exhibit.ViewUtilities.constructPlottingViewDom(
         this.getContainer(), 
@@ -214,68 +214,61 @@ Exhibit.ScatterPlotView.prototype._initializeUI = function() {
 };
 
 Exhibit.ScatterPlotView.prototype._reconstruct = function() {
-    var self = this;
-    var collection = this.getUIContext().getCollection();
-    var database = this.getUIContext().getDatabase();
-    var settings = this._settings;
-    var accessors = this._accessors;
-    var colorCoder = this._colorCoder;
-    var colorCodingFlags = { mixed: false, missing: false, others: false, keys: new Exhibit.Set() };
-    var hasColorKey = (this._accessors.getColorKey != null);
+    var self, collection, database, settings, accessors, colorCoder, colorCodingFlags, hasColorKey, scaleX, scaleY, 
+    unscaleX, unscaleY, currentSize, unplottableItems, currentSet, xyToData, xAxisMin, yAxisMin, xAxisMax, yAxisMax;
+    
+    self = this;
+    collection = this.getUIContext().getCollection();
+    database = this.getUIContext().getDatabase();
+    settings = this._settings;
+    accessors = this._accessors;
+    colorCoder = this._colorCoder;
+    colorCodingFlags = { mixed: false, missing: false, others: false, keys: new Exhibit.Set() };
+    hasColorKey = (this._accessors.getColorKey != null);
     
     this._dom.plotContainer.innerHTML = "";
     
-    var scaleX = self._axisFuncs.x;
-    var scaleY = self._axisFuncs.y;
-    var unscaleX = self._axisInverseFuncs.x;
-    var unscaleY = self._axisInverseFuncs.y;
+    scaleX = self._axisFuncs.x;
+    scaleY = self._axisFuncs.y;
+    unscaleX = self._axisInverseFuncs.x;
+    unscaleY = self._axisInverseFuncs.y;
     
-    var currentSize = collection.countRestrictedItems();
-    var unplottableItems = [];
+    currentSize = collection.countRestrictedItems();
+    unplottableItems = [];
     
     this._dom.legendWidget.clear();
     if (currentSize > 0) {
-        var currentSet = collection.getRestrictedItems();
-        var hasColorKey = (this._accessors.getColorKey != null);
+        currentSet = collection.getRestrictedItems();
+        hasColorKey = (this._accessors.getColorKey != null);
         
-        var xyToData = {};
-        var xAxisMin = settings.xAxisMin;
-        var xAxisMax = settings.xAxisMax;
-        var yAxisMin = settings.yAxisMin;
-        var yAxisMax = settings.yAxisMax;
+        xyToData = {};
+        xAxisMin = settings.xAxisMin;
+        xAxisMax = settings.xAxisMax;
+        yAxisMin = settings.yAxisMin;
+        yAxisMax = settings.yAxisMax;
         
 
         /*
          *  Iterate through all items, collecting min and max on both axes
+         *  get all the x,y coordinates in dataToPlot list that will be passed to jit Constructor
          */
-        var i = 0;
-        var dataToPlot = []
+        var i = 0, dataToPlot = [], xys, colorKeys;
         currentSet.visit(function(itemID) {
-            var xys = []; //xys contains coordinate of an Item
-
-            /*
-             * Note: xy = ['x','y'] where x is birthrate and y is deathrate
-             *
-             */
-
+            xys = []; 
             self._getXY(itemID, database, function(xy) {
                 if ("x" in xy && "y" in xy){
                     dataToPlot.push([xy.x, xy.y]);
                     xys.push(xy);
                 }
             });
-            
             if (xys.length > 0) {
-                var colorKeys = null;
+                colorKeys = null;
                 if (hasColorKey) {
                     colorKeys = new Exhibit.Set();
                     accessors.getColorKey(itemID, database, function(v) {
                         colorKeys.add(v);
                     });
-                    color = self._colorCoder.translateSet(xyData.colorKeys, colorCodingFlags);
                 }
-
-
                 for (var i = 0; i < xys.length; i++) {
                     var xy = xys[i];
                     var xyKey = xy.x + "," + xy.y;
@@ -305,14 +298,12 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
                             xyData.colorKeys = colorKeys;
                         }
                         xyToData[xyKey] = xyData;
-
                         xAxisMin = Math.min(xAxisMin, xy.scaledX);
                         xAxisMax = Math.max(xAxisMax, xy.scaledX);
                         yAxisMin = Math.min(yAxisMin, xy.scaledY);
                         yAxisMax = Math.max(yAxisMax, xy.scaledY);
                     }
                 }
-
             } else {
                 unplottableItems.push(itemID);
             }
@@ -364,9 +355,9 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
         var yScale =  364/ (yAxisMax - yAxisMin);
         
         var container = document.createElement("div");
-		container.id = "scatterplotViewContainer";
-		container.style.height = "100%"
-		this._dom.plotContainer.appendChild(container);      
+        container.id = "scatterplotViewContainer";
+        container.style.height = "100%"
+        this._dom.plotContainer.appendChild(container);      
     } 
     this._dom.setUnplottableMessage(currentSize, unplottableItems);
     this._clickHandler(xyToData);
@@ -411,58 +402,58 @@ Exhibit.ScatterPlotView.prototype._clickHandler = function(xyToData){
 }
 
 Exhibit.ScatterPlotView.prototype._createFlotrScatter = function(container, dataToPlot, xAxisMin, xAxisMax, yAxisMin, yAxisMax, xyToData){  
-    self = this;             			
+    self = this;                        
 
     (function () {
-    	
-    	//shows the data info when the point is hovered over
-    	var trackFn = function(o){
-    		//to get rid of the padded 0's        		
-    		var x = eval(o.x);
-    		var y = eval(o.y);
-    		
-    		var key = x + "," + y;
-    		if (key in xyToData){
-    			var id = xyToData[key].items[0];
-    		}
-    		
-    		return id + ": " + self._settings.xLabel + ' = ' + x +', '+ self._settings.yLabel + ' = ' + y;
-     	}
-     	
-	  // Draw the graph
-	  var graph = Flotr.draw(container, 
-	  	[{data: dataToPlot, label : "y=x", points : { show : true }, lines : {show:false}}], //bracket very imp!!
-	   {
-	   	colors : [self._settings.color],	
-		xaxis : {
-			title: self._settings.xLabel,
-	        //ticks : xAxis,              
-			min : xAxisMin,                  // Part of the series is not displayed.
-			max : xAxisMax                 // Part of the series is not displayed.
-	      }, 
-		yaxis : {
-	      	title: self._settings.yLabel,
-	        //ticks : yAxis,            // Set Y-Axis ticks
-			min : yAxisMin,
-			max : yAxisMax              // Maximum value along Y-Axis
-	      },
-		grid : {
-			backgroundColor : {
-				colors : [[0,'#fff'], [1,'#eee']],
-				start : 'top',
-				end : 'bottom'
-				}
-			},
-		mouse : {
-		 	track : true,
-		 	sensibility : 3,
-		 	relative        : true,
-		 	position        : 'ne',
-		 	trackDecimals   : 2,
-		 	trackFormatter  : trackFn
-			}
-  		});
-	})(document.getElementById("editor-render-0"));
+        
+        //shows the data info when the point is hovered over
+        var trackFn = function(o){
+            //to get rid of the padded 0's              
+            var x = eval(o.x);
+            var y = eval(o.y);
+            
+            var key = x + "," + y;
+            if (key in xyToData){
+                var id = xyToData[key].items[0];
+            }
+            
+            return id + ": " + self._settings.xLabel + ' = ' + x +', '+ self._settings.yLabel + ' = ' + y;
+        }
+        
+      // Draw the graph
+      var graph = Flotr.draw(container, 
+        [{data: dataToPlot, label : "y=x", points : { show : true }, lines : {show:false}}], //bracket very imp!!
+       {
+        colors : [self._settings.color],    
+        xaxis : {
+            title: self._settings.xLabel,
+            //ticks : xAxis,              
+            min : xAxisMin,                  // Part of the series is not displayed.
+            max : xAxisMax                 // Part of the series is not displayed.
+          }, 
+        yaxis : {
+            title: self._settings.yLabel,
+            //ticks : yAxis,            // Set Y-Axis ticks
+            min : yAxisMin,
+            max : yAxisMax              // Maximum value along Y-Axis
+          },
+        grid : {
+            backgroundColor : {
+                colors : [[0,'#fff'], [1,'#eee']],
+                start : 'top',
+                end : 'bottom'
+                }
+            },
+        mouse : {
+            track : true,
+            sensibility : 3,
+            relative        : true,
+            position        : 'ne',
+            trackDecimals   : 2,
+            trackFormatter  : trackFn
+            }
+        });
+    })(document.getElementById("editor-render-0"));
 /*
   
         if (hasColorKey) {
