@@ -434,17 +434,16 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
 }
 
 Exhibit.ScatterPlotView.prototype._clickHandler = function(xyToData) {
-    var self, hitEvt, pop;
-
+    var self, pop;
     self = this;
-    hitEvt = null;
+    this._hitEvt = null;  
     pop = false;
 
     //capturing the last hit event
     Flotr.addPlugin('clickHit', {
         callbacks : {
             'flotr:hit' : function(e) {
-                hitEvt = e;
+                self._hitEvt = e;
             }
         }
     });
@@ -460,12 +459,12 @@ Exhibit.ScatterPlotView.prototype._clickHandler = function(xyToData) {
         }
 
         if (!pop) {
-            var disX = Math.abs(e.pageX - hitEvt.absX);
-            var disY = Math.abs(e.pageY - hitEvt.absY);
+            var disX = Math.abs(e.pageX - self._hitEvt.absX);
+            var disY = Math.abs(e.pageY - self._hitEvt.absY);
             var distance = Math.sqrt(disX * disX + disY * disY);
 
             if (distance < 10) {
-                var key = hitEvt.x + "," + hitEvt.y;
+                var key = self._hitEvt.x + "," + self._hitEvt.y;
                 var items = xyToData[key].items;
                 pop = true;
                 Exhibit.ViewUtilities.openBubbleWithCoords(e.pageX, e.pageY, items, self.getUIContext());
@@ -479,6 +478,7 @@ Exhibit.ScatterPlotView.prototype._createFlotrScatter = function(container, data
     self = this;
     dataList = [];
     i = 0;
+    
     for (key in dataToPlot) {
         dataList.push({
             data : dataToPlot[key],
