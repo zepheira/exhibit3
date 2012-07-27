@@ -46,7 +46,6 @@ Exhibit.ViewUtilities.openBubbleWithCoords = function(x,y, arrayOfItemIDs, uiCon
  * @returns {Element}
  */
 Exhibit.ViewUtilities.fillBubbleWithItems = function(bubbleElmt, arrayOfItemIDs, uiContext) {
-    console.log("inside");
     var ul, i, itemLensDiv, itemLens;
     if (typeof bubbleElmt === "undefined" || bubbleElmt === null) {
         bubbleElmt = $("<div>");
