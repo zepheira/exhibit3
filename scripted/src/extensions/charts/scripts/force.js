@@ -17,7 +17,7 @@ Exhibit.ForceDirectedView = function(containerElmt, uiContext) {
         "getColorKey":    null
     };
     this._colorCoder = null;
-
+    this._shapeCoder = null;
     this._colorKeyCache = new Object();
     this._maxColor = 0;
     this._edgeExpression = null;
@@ -39,6 +39,8 @@ Exhibit.ForceDirectedView._settingSpecs = {
         "plotWidth" : {type : "int", defaultValue : 600},
         "color" : {type : "text"},
         "colorCoder" : {type : "text", defaultValue : null},
+        "shape" : {type : "text"},
+        "shapeCoder" : {type : "text", defaultValue : null},
         "edgeColor" : {type : "text", defaultValue : '#23A4FF'},
         "bubbleWidth":  { type: "int",   defaultValue: 400 },
         "bubbleHeight": { type: "int",   defaultValue: 300 }
@@ -50,6 +52,10 @@ Exhibit.ForceDirectedView._accessorSpecs = [
     },
     {   "accessorName":   "getColorKey",
         "attributeName":  "colorKey",
+        "type":           "text"
+    },
+    {   "accessorName":   "getShapeKey",
+        "attributeName":  "shapeKey",
         "type":           "text"
     }
 ];
@@ -118,6 +124,16 @@ Exhibit.ForceDirectedView.prototype._internalValidate = function() {
             this._colorCoder = new Exhibit.DefaultColorCoder(this.getUIContext());
         }
     }
+    
+    if ("getShapeKey" in this._accessors) {
+        if ("shapeCoder" in this._settings) {
+            this._shapeCoder = this.getUIContext().getMain().getComponent(this._settings.shapeCoder);
+        }
+        
+        if (this._shapeCoder == null) {
+            this._shapeCoder = new Exhibit.DefaultShapeCoder(this.getUIContext());
+        }
+    }
 };
 
 Exhibit.ForceDirectedView.prototype._initializeUI = function() {
@@ -158,15 +174,16 @@ Exhibit.ForceDirectedView.prototype._initializeUI = function() {
         "label": "graphnode0"
         "name": "Harry"
       }
-      
-      Wanted to map adjacencies to a list. However exhibit doesn't parse the list correctly.
-      When adjacencies maps to ["graphnode1","graphnode2"], database.getObject(itemID, "adjacencies") only returns
-      the first node in the list. 
  */
 
 
 Exhibit.ForceDirectedView.prototype._reconstruct = function (){
     self = this;
+    var accessors = this._accessors;
+    var database = this.getUIContext().getDatabase();
+    var edgeToData = {};
+    var edgeExpr = this._edgeExpression;
+    currentSize = this.getUIContext().getCollection().countRestrictedItems();
     var colorCoder = this._colorCoder;
     var colorCodingFlags = {
         mixed : false,
@@ -174,83 +191,96 @@ Exhibit.ForceDirectedView.prototype._reconstruct = function (){
         others : false,
         keys : new Exhibit.Set()
     };
-    var accessors = this._accessors;
-    var database = this.getUIContext().getDatabase();
-    var edgeToData = {};
-    var edgeExpr = this._edgeExpression;
     var hasColorKey = (this._accessors.getColorKey != null);
+    var shapeCoder = this._shapeCoder;
+    var shapeCodingFlags = {
+        mixed : false,
+        missing : false,
+        others : false,
+        keys : new Exhibit.Set()
+    }
+    var hasShapeKey = (this._accessors.getShapeKey != null);
     
     //json is the list of data that we pass to the jit graph constructor
     var json = []
     currentSet = this.getUIContext().getCollection().getRestrictedItems();
     currentSetIds = currentSet.toArray(); // list of ids of all the elements in the current set. 
-    
-    var colorInd = 0;
-    color = self._settings.color;
-    currentSet.visit(function(itemID){
-            var group = [];
-                if (hasColorKey){
-                accessors.getColorKey(itemID, database, function(item) {
-                        group.push(item);
+    prepareData = function(){
+        var colorInd = 0, colorKeys;
+        color = self._settings.color;
+        shape = "circle"; // may be change shape into a setting too
+        currentSet.visit(function(itemID){
+            colorKeys = [];
+            if (hasColorKey) {
+                colorKeys = new Exhibit.Set();
+                accessors.getColorKey(itemID, database, function(v) {
+                    colorKeys.add(v);
                 });
+                color = colorCoder.translateSet(colorKeys, colorCodingFlags);
             }
-            if (group.length > 0) {
-                var colorKeys = null;
+            
+            if (hasShapeCoder){
+                shapeKeys = new Exhibit.Set();
+                accessors.getShapeKey(itemID, database, function(v) {
+                    shapeKeys.add(v);
+                });
+                shape = shapeCoder.translateSet(shapeKeys, shapeCodingFlags);
+            }
                 
-                if (hasColorKey) {
-                    colorKeys = new Exhibit.Set();
-                    accessors.getColorKey(itemID, database, function(v) {
-                        colorKeys.add(v);
-                    });
-                    color = self._colorCoder.translateSet(colorKeys, colorCodingFlags);
+            /**
+             * ob : data item that will be fed to jit
+             */
+            var ob = {}, edgeObj, edgeList = [], colors;
+            colors = Exhibit.ForceDirectedView._colors;
+            
+            edgeObj = edgeExpr.evaluate(
+                            { "value" : itemID }, 
+                            { "value" : "item" }, 
+                            "value",
+                            database
+                        );
+            
+            //edgeList is a list of adj edges for each item     
+            edgeObj.values.visit(function(edge){
+                for (i in currentSetIds){
+                    if (currentSetIds[i] == edge){
+                        edgeList.push({"nodeTo" : edge, "nodeFrom": itemID }); 
+                        break;
+                    }
                 }
-            }
-        /**
-         * ob : data item that will be fed to jit
-         */
-        var ob = {}, edgeObj, edgeList = [], colors;
-        colors = Exhibit.ForceDirectedView._colors;
-        
-        edgeObj = edgeExpr.evaluate(
-                        { "value" : itemID }, 
-                        { "value" : "item" }, 
-                        "value",
-                        database
-                    );
-        
-        //edgeList is a list of adj edges for each item     
-        edgeObj.values.visit(function(edge){
-            for (i in currentSetIds){
-                if (currentSetIds[i] == edge){
-                    edgeList.push({"nodeTo" : edge, "nodeFrom": itemID }); 
-                    break;
-                }
-            }
-        });
-        
-        ob["adjacencies"] = edgeList;
-        
-        if (typeof color == "undefined"){
-            console.log(colorInd);
-            ob["data"] = {"$color": colors[colorInd%5],"$type": "circle","$dim": 11};
-            //ob["data"] = {"$color": color,"$type": "circle","$dim": 11};
-        }else{
-            ob["data"] = {"$color": color,"$type": "circle","$dim": 8};
-        }  
-        
-        ob["id"] = itemID;
-        accessors.getName(itemID, database, function(key){ob["name"] = key;});
-        
-        colorInd++;
-        json.push(ob);
-    })   
+            });
+            
+            ob["adjacencies"] = edgeList;
+            
+            if (typeof color == "undefined"){
+                color = colors[colorInd%5];
+                //ob["data"] = {"$color": colors[colorInd%5],"$type": "circle","$dim": 11};
+                //ob["data"] = {"$color": color,"$type": "circle","$dim": 11};
+            }else{
+                
+                //ob["data"] = {"$color": "red","$type": color,"$dim": 8};
+            }  
+            
+            ob["data"] = {"$color": color, "$type": shape,"$dim": 11};
+            
+            ob["id"] = itemID;
+            accessors.getName(itemID, database, function(key){ob["name"] = key;});
+            
+            colorInd++;
+            json.push(ob);
+        })   
+    }
     
-    this._dom.plotContainer.innerHTML = "";
-    var container = document.createElement("div");
-    container.id = "ForceDirectedContainer";
-    this._dom.plotContainer.appendChild(container);
-    this._createJitFD(container.id, json);
-   
+    if (currentSize > 0){
+        prepareData();
+        this._dom.plotContainer.innerHTML = "";
+        var container = document.createElement("div");
+        container.id = "ForceDirectedContainer";
+        this._dom.plotContainer.appendChild(container);
+        
+        this._createJitFD(container.id, json);
+    }
+       
 };
 
 Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
