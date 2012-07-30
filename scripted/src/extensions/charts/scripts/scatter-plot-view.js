@@ -265,7 +265,7 @@ Exhibit.ScatterPlotView.prototype._initializeUI = function() {
 
 Exhibit.ScatterPlotView.prototype._reconstruct = function() {
     var self, collection, database, settings, accessors, colorCoder, colorCodingFlags, hasColorKey, currentSize, prepareData, unplottableItems;
-    var xyToData, xAxisMin, yAxisMin, xAxisMax, yAxisMax, dataToPlot;
+    var xyToData, dataToPlot;
 
     self = this;
     collection = this.getUIContext().getCollection();
@@ -281,20 +281,19 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
     };
     hasColorKey = (this._accessors.getColorKey != null);
     currentSize = collection.countRestrictedItems();
+    xyToData = {}; //dictionary that maps xy coord to data id. useful for popUp
+    dataToPlot = {}; //data that will be passed to the scatterplot constructor
+    unplottableItems = [];
 
     this._dom.plotContainer.innerHTML = "";
 
     prepareData = function() {
-        var currentSet, unscaleX, unscaleY, scaleX, scaleY, i, xys, colorKeys, color;
-        dataToPlot = {};
-        unplottableItems = [];
+        var scaleX, scaleY, unscaleX, unscaleY, currentSet, xAxisMin, yAxisMin, xAxisMax, yAxisMax, i, xys, colorKeys, color;
         scaleX = self._axisFuncs.x;
         scaleY = self._axisFuncs.y;
         unscaleX = self._axisInverseFuncs.x;
         unscaleY = self._axisInverseFuncs.y;
         currentSet = collection.getRestrictedItems();
-        hasColorKey = (accessors.getColorKey != null);
-        xyToData = {};
         xAxisMin = settings.xAxisMin;
         xAxisMax = settings.xAxisMax;
         yAxisMin = settings.yAxisMin;
@@ -306,15 +305,18 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
          */
 
         color = settings.color;
-        var colork = {};
         currentSet.visit(function(itemID) {
             xys = [];
 
             self._getXY(itemID, database, function(xy) {
+                if (itemID == "China"){
+                    console.log(xy, xy);
+                }
                 if ("x" in xy && "y" in xy) {
                     xys.push(xy);
                 }
             });
+            
 
             if (xys.length > 0) {
                 colorKeys = null;
@@ -363,12 +365,19 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
                 unplottableItems.push(itemID);
             }
         });
-
-        var xDiff = xAxisMax - xAxisMin;
-        var yDiff = yAxisMax - yAxisMin;
-        var xInterval = 1;
+        
+        /*
+         * finalize min/max for both axis
+         */
+        var xDiff, yDiff, xInterval, yInterval;
+        
+        xDiff = xAxisMax - xAxisMin;
+        yDiff = yAxisMax - yAxisMin;
+        xInterval = 1;
+        yInterval = 1;
+        
         if (xDiff > 1) {
-            while (xInterval * 20 < xDiff) {
+            while (xInterval * 20 < xDiff) { 
                 xInterval *= 10;
             }
         } else {
@@ -376,10 +385,7 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
                 xInterval /= 10;
             }
         }
-        xAxisMin = Math.floor(xAxisMin / xInterval) * xInterval;
-        xAxisMax = Math.ceil(xAxisMax / xInterval) * xInterval;
-
-        var yInterval = 1;
+        
         if (yDiff > 1) {
             while (yInterval * 20 < yDiff) {
                 yInterval *= 10;
@@ -389,27 +395,28 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
                 yInterval /= 10;
             }
         }
-        yAxisMin = Math.floor(yAxisMin / yInterval) * yInterval;
-        yAxisMax = Math.ceil(yAxisMax / yInterval) * yInterval;
+        
+        settings.xAxisMin = Math.floor(xAxisMin / xInterval) * xInterval;
+        settings.xAxisMax = Math.ceil(xAxisMax / xInterval) * xInterval;
+        settings.yAxisMin = Math.floor(yAxisMin / yInterval) * yInterval;
+        settings.yAxisMax = Math.ceil(yAxisMax / yInterval) * yInterval;
 
-        settings.xAxisMin = xAxisMin;
-        settings.xAxisMax = xAxisMax;
-        settings.yAxisMin = yAxisMin;
-        settings.yAxisMax = yAxisMax;
     }
     
     createLegend = function() {
+        var legendWidget, keys, key, color;
+        
         if (hasColorKey) {
-            var legendWidget = self._dom.legendWidget;
-            var colorCoder = self._colorCoder;
-            var keys = colorCodingFlags.keys.toArray().sort();
+            legendWidget = self._dom.legendWidget;
+            colorCoder = self._colorCoder;
+            keys = colorCodingFlags.keys.toArray().sort();
 
             if (self._colorCoder._gradientPoints != null) {
                 legendWidget.addGradient(this._colorCoder._gradientPoints);
             } else {
                 for (var k = 0; k < keys.length; k++) {
-                    var key = keys[k];
-                    var color = colorCoder.translate(key);
+                    key = keys[k];
+                    color = colorCoder.translate(key);
                     legendWidget.addEntry(color, key);
                 }
             }
@@ -430,13 +437,15 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
     
     if (currentSize > 0) {
         prepareData();
+        
         var legendLabels = colorCodingFlags.keys.toArray();
-        console.log(legendLabels);
         var container = document.createElement("div");
         container.id = "scatterplotViewContainer";
         container.style.height = "100%"
         this._dom.plotContainer.appendChild(container);
+        
         this._clickHandler(xyToData);
+        
         this._createFlotrScatter(container, dataToPlot, xyToData, legendLabels);
         //createLegend();
     }
@@ -445,7 +454,7 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
 }
 
 Exhibit.ScatterPlotView.prototype._clickHandler = function(xyToData) {
-    var self, pop, disX, disY, key, items;
+    var self, pop;
     self = this;
     this._hitEvt = null;  
     pop = false;
@@ -460,7 +469,8 @@ Exhibit.ScatterPlotView.prototype._clickHandler = function(xyToData) {
     });
 
     $("body").bind("click", function(e) {
-        console.log(self._hitEvt);
+        var disX, disY, key, items;
+        
         //close the existing popUp if the user has clicked outside the popUp
         if (pop) {
             if (!$(e.target).closest('.simileAjax-bubble-contentContainer.simileAjax-bubble-contentContainer-pngTranslucent').length) {
@@ -505,18 +515,27 @@ Exhibit.ScatterPlotView.prototype._createFlotrScatter = function(container, data
         });
         i++
     }
-
+    this._track = null; 
     (function() {
         var trackFn, x, y, key, id, graph;
+        
         //shows the data info when the point is hovered over
         trackFn = function(o) {
-            //to get rid of the padded 0's
-            x = eval(o.x);
-            y = eval(o.y);
+            x = o.x;
+            y = o.y;
+            console.log(x,y);
 
             key = x + "," + y;
             if ( key in xyToData) {
                 id = xyToData[key].items[0];
+            }
+            
+            if (settings.xAxisType == "logarithmic" || settings.xAxisType == "log") {
+                x = Math.pow(10, x);
+            }
+            
+            if (settings.yAxisType == "logarithmic" || settings.yAxisType == "log") {
+                y = Math.pow(10, y);
             }
 
             return id + ": " + settings.xLabel + ' = ' + x + ', ' + settings.yLabel + ' = ' + y;
@@ -550,7 +569,6 @@ Exhibit.ScatterPlotView.prototype._createFlotrScatter = function(container, data
                     sensibility : 3,
                     relative : true,
                     position : 'ne',
-                    trackDecimals : 2,
                     trackFormatter : trackFn
                 },
                 legend : {
