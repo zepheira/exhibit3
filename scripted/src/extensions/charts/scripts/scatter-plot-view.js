@@ -53,6 +53,10 @@ Exhibit.ScatterPlotView._settingSpecs = {
         type : "int",
         defaultValue : 400
     },
+    "plotWidth" : {
+        type : "int",
+        defaultValue : 689
+    },
     "bubbleWidth" : {
         type : "int",
         defaultValue : 400
@@ -102,6 +106,10 @@ Exhibit.ScatterPlotView._settingSpecs = {
     "colorCoder" : {
         type : "text",
         defaultValue : null
+    },
+    "legendPos" : {
+        type:"text",
+        defaultValue : 'nw'
     }
 };
 
@@ -200,7 +208,7 @@ Exhibit.ScatterPlotView._getAxisInverseFunc = function(s) {
         };
     };
 }
-/*
+
  Exhibit.ScatterPlotView._colors = [
  "FF9000",
  "5D7CBA",
@@ -210,11 +218,11 @@ Exhibit.ScatterPlotView._getAxisInverseFunc = function(s) {
  "003EBA",
  "29447B",
  "543C1C"
- ];*/
+ ];
 
-/*
+
  Exhibit.ScatterPlotView._mixColor = "FFFFFF";
- */
+ 
 
 Exhibit.ScatterPlotView.prototype.dispose = function() {
     $(this.getUIContext().getCollection().getElement()).unbind("onItemsChanged.exhibit", this._onItemsChanged);
@@ -250,7 +258,7 @@ Exhibit.ScatterPlotView.prototype._initializeUI = function() {
     }, legendWidgetSettings);
     this._dom.plotContainer.className = "exhibit-scatterPlotView-plotContainer";
     this._dom.plotContainer.style.height = this._settings.plotHeight + "px";
-
+    this._dom.plotContainer.style.width = this._settings.plotWidth + "px";
     self._initializeViewUI();
     this._reconstruct();
 };
@@ -389,7 +397,8 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
         settings.yAxisMin = yAxisMin;
         settings.yAxisMax = yAxisMax;
     }
-    createLegened = function() {
+    
+    createLegend = function() {
         if (hasColorKey) {
             var legendWidget = self._dom.legendWidget;
             var colorCoder = self._colorCoder;
@@ -418,23 +427,25 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
             }
         }
     }
+    
     if (currentSize > 0) {
         prepareData();
         var legendLabels = colorCodingFlags.keys.toArray();
+        console.log(legendLabels);
         var container = document.createElement("div");
         container.id = "scatterplotViewContainer";
         container.style.height = "100%"
         this._dom.plotContainer.appendChild(container);
         this._clickHandler(xyToData);
-        this._createFlotrScatter(container, dataToPlot, xAxisMin, xAxisMax, yAxisMin, yAxisMax, xyToData, legendLabels);
-        //createLegened();
+        this._createFlotrScatter(container, dataToPlot, xyToData, legendLabels);
+        //createLegend();
     }
 
     this._dom.setUnplottableMessage(currentSize, unplottableItems);
 }
 
 Exhibit.ScatterPlotView.prototype._clickHandler = function(xyToData) {
-    var self, pop;
+    var self, pop, disX, disY, key, items;
     self = this;
     this._hitEvt = null;  
     pop = false;
@@ -449,23 +460,23 @@ Exhibit.ScatterPlotView.prototype._clickHandler = function(xyToData) {
     });
 
     $("body").bind("click", function(e) {
-
+        console.log(self._hitEvt);
         //close the existing popUp if the user has clicked outside the popUp
         if (pop) {
-            if (!$(e.target).closest('.simileAjax-bubble-container *').length) {
+            if (!$(e.target).closest('.simileAjax-bubble-contentContainer.simileAjax-bubble-contentContainer-pngTranslucent').length) {
                 pop = false;
                 $('.simileAjax-bubble-container').hide();
             };
         }
 
         if (!pop) {
-            var disX = Math.abs(e.pageX - self._hitEvt.absX);
-            var disY = Math.abs(e.pageY - self._hitEvt.absY);
-            var distance = Math.sqrt(disX * disX + disY * disY);
+            disX = Math.abs(e.pageX - self._hitEvt.absX);
+            disY = Math.abs(e.pageY - self._hitEvt.absY);
+            distance = Math.sqrt(disX * disX + disY * disY);
 
             if (distance < 10) {
-                var key = self._hitEvt.x + "," + self._hitEvt.y;
-                var items = xyToData[key].items;
+                key = self._hitEvt.x + "," + self._hitEvt.y;
+                items = xyToData[key].items;
                 pop = true;
                 Exhibit.ViewUtilities.openBubbleWithCoords(e.pageX, e.pageY, items, self.getUIContext());
             }
@@ -473,12 +484,13 @@ Exhibit.ScatterPlotView.prototype._clickHandler = function(xyToData) {
     });
 }
 
-Exhibit.ScatterPlotView.prototype._createFlotrScatter = function(container, dataToPlot, xAxisMin, xAxisMax, yAxisMin, yAxisMax, xyToData, legendLabels) {
-    var self, dataList, i;
+Exhibit.ScatterPlotView.prototype._createFlotrScatter = function(container, dataToPlot, xyToData, legendLabels) {
+    var self, settings, dataList, i;
     self = this;
+    settings = this._settings;
     dataList = [];
     i = 0;
-    
+
     for (key in dataToPlot) {
         dataList.push({
             data : dataToPlot[key],
@@ -495,52 +507,55 @@ Exhibit.ScatterPlotView.prototype._createFlotrScatter = function(container, data
     }
 
     (function() {
-
+        var trackFn, x, y, key, id, graph;
         //shows the data info when the point is hovered over
-        var trackFn = function(o) {
+        trackFn = function(o) {
             //to get rid of the padded 0's
-            var x = eval(o.x);
-            var y = eval(o.y);
+            x = eval(o.x);
+            y = eval(o.y);
 
-            var key = x + "," + y;
+            key = x + "," + y;
             if ( key in xyToData) {
-                var id = xyToData[key].items[0];
+                id = xyToData[key].items[0];
             }
 
-            return id + ": " + self._settings.xLabel + ' = ' + x + ', ' + self._settings.yLabel + ' = ' + y;
+            return id + ": " + settings.xLabel + ' = ' + x + ', ' + settings.yLabel + ' = ' + y;
         }
         // Draw the graph
-        var graph = Flotr.draw(container, dataList,
-        //[{data: dataList, label : "y=x", points : { show : true }, lines : {show:false}}], //bracket very imp!!
-        {
-            //colors : colorList,
-            xaxis : {
-                title : self._settings.xLabel,
-                //ticks : xAxis,
-                min : xAxisMin, // Part of the series is not displayed.
-                max : xAxisMax // Part of the series is not displayed.
-            },
-            yaxis : {
-                title : self._settings.yLabel,
-                //ticks : yAxis,            // Set Y-Axis ticks
-                min : yAxisMin,
-                max : yAxisMax // Maximum value along Y-Axis
-            },
-            grid : {
-                backgroundColor : {
-                    colors : [[0, '#fff'], [1, '#eee']],
-                    start : 'top',
-                    end : 'bottom'
+        graph = Flotr.draw(container,
+             dataList,
+            {
+                //colors : colorList,
+                xaxis : {
+                    title : settings.xLabel,
+                    //ticks : xAxis,
+                    min : settings.xAxisMin, // Part of the series is not displayed.
+                    max : settings.xAxisMax // Part of the series is not displayed.
+                },
+                yaxis : {
+                    title : settings.yLabel,
+                    //ticks : yAxis,            // Set Y-Axis ticks
+                    min : settings.yAxisMin,
+                    max : settings.yAxisMax // Maximum value along Y-Axis
+                },
+                grid : {
+                    backgroundColor : {
+                        colors : [[0, '#fff'], [1, '#eee']],
+                        start : 'top',
+                        end : 'bottom'
+                    }
+                },
+                mouse : {
+                    track : true,
+                    sensibility : 3,
+                    relative : true,
+                    position : 'ne',
+                    trackDecimals : 2,
+                    trackFormatter : trackFn
+                },
+                legend : {
+                    position : settings.legendPos
                 }
-            },
-            mouse : {
-                track : true,
-                sensibility : 3,
-                relative : true,
-                position : 'ne',
-                trackDecimals : 2,
-                trackFormatter : trackFn
-            }
         });
     })(document.getElementById("editor-render-0"));
 
