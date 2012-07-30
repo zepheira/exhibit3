@@ -72,19 +72,25 @@
                             ex:height="10em"></div>
                     </td>
                     <td>
-                        <div ex:role="coder"  ex:coderClass = "Color" id = "floor">
-                            <span ex:color="red">5th floor</span>
-                            <span ex:color="blue">6th floor</span>
-                            <span ex:color="green">4th floor</span>
-                            <span ex:color="yellow">7th floor</span>
+                        <div ex:role="coder"  ex:coderClass="Color" id="floor-colors">
+                            <span ex:color="#E41A1C">5th floor</span>
+                            <span ex:color="#377EB8">6th floor</span>
+                            <span ex:color="#984EA3">4th floor</span>
+                            <span ex:color="#FF7F00">7th floor</span>
+                        </div>
+                        <div ex:role="coder"  ex:coderClass="Shape" id="position-shapes">
+                            <span ex:shape="star">5th floor</span>
+                            <span ex:shape="triangle">6th floor</span>  
+                            <span ex:shape="square">7th floor</span>
+                            <span ex:shape="circle">4th floor</span>
                         </div>
                         <div ex:role="viewPanel">
                              <div ex:role="view"
                              ex:viewClass="Exhibit.ForceDirectedView"
                              ex:label="ForceDirected"
                              ex:edge=".floor!floor"
-                             ex:colorCoder = "floor"
-                             ex:colorKey = ".floor"
+                             ex:colorCoder="floor-colors"
+                             ex:shapeKey=".floor"
                              ex:name=".label"> 
                               <div id="log"></div>
                              </div>   
