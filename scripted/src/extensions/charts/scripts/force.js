@@ -335,7 +335,7 @@ Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
       animate = !(iStuff || !nativeCanvasSupport);
     })();
     
-    
+    /*
     var Log = {
       elem: false,
       write: function(text){
@@ -345,7 +345,7 @@ Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
         this.elem.style.left = (500 - this.elem.offsetWidth / 2) + 'px';
       }
     };
-    
+    */
     var _pos, _items, _node;    
     // init ForceDirected
     var fd = new $jit.ForceDirected({
@@ -423,7 +423,6 @@ Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
         _items = [node.id];
         _node = node;
         
-        console.log(_pos, e);
       }
     },
     //Number of iterations for the FD algorithm
@@ -456,9 +455,6 @@ Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
       fd.computeIncremental({
         iter: 40,
         property: 'end',
-    onStep: function(perc){
-      Log.write(perc + '% loaded...');
-    },
     onComplete: function(){
       //Log.write('done');
       fd.animate({
