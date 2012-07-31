@@ -1,6 +1,14 @@
 /**
- * @author Baiaboo
- * @author Zhi 
+ * @author Baiaboo Rai
+ * @author Zhi X Huang
+ * @Library in use : Javascript InfoVis Toolkit
+ */
+
+/**
+ * @class
+ * @constructor
+ * @param {Element} containerElmt
+ * @param {Exhibit.UIContext} uiContext
  */
 Exhibit.ForceDirectedView = function(containerElmt, uiContext) {
     var view = this;
@@ -34,17 +42,24 @@ Exhibit.ForceDirectedView = function(containerElmt, uiContext) {
     this.register();
 };
 
+/**
+ * @constant 
+ */
 Exhibit.ForceDirectedView._settingSpecs = {
-        "plotHeight" : {type : "int", defaultValue : 400},
-        "plotWidth" : {type : "int", defaultValue : 600},
-        "color" : {type : "text"},
-        "colorCoder" : {type : "text", defaultValue : null},
-        "shape" : {type : "text"},
-        "shapeCoder" : {type : "text", defaultValue : null},
-        "edgeColor" : {type : "text", defaultValue : '#23A4FF'},
-        "bubbleWidth":  { type: "int",   defaultValue: 400 },
-        "bubbleHeight": { type: "int",   defaultValue: 300 }
+    "plotHeight" : {type : "int", defaultValue : 400},
+    "plotWidth" : {type : "int", defaultValue : 600},
+    "color" : {type : "text"},
+    "colorCoder" : {type : "text", defaultValue : null},
+    "shape" : {type : "text"},
+    "shapeCoder" : {type : "text", defaultValue : null},
+    "edgeColor" : {type : "text", defaultValue : '#23A4FF'},
+    "bubbleWidth":  { type: "int",   defaultValue: 400 },
+    "bubbleHeight": { type: "int",   defaultValue: 300 }
 };
+
+/**
+ * @constant 
+ */
 Exhibit.ForceDirectedView._accessorSpecs = [
     {   "accessorName":   "getName",
         "attributeName":  "name",
@@ -60,6 +75,17 @@ Exhibit.ForceDirectedView._accessorSpecs = [
     }
 ];
 
+/**
+ * @constant 
+ */
+Exhibit.ForceDirectedView._colors = ['#557EAA', '#83548B','#909291','#416D9C','#C74243'];
+
+/**
+ * @param {Object} configuration
+ * @param {Element} containerElmt
+ * @param {Exhibit.UIContext} uiContext
+ * @returns {Exhibit.MapView}
+ */
 Exhibit.ForceDirectedView.create = function(configuration, containerElmt, uiContext) {
     var view = new Exhibit.ForceDirectedView(
         containerElmt,
@@ -72,6 +98,12 @@ Exhibit.ForceDirectedView.create = function(configuration, containerElmt, uiCont
     return view;
 };
 
+/**
+ * @param {Element} configElmt
+ * @param {Element} containerElmt
+ * @param {Exhibit.UIContext} uiContext
+ * @returns {Exhibit.MapView}
+ */
 Exhibit.ForceDirectedView.createFromDOM = function(configElmt, containerElmt, uiContext) {
     var configuration = Exhibit.getConfigurationFromDOM(configElmt);
     var view = new Exhibit.ForceDirectedView(
@@ -91,22 +123,24 @@ Exhibit.ForceDirectedView.createFromDOM = function(configElmt, containerElmt, ui
     return view;
 };
 
+/**
+ * @static
+ * @param {Exhibit.MapView} view
+ * @param {Object} configuration
+ */
 Exhibit.ForceDirectedView._configure = function(view, configuration) {
     Exhibit.SettingsUtilities.createAccessors(configuration, Exhibit.ForceDirectedView._accessorSpecs, view._accessors);
     Exhibit.SettingsUtilities.collectSettings(configuration, view.getSettingSpecs(), view._settings);
 };
 
-Exhibit.ForceDirectedView.evaluateSingle = function(expression, itemID, database) {
-    return expression.evaluateSingleOnItem(itemID, database).value;
-}
-
-//Note:come back to this later and remove the redundant objects
+/**
+ * 
+ */
 Exhibit.ForceDirectedView.prototype.dispose = function() {
     $(this.getUIContext().getCollection().getElement()).unbind(
         "onItemsChanged.exhibit",
         this._onItemsChanged
     );
-    
     
     this._dom.dispose();
     this._dom = null;
@@ -114,6 +148,9 @@ Exhibit.ForceDirectedView.prototype.dispose = function() {
     this._dispose();
 };
 
+/**
+ * 
+ */
 Exhibit.ForceDirectedView.prototype._internalValidate = function() {
     if ("getColorKey" in this._accessors) {
         if ("colorCoder" in this._settings) {
@@ -128,10 +165,6 @@ Exhibit.ForceDirectedView.prototype._internalValidate = function() {
     if ("getShapeKey" in this._accessors) {
         if ("shapeCoder" in this._settings) {
             this._shapeCoder = this.getUIContext().getMain().getComponent(this._settings.shapeCoder);
-        }
-        
-        if (this._shapeCoder == null) {
-            this._shapeCoder = new Exhibit.DefaultShapeCoder(this.getUIContext());
         }
     }
 };
@@ -176,7 +209,9 @@ Exhibit.ForceDirectedView.prototype._initializeUI = function() {
       }
  */
 
-
+/**
+ * 
+ */
 Exhibit.ForceDirectedView.prototype._reconstruct = function (){
     self = this;
     var accessors = this._accessors;
@@ -193,6 +228,7 @@ Exhibit.ForceDirectedView.prototype._reconstruct = function (){
     };
     var hasColorKey = (this._accessors.getColorKey != null);
     var shapeCoder = this._shapeCoder;
+    console.log(shapeCoder);
     var shapeCodingFlags = {
         mixed : false,
         missing : false,
@@ -201,16 +237,17 @@ Exhibit.ForceDirectedView.prototype._reconstruct = function (){
     }
     var hasShapeKey = (this._accessors.getShapeKey != null);
     
-    //json is the list of data that we pass to the jit graph constructor
+    //json is the list of items that we pass to the jit graph constructor
     var json = []
     currentSet = this.getUIContext().getCollection().getRestrictedItems();
     currentSetIds = currentSet.toArray(); // list of ids of all the elements in the current set. 
     prepareData = function(){
-        var colorInd = 0, colorKeys;
+        var color, shape;
         color = self._settings.color;
-        shape = "circle"; // may be change shape into a setting too
+        shape = self._settings.shape;
+        
         currentSet.visit(function(itemID){
-            colorKeys = [];
+            var colorInd = 0, colorKeys = [],jitItem = {}, edgeObj, edgeList = [], defaultColors;
             if (hasColorKey) {
                 colorKeys = new Exhibit.Set();
                 accessors.getColorKey(itemID, database, function(v) {
@@ -219,20 +256,23 @@ Exhibit.ForceDirectedView.prototype._reconstruct = function (){
                 color = colorCoder.translateSet(colorKeys, colorCodingFlags);
             }
             
-            if (hasShapeCoder){
+            if (hasShapeKey){
                 shapeKeys = new Exhibit.Set();
                 accessors.getShapeKey(itemID, database, function(v) {
                     shapeKeys.add(v);
                 });
                 shape = shapeCoder.translateSet(shapeKeys, shapeCodingFlags);
             }
-                
-            /**
-             * ob : data item that will be fed to jit
-             */
-            var ob = {}, edgeObj, edgeList = [], colors;
-            colors = Exhibit.ForceDirectedView._colors;
             
+            defaultColors = Exhibit.ForceDirectedView._colors;         
+            if (typeof color == "undefined"){
+                color = defaultColors[colorInd%5];
+            }
+            
+            if (typeof shape == "undefined"){
+                shape = "triangle";
+            }
+                
             edgeObj = edgeExpr.evaluate(
                             { "value" : itemID }, 
                             { "value" : "item" }, 
@@ -250,24 +290,12 @@ Exhibit.ForceDirectedView.prototype._reconstruct = function (){
                 }
             });
             
-            ob["adjacencies"] = edgeList;
-            
-            if (typeof color == "undefined"){
-                color = colors[colorInd%5];
-                //ob["data"] = {"$color": colors[colorInd%5],"$type": "circle","$dim": 11};
-                //ob["data"] = {"$color": color,"$type": "circle","$dim": 11};
-            }else{
-                
-                //ob["data"] = {"$color": "red","$type": color,"$dim": 8};
-            }  
-            
-            ob["data"] = {"$color": color, "$type": shape,"$dim": 11};
-            
-            ob["id"] = itemID;
-            accessors.getName(itemID, database, function(key){ob["name"] = key;});
-            
+            jitItem["adjacencies"] = edgeList;            
+            jitItem["data"] = {"$color": color, "$type": shape,"$dim": 11};
+            jitItem["id"] = itemID;
+            accessors.getName(itemID, database, function(key){jitItem["name"] = key;});
             colorInd++;
-            json.push(ob);
+            json.push(jitItem);        
         })   
     }
     
@@ -283,6 +311,11 @@ Exhibit.ForceDirectedView.prototype._reconstruct = function (){
        
 };
 
+/** 
+ * @private
+ * @param {Object} id
+ * @param {Object} json
+ */
 Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
     self = this;
     var labelType, useGradients, nativeTextSupport, animate;
@@ -457,5 +490,3 @@ Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
         }
       });
 };
-
-Exhibit.ForceDirectedView._colors = ['#557EAA', '#83548B','#909291','#416D9C','#C74243'];
