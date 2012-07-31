@@ -61,7 +61,7 @@ Exhibit.LegendWidget.prototype.dispose = function() {
  *
  */
 Exhibit.LegendWidget.prototype._initializeUI = function() {
-    Exhibit.jQuery(this._div).attr("class", "exhibit-legendWidget");
+    Exhibit.jQuery(this._div).addClass("exhibit-legendWidget");
     this.clear();
 };
 
@@ -87,7 +87,7 @@ Exhibit.LegendWidget.prototype.addLegendLabel = function(label, type) {
 			"&nbsp;&nbsp; </div>",
 			{ }
 		);
-	Exhibit.jQuery(dom.elmt).attr("class","exhibit-legendWidget-label");
+	Exhibit.jQuery(dom.elmt).addClass("exhibit-legendWidget-label");
 	Exhibit.jQuery('#exhibit-' + type + '-legend').append(dom.elmt);
 }
 
@@ -140,7 +140,7 @@ Exhibit.LegendWidget.prototype.addEntry = function(value, label, type) {
 		);
 		legendDiv = Exhibit.jQuery("#exhibit-icon-legend");
 	}
-    Exhibit.jQuery(dom.elmt).attr("class", "exhibit-legendWidget-entry");
+    Exhibit.jQuery(dom.elmt).addClass("exhibit-legendWidget-entry");
     this._labelStyler(dom.label, value);
     Exhibit.jQuery(legendDiv).append(dom.elmt);
 };

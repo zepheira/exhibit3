@@ -224,7 +224,7 @@ Exhibit.ToolboxWidget.prototype._fillPopup = function(elmt) {
     self = this;
     
     exportImg = Exhibit.UI.createTranslucentImage("images/liveclipboard-icon.png");
-    Exhibit.jQuery(exportImg).attr("class", "exhibit-toolboxWidget-button");
+    Exhibit.jQuery(exportImg).addClass("exhibit-toolboxWidget-button");
     Exhibit.jQuery(exportImg).bind("click", function(evt) {
         self._showExportMenu(exportImg, evt);
     });

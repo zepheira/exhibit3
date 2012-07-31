@@ -76,7 +76,7 @@ Exhibit.Lens.prototype._constructDefaultUI = function(itemID, div, uiContext) {
         tr = Exhibit.jQuery("<tr>")
             .appendTo(dom.propertiesTable);
         tr = Exhibit.jQuery(dom.propertiesTable.get(0).insertRow(j))
-            .attr("class", "exhibit-lens-property");
+            .addClass("exhibit-lens-property");
         
         Exhibit.jQuery("<td>")
             .appendTo(tr)
