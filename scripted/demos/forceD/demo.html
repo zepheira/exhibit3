@@ -72,17 +72,17 @@
                             ex:height="10em"></div>
                     </td>
                     <td>
-                        <div ex:role="coder"  ex:coderClass="Color" id="floor-colors">
+                        <div ex:role="coder"  ex:coderClass="Color" style="display:none" id="floor-colors">
                             <span ex:color="#E41A1C">5th floor</span>
                             <span ex:color="#377EB8">6th floor</span>
                             <span ex:color="#984EA3">4th floor</span>
                             <span ex:color="#FF7F00">7th floor</span>
                         </div>
-                        <div ex:role="coder"  ex:coderClass="Shape" id="position-shapes">
-                            <span ex:shape="star">5th floor</span>
-                            <span ex:shape="triangle">6th floor</span>  
-                            <span ex:shape="square">7th floor</span>
-                            <span ex:shape="circle">4th floor</span>
+                        <div ex:role="coder"  ex:coderClass="Shape" style="display:none" id="position-shapes">
+                            <span ex:shape="star">director</span>
+                            <span ex:shape="square">professor</span>  
+                            <span ex:shape="triangle">faculty</span>
+                            <span ex:shape="circle" ex:case="others">faculty</span>
                         </div>
                         <div ex:role="viewPanel">
                              <div ex:role="view"
@@ -90,7 +90,9 @@
                              ex:label="ForceDirected"
                              ex:edge=".floor!floor"
                              ex:colorCoder="floor-colors"
-                             ex:shapeKey=".floor"
+                             ex:colorKey=".floor"
+                             ex:shapeCoder="position-shapes"
+                             ex:shapeKey=".position"                            
                              ex:name=".label"> 
                               <div id="log"></div>
                              </div>   
