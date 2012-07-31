@@ -1,6 +1,17 @@
-/*==================================================
- *  Exhibit.ScatterPlotView
- *==================================================
+/**
+ * @fileOverview
+ * @author David Huynh
+ * @author <a href="mailto:karger@mit.edu">David Karger</a>
+ * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
+ * @author Baiaboo Rai
+ * @Library in use : Flotr2
+ */
+
+/**
+ * @class
+ * @constructor
+ * @param {Element} containerElmt
+ * @param {Exhibit.UIContext} uiContext
  */
 Exhibit.ScatterPlotView = function(containerElmt, uiContext) {
     var view = this;
@@ -48,6 +59,9 @@ Exhibit.ScatterPlotView = function(containerElmt, uiContext) {
     this.register();
 };
 
+/**
+ * @constant
+ */
 Exhibit.ScatterPlotView._settingSpecs = {
     "plotHeight" : {
         type : "int",
@@ -107,12 +121,15 @@ Exhibit.ScatterPlotView._settingSpecs = {
         type : "text",
         defaultValue : null
     },
-    "legendPos" : {
+    "legendPosition" : {
         type:"text",
         defaultValue : 'nw'
     }
 };
 
+/**
+ * @constant 
+ */
 Exhibit.ScatterPlotView._accessorSpecs = [{
     "accessorName" : "getProxy",
     "attributeName" : "proxy"
@@ -144,6 +161,13 @@ Exhibit.ScatterPlotView._accessorSpecs = [{
     "type" : "text"
 }];
 
+
+/**
+ * @param {Object} configuration
+ * @param {Element} containerElmt
+ * @param {Exhibit.UIContext} uiContext
+ * @returns {Exhibit.MapView}
+ */
 Exhibit.ScatterPlotView.create = function(configuration, containerElmt, uiContext) {
     var view = new Exhibit.ScatterPlotView(containerElmt, Exhibit.UIContext.create(configuration, uiContext));
     Exhibit.ScatterPlotView._configure(view, configuration);
@@ -153,6 +177,12 @@ Exhibit.ScatterPlotView.create = function(configuration, containerElmt, uiContex
     return view;
 };
 
+/**
+ * @param {Element} configElmt
+ * @param {Element} containerElmt
+ * @param {Exhibit.UIContext} uiContext
+ * @returns {Exhibit.MapView}
+ */
 Exhibit.ScatterPlotView.createFromDOM = function(configElmt, containerElmt, uiContext) {
     var configuration = Exhibit.getConfigurationFromDOM(configElmt);
     var view = new Exhibit.ScatterPlotView(containerElmt != null ? containerElmt : configElmt, Exhibit.UIContext.createFromDOM(configElmt, uiContext));
@@ -166,6 +196,11 @@ Exhibit.ScatterPlotView.createFromDOM = function(configElmt, containerElmt, uiCo
     return view;
 };
 
+/**
+ * @static
+ * @param {Exhibit.MapView} view
+ * @param {Object} configuration
+ */
 Exhibit.ScatterPlotView._configure = function(view, configuration) {
     Exhibit.SettingsUtilities.createAccessors(configuration, Exhibit.ScatterPlotView._accessorSpecs, view._accessors);
     Exhibit.SettingsUtilities.collectSettings(configuration, view.getSettingSpecs(), view._settings);
@@ -184,7 +219,12 @@ Exhibit.ScatterPlotView._configure = function(view, configuration) {
     };
 };
 
-// Convenience function that maps strings to respective functions
+/**
+ * Convenience function that maps strings to respective functions 
+ * @private
+ * @param {String} s 
+ * @returns {Function}
+ */
 Exhibit.ScatterPlotView._getAxisFunc = function(s) {
     if (s == "log") {
         return function(x) {
@@ -196,7 +236,13 @@ Exhibit.ScatterPlotView._getAxisFunc = function(s) {
         };
     }
 }
-// Convenience function that maps strings to respective functions
+
+/**
+ * Convenience function that maps strings to respective functions 
+ * @private
+ * @param {String} s 
+ * @returns {Function}
+ */
 Exhibit.ScatterPlotView._getAxisInverseFunc = function(s) {
     if (s == "log") {
         return function(x) {
@@ -209,21 +255,9 @@ Exhibit.ScatterPlotView._getAxisInverseFunc = function(s) {
     };
 }
 
- Exhibit.ScatterPlotView._colors = [
- "FF9000",
- "5D7CBA",
- "A97838",
- "8B9BBA",
- "FFC77F",
- "003EBA",
- "29447B",
- "543C1C"
- ];
-
-
- Exhibit.ScatterPlotView._mixColor = "FFFFFF";
- 
-
+/**
+ * 
+ */
 Exhibit.ScatterPlotView.prototype.dispose = function() {
     $(this.getUIContext().getCollection().getElement()).unbind("onItemsChanged.exhibit", this._onItemsChanged);
 
@@ -233,6 +267,9 @@ Exhibit.ScatterPlotView.prototype.dispose = function() {
     this._dispose();
 };
 
+/**
+ * 
+ */
 Exhibit.ScatterPlotView.prototype._internalValidate = function() {
     if ("getColorKey" in this._accessors) {
         if ("colorCoder" in this._settings) {
@@ -246,6 +283,9 @@ Exhibit.ScatterPlotView.prototype._internalValidate = function() {
     }
 };
 
+/**
+ * 
+ */
 Exhibit.ScatterPlotView.prototype._initializeUI = function() {
     var self = this;
     var legendWidgetSettings = "_gradientPoints" in this._colorCoder ? "gradient" : {}
@@ -263,6 +303,9 @@ Exhibit.ScatterPlotView.prototype._initializeUI = function() {
     this._reconstruct();
 };
 
+/**
+ * 
+ */
 Exhibit.ScatterPlotView.prototype._reconstruct = function() {
     var self, collection, database, settings, accessors, colorCoder, colorCodingFlags, hasColorKey, currentSize, prepareData, unplottableItems;
     var xyToData, dataToPlot;
@@ -291,8 +334,6 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
         var scaleX, scaleY, unscaleX, unscaleY, currentSet, xAxisMin, yAxisMin, xAxisMax, yAxisMax, i, xys, colorKeys, color;
         scaleX = self._axisFuncs.x;
         scaleY = self._axisFuncs.y;
-        unscaleX = self._axisInverseFuncs.x;
-        unscaleY = self._axisInverseFuncs.y;
         currentSet = collection.getRestrictedItems();
         xAxisMin = settings.xAxisMin;
         xAxisMax = settings.xAxisMax;
@@ -342,7 +383,6 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
                         continue;
                         // ignore the point since we can't scale it, e.g., log(0)
                     }
-
                     var xyKey = xy.scaledX + "," + xy.scaledY;
                     var xyData = {
                         xy : xy,
@@ -453,6 +493,10 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
     this._dom.setUnplottableMessage(currentSize, unplottableItems);
 }
 
+/** 
+ * @private
+ * @param {Object} xyToData
+ */
 Exhibit.ScatterPlotView.prototype._clickHandler = function(xyToData) {
     var self, pop;
     self = this;
@@ -494,13 +538,22 @@ Exhibit.ScatterPlotView.prototype._clickHandler = function(xyToData) {
     });
 }
 
+/**
+ * @private 
+ * @param {Object} container
+ * @param {Object} dataToPlot
+ * @param {Object} xyToData
+ * @param {Object} legendLabels
+ */
 Exhibit.ScatterPlotView.prototype._createFlotrScatter = function(container, dataToPlot, xyToData, legendLabels) {
     var self, settings, dataList, i;
     self = this;
     settings = this._settings;
     dataList = [];
+    unscaleX = self._axisInverseFuncs.x;
+    unscaleY = self._axisInverseFuncs.y;
+    
     i = 0;
-
     for (key in dataToPlot) {
         dataList.push({
             data : dataToPlot[key],
@@ -529,15 +582,9 @@ Exhibit.ScatterPlotView.prototype._createFlotrScatter = function(container, data
             if ( key in xyToData) {
                 id = xyToData[key].items[0];
             }
-            
-            if (settings.xAxisType == "logarithmic" || settings.xAxisType == "log") {
-                x = Math.pow(10, x);
-            }
-            
-            if (settings.yAxisType == "logarithmic" || settings.yAxisType == "log") {
-                y = Math.pow(10, y);
-            }
 
+            x = Math.round(unscaleX(x));
+            y = Math.round(unscaleY(y));
             return id + ": " + settings.xLabel + ' = ' + x + ', ' + settings.yLabel + ' = ' + y;
         }
         // Draw the graph
@@ -572,7 +619,7 @@ Exhibit.ScatterPlotView.prototype._createFlotrScatter = function(container, data
                     trackFormatter : trackFn
                 },
                 legend : {
-                    position : settings.legendPos
+                    position : settings.legendPosition
                 }
         });
     })(document.getElementById("editor-render-0"));
