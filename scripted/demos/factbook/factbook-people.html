@@ -12,7 +12,7 @@
 
     <!-- Replace the URL here with http://api.simile-widgets.org/exhibit/2.2.0/exhibit-api.js -->
     <script src="../../src/exhibit-api.js?bundle=false"></script>
-    <script type="text/javascript" src="../../../../../HumbleSoftware/flotr2.min.js"></script>
+    <script type="text/javascript" src="../../../../../HumbleSoftware/flotr2.js"></script>
     
     <!--script src="http://ajax.googleapis.com/ajax/libs/dojo/1.7.2/dojo/dojo.js" 
     data-dojo-config="async: true, gfxRenderer: 'svg,silverlight,vml,canvas'"></script>
@@ -40,20 +40,18 @@
                         ex:expression=".speaks" 
                         ex:facetLabel="Languages"
                         ex:height="20em"></div>
-
                 </td>
                 <td>
-                    <div ex:role="coder"  ex:coderClass="Color" id="continent-colors">
+                    <div ex:role="coder"  ex:coderClass="Color" style="display :none" id="continent-colors">
                         <span ex:color="#E41A1C">ASIA</span>
                         <span ex:color="#377EB8">EUROPE</span>
                         <span ex:color="#4DAF4A">AFRICA</span>
                         <span ex:color="#984EA3">NORTH AMERICA</span>
                         <span ex:color="#FF7F00">SOUTH AMERICA</span>
                         <span ex:color="#FFFF33">AUSTRALIA</span>
-                        <span ex:color="#A65628">OTHERS</span>
+                        <span ex:color="#A65628">OTHER</span>
                     </div>
-                </td>
-                <td>
+                
                     <div ex:role="viewPanel">
                     	<div ex:role="view"
                            ex:viewClass="Exhibit.ScatterPlotView"
@@ -63,7 +61,8 @@
                            ex:y=".deathrate"
                            ex:yLabel="Deathrate"
                            ex:colorCoder="continent-colors"
-                           ex:colorKey=".continent">
+                           ex:colorKey=".continent"
+                           ex:legendPosition="se">
                         </div>
                     	<div ex:role="view"
                            ex:viewClass="Exhibit.BarChartView"
