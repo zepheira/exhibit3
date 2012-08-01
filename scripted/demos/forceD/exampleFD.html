@@ -19,7 +19,7 @@
         background-color: #D4D4D4;
     }
     #content{
-        width: 920px;
+        width: 1120px;
         height:600px;
         position: relative;
         margin:0px auto;
@@ -27,7 +27,7 @@
         border:1px solid #9C9C9C;
         background-color:#F2F2F2;
     }
-    #left-container, #right-container{
+    #left-container, #centre-container, #right-container{
         height: 600px; 
         position: absolute;
         padding: 0 10px;
@@ -36,11 +36,22 @@
         width: 200px;
         left:0;
         background-color: #DE8D57;
+        padding-top:10px;
     }
-    #right-container{
+    #centre-container{
         margin-left: 40px;
         width: 650px;
+        left: 220px;
+    }
+    #right-container{
+        width: 200px;
         right:0;
+    }
+    .exhibit-facet{
+        margin-top: 20px;
+    }
+    .exhibit-facet-body{
+        background-color: white;
     }
 </style>
 </head>
@@ -56,19 +67,19 @@
     <div id="left-container">
     
             <div class="text">
-            <h4>
+            <h2>
                  Force Directed Static Graph  <br>
                  using JavaScript InfoVis Library
                  
             </h4> 
-                The nodes in the graph are professors at MIT. 
-                There is an <b>edge</b> between two professors if they have offices in the same floor.<br>
+                The <b>nodes</b> in the graph are professors at MIT. 
+                There is an <b>edge</b> between two professors if they have offices in the same floor.<br><br>
                 You can <b>zoom</b> and <b>pan</b> the visualization by <b>scrolling</b> and <b>dragging</b>.<br /><br />
                 You can <b>change node positions</b> by <b>dragging the nodes around</b>.<br /><br />
             </div>         
     </div>
 
-    <div id="right-container">
+    <div id="centre-container">
           <h1>Selected CSAIL PIs connected by floors</h1>
         
         <div ex:role="coder"  ex:coderClass="Color" style="display:none" id="floor-colors">
@@ -93,6 +104,16 @@
              ex:shapeKey=".position"                            
              ex:name=".label"> 
          </div>  
+    </div>
+    <div id="right-container">
+        <div ex:role="facet" 
+            ex:expression=".group" 
+            ex:facetLabel="Group"
+            ex:height="20em"></div>
+        <div ex:role="facet" 
+            ex:expression=".position" 
+            ex:facetLabel="Position"
+            ex:height="15em"></div>
     </div>
 
 </div>
