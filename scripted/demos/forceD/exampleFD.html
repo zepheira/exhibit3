@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<link rel='stylesheet' href='http://www.simile-widgets.org/styles/common.css' type='text/css' />
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
+<!-- Replace the URL here with http://api.simile-widgets.org/exhibit/2.2.0/exhibit-api.js -->
+<script src="../../src/exhibit-api.js?bundle=false"></script>
+
+<!-- Jit stuff-->
+<link type="text/css" href="../../../../../Jit/Examples/css/ForceDirected.css" rel="stylesheet" />
+<script language="javascript" type="text/javascript" src="../../../../../Jit/jit.js"></script>
+<link href="forceData.js" type="application/json" rel="exhibit-data" />
+
+<!-- Replace the URL here with http://api.simile-widgets.org/exhibit/2.2.0/extensions/chart/chart-extension.js -->
+<script src="../../src/extensions/charts/chart-extension.js" type="text/javascript"></script>
+<style>
+    body{
+        background-color: #D4D4D4;
+    }
+    #content{
+        width: 920px;
+        height:600px;
+        position: relative;
+        margin:0px auto;
+        text-align:left;
+        border:1px solid #9C9C9C;
+        background-color:#F2F2F2;
+    }
+    #left-container, #right-container{
+        height: 600px; 
+        position: absolute;
+        padding: 0 10px;
+    }
+    #left-container{
+        width: 200px;
+        left:0;
+        background-color: #DE8D57;
+    }
+    #right-container{
+        margin-left: 40px;
+        width: 650px;
+        right:0;
+    }
+</style>
+</head>
+
+<body>
+    <ul id="path">
+      <li><a href="/">SIMILE Widgets</a></li>
+      <li><a href="/exhibit/">Exhibit</a></li>
+      <li><span>Examples: CSAIL PIs</span></li>
+    </ul>
+<div id="content">
+    
+    <div id="left-container">
+    
+            <div class="text">
+            <h4>
+                 Force Directed Static Graph  
+            </h4> 
+                You can <b>zoom</b> and <b>pan</b> the visualization by <b>scrolling</b> and <b>dragging</b>.<br /><br />
+                You can <b>change node positions</b> by <b>dragging the nodes around</b>.<br /><br />
+            </div>         
+    </div>
+
+    <div id="right-container">
+          <h1>Selected CSAIL PIs connected by floors</h1>
+        
+        <div ex:role="coder"  ex:coderClass="Color" style="display:none" id="floor-colors">
+            <span ex:color="#E41A1C">5th floor</span>
+            <span ex:color="#377EB8">6th floor</span>
+            <span ex:color="#984EA3">4th floor</span>
+            <span ex:color="#FF7F00">7th floor</span>
+        </div>
+        <div ex:role="coder"  ex:coderClass="Shape" style="display:none" id="position-shapes">
+            <span ex:shape="star">director</span>
+            <span ex:shape="square">professor</span>  
+            <span ex:shape="triangle">faculty</span>
+            <span ex:shape="circle" ex:case="others">faculty</span>
+        </div>
+        <div ex:role="view"
+             ex:viewClass="Exhibit.ForceDirectedView"
+             ex:label="ForceDirected"
+             ex:edge=".floor!floor"
+             ex:colorCoder="floor-colors"
+             ex:colorKey=".floor"
+             ex:shapeCoder="position-shapes"
+             ex:shapeKey=".position"                            
+             ex:name=".label"> 
+         </div>  
+    </div>
+
+</div>
+</body>
+</html>
