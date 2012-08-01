@@ -476,17 +476,19 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
     }
     
     if (currentSize > 0) {
-        prepareData();
+        var flotr, legendLabels, container;
         
-        var legendLabels = colorCodingFlags.keys.toArray();
-        var container = document.createElement("div");
+        flotr = Flotr; // pass the same Flotr instance to clickHandler and createFlotrScatter functions
+        legendLabels = colorCodingFlags.keys.toArray();
+        container = document.createElement("div");
         container.id = "scatterplotViewContainer";
         container.style.height = "100%"
         this._dom.plotContainer.appendChild(container);
         
-        this._clickHandler(xyToData);
+        prepareData();
+        this._clickHandler(flotr, container, xyToData);
+        this._createFlotrScatter(flotr,container, dataToPlot, xyToData, legendLabels);
         
-        this._createFlotrScatter(container, dataToPlot, xyToData, legendLabels);
         //createLegend();
     }
 
@@ -497,22 +499,23 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
  * @private
  * @param {Object} xyToData
  */
-Exhibit.ScatterPlotView.prototype._clickHandler = function(xyToData) {
-    var self, pop;
+Exhibit.ScatterPlotView.prototype._clickHandler = function(flotr, container, xyToData) {
+    var self, hitEvt, pop;
     self = this;
-    this._hitEvt = null;  
+    hitEvt = null;  
     pop = false;
 
     //capturing the last hit event
-    Flotr.addPlugin('clickHit', {
+    flotr.addPlugin('clickHit', {
         callbacks : {
             'flotr:hit' : function(e) {
-                self._hitEvt = e;
+                hitEvt = e;
             }
         }
     });
 
-    $("body").bind("click", function(e) {
+    $("body").click( function(e) {
+        console.log("click in scatter");
         var disX, disY, key, items;
         
         //close the existing popUp if the user has clicked outside the popUp
@@ -524,12 +527,12 @@ Exhibit.ScatterPlotView.prototype._clickHandler = function(xyToData) {
         }
 
         if (!pop) {
-            disX = Math.abs(e.pageX - self._hitEvt.absX);
-            disY = Math.abs(e.pageY - self._hitEvt.absY);
+            disX = Math.abs(e.pageX - hitEvt.absX);
+            disY = Math.abs(e.pageY - hitEvt.absY);
             distance = Math.sqrt(disX * disX + disY * disY);
 
             if (distance < 10) {
-                key = self._hitEvt.x + "," + self._hitEvt.y;
+                key = hitEvt.x + "," + hitEvt.y;
                 items = xyToData[key].items;
                 pop = true;
                 Exhibit.ViewUtilities.openBubbleWithCoords(e.pageX, e.pageY, items, self.getUIContext());
@@ -545,7 +548,7 @@ Exhibit.ScatterPlotView.prototype._clickHandler = function(xyToData) {
  * @param {Object} xyToData
  * @param {Object} legendLabels
  */
-Exhibit.ScatterPlotView.prototype._createFlotrScatter = function(container, dataToPlot, xyToData, legendLabels) {
+Exhibit.ScatterPlotView.prototype._createFlotrScatter = function(flotr, container, dataToPlot, xyToData, legendLabels) {
     var self, settings, dataList, i;
     self = this;
     settings = this._settings;
@@ -569,7 +572,6 @@ Exhibit.ScatterPlotView.prototype._createFlotrScatter = function(container, data
         i++
     }
     this._track = null; 
-    (function() {
         var trackFn, x, y, key, id, graph;
         
         //shows the data info when the point is hovered over
@@ -588,7 +590,7 @@ Exhibit.ScatterPlotView.prototype._createFlotrScatter = function(container, data
             return id + ": " + settings.xLabel + ' = ' + x + ', ' + settings.yLabel + ' = ' + y;
         }
         // Draw the graph
-        graph = Flotr.draw(container,
+        graph = flotr.draw(container,
              dataList,
             {
                 //colors : colorList,
@@ -622,7 +624,6 @@ Exhibit.ScatterPlotView.prototype._createFlotrScatter = function(container, data
                     position : settings.legendPosition
                 }
         });
-    })(document.getElementById("editor-render-0"));
 
 };
 

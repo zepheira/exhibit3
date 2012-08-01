@@ -299,14 +299,82 @@ Exhibit.ForceDirectedView.prototype._reconstruct = function (){
         })   
     }
     
+    createColorLegend = function() {
+        var legendWidget, keys, key, color;
+        
+        if (hasColorKey) {
+            legendWidget = self._dom.legendWidget;
+            colorCoder = self._colorCoder;
+            keys = colorCodingFlags.keys.toArray().sort();
+
+            if (self._colorCoder._gradientPoints != null) {
+                legendWidget.addGradient(this._colorCoder._gradientPoints);
+            } else {
+                for (var k = 0; k < keys.length; k++) {
+                    key = keys[k];
+                    color = colorCoder.translate(key);
+                    legendWidget.addEntry(color, key);
+                }
+            }
+
+            if (colorCodingFlags.others) {
+                legendWidget.addEntry(colorCoder.getOthersColor(), colorCoder.getOthersLabel());
+            }
+
+            if (colorCodingFlags.mixed) {
+                legendWidget.addEntry(colorCoder.getMixedColor(), colorCoder.getMixedLabel());
+            }
+
+            if (colorCodingFlags.missing) {
+                legendWidget.addEntry(colorCoder.getMissingColor(), colorCoder.getMissingLabel());
+            }
+        }
+    }
+    
+    createShapeLegend = function() {
+        var legendWidget, keys, key, shape;
+        
+        if (hasShapeKey) {
+            legendWidget = self._dom.legendWidget;
+            shapeCoder = self._shapeCoder;
+            keys = shapeCodingFlags.keys.toArray().sort();
+
+            if (self._shapeCoder._gradientPoints != null) {
+                legendWidget.addGradient(this._shapeCoder._gradientPoints);
+            } else {
+                for (var k = 0; k < keys.length; k++) {
+                    key = keys[k];
+                    shape = shapeCoder.translate(key);
+                    legendWidget.addEntry(shape, key);
+                }
+            }
+
+            if (shapeCodingFlags.others) {
+                legendWidget.addEntry(shapeCoder.getOthersShape(), shapeCoder.getOthersLabel());
+            }
+
+            if (shapeCodingFlags.mixed) {
+                legendWidget.addEntry(shapeCoder.getMixedShape(), shapeCoder.getMixedLabel());
+            }
+
+            if (shapeCodingFlags.missing) {
+                legendWidget.addEntry(shapeCoder.getMissingShape(), shapeCoder.getMissingLabel());
+            }
+        }
+    }
+    
     if (currentSize > 0){
         prepareData();
         this._dom.plotContainer.innerHTML = "";
         var container = document.createElement("div");
         container.id = "ForceDirectedContainer";
+        container.style.height = "100%";
+        container.style.width = "100%";
+        container.style.backgroundColor = "black";
         this._dom.plotContainer.appendChild(container);
         
         this._createJitFD(container.id, json);
+        createColorLegend();
     }
        
 };
@@ -335,17 +403,6 @@ Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
       animate = !(iStuff || !nativeCanvasSupport);
     })();
     
-    /*
-    var Log = {
-      elem: false,
-      write: function(text){
-        if (!this.elem) 
-          this.elem = document.getElementById('log');
-        this.elem.innerHTML = text;
-        this.elem.style.left = (500 - this.elem.offsetWidth / 2) + 'px';
-      }
-    };
-    */
     var _pos, _items, _node;    
     // init ForceDirected
     var fd = new $jit.ForceDirected({
@@ -380,9 +437,6 @@ Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
       size: 11,
       style: 'bold',
       color:'white'
-      //color:'#878787',
-      //color: '#E6550D',
-      //color: '#878787'
     },
     //Add Tips
     Tips: {
@@ -472,10 +526,10 @@ Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
               _node = null;
           }
          if (pop){
-             if (!$(e.target).closest('.simileAjax-bubble-container *').length) {
-                    pop = false;
-                    $('.simileAjax-bubble-container').hide();
-             }
+            if (!$(e.target).closest('.simileAjax-bubble-contentContainer.simileAjax-bubble-contentContainer-pngTranslucent').length) {
+                pop = false;
+                $('.simileAjax-bubble-container').hide();
+            };
         }
         if (!pop){
             if (_node){
