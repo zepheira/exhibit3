@@ -122,8 +122,9 @@ Exhibit.ScatterPlotView._settingSpecs = {
         defaultValue : null
     },
     "legendPosition" : {
-        type:"text",
-        defaultValue : 'nw'
+        type:"enum",
+        defaultValue :'nw',
+        choices: ['nw','ne','sw','se']
     }
 };
 
@@ -476,18 +477,15 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
     }
     
     if (currentSize > 0) {
-        var flotr, legendLabels, container;
+        var flotr, legendLabels, scatterDiv;
         
         flotr = Flotr; // pass the same Flotr instance to clickHandler and createFlotrScatter functions
         legendLabels = colorCodingFlags.keys.toArray();
-        container = document.createElement("div");
-        container.id = "scatterplotViewContainer";
-        container.style.height = "100%"
-        this._dom.plotContainer.appendChild(container);
+        scatterDiv = this._dom.plotContainer;
         
         prepareData();
-        this._clickHandler(flotr, container, xyToData);
-        this._createFlotrScatter(flotr,container, dataToPlot, xyToData, legendLabels);
+        this._clickHandler(flotr, scatterDiv, xyToData);
+        this._createFlotrScatter(flotr,scatterDiv, dataToPlot, xyToData, legendLabels);
         
         //createLegend();
     }
@@ -500,10 +498,10 @@ Exhibit.ScatterPlotView.prototype._reconstruct = function() {
  * @param {Object} xyToData
  */
 Exhibit.ScatterPlotView.prototype._clickHandler = function(flotr, container, xyToData) {
-    var self, hitEvt, pop;
+    var self, hitEvt, popupPresent;
     self = this;
     hitEvt = null;  
-    pop = false;
+    popupPresent = false;
 
     //capturing the last hit event
     flotr.addPlugin('clickHit', {
@@ -519,14 +517,14 @@ Exhibit.ScatterPlotView.prototype._clickHandler = function(flotr, container, xyT
         var disX, disY, key, items;
         
         //close the existing popUp if the user has clicked outside the popUp
-        if (pop) {
+        if (popupPresent) {
             if (!$(e.target).closest('.simileAjax-bubble-contentContainer.simileAjax-bubble-contentContainer-pngTranslucent').length) {
-                pop = false;
+                popupPresent = false;
                 $('.simileAjax-bubble-container').hide();
             };
         }
 
-        if (!pop) {
+        if (!popupPresent) {
             disX = Math.abs(e.pageX - hitEvt.absX);
             disY = Math.abs(e.pageY - hitEvt.absY);
             distance = Math.sqrt(disX * disX + disY * disY);
@@ -534,7 +532,7 @@ Exhibit.ScatterPlotView.prototype._clickHandler = function(flotr, container, xyT
             if (distance < 10) {
                 key = hitEvt.x + "," + hitEvt.y;
                 items = xyToData[key].items;
-                pop = true;
+                popupPresent = true;
                 Exhibit.ViewUtilities.openBubbleWithCoords(e.pageX, e.pageY, items, self.getUIContext());
             }
         }
@@ -572,7 +570,7 @@ Exhibit.ScatterPlotView.prototype._createFlotrScatter = function(flotr, containe
         i++
     }
     this._track = null; 
-        var trackFn, x, y, key, id, graph;
+        var trackFn, x, y, key, id, graph, r;
         
         //shows the data info when the point is hovered over
         trackFn = function(o) {
