@@ -12,7 +12,7 @@
 
 Exhibit.BarChartView = function(containerElmt, uiContext) {
 	var view = this;
-	Exhibit.jQuery.extend(this, new Exhibit.View("barChart", containerElmt, uiContext));
+	$.extend(this, new Exhibit.View("barChart", containerElmt, uiContext));
 
 	this.addSettingSpecs(Exhibit.BarChartView._settingSpecs);
 
@@ -47,7 +47,7 @@ Exhibit.BarChartView = function(containerElmt, uiContext) {
 		view._reconstruct();
 	};
 
-	Exhibit.jQuery(uiContext.getCollection().getElement()).bind("onItemsChanged.exhibit", view._onItemsChanged);
+	$(uiContext.getCollection().getElement()).bind("onItemsChanged.exhibit", view._onItemsChanged);
 
 	this.register();
 };
@@ -180,7 +180,7 @@ Exhibit.BarChartView.evaluateSingle = function(expression, itemID, database) {
 }
 
 Exhibit.BarChartView.prototype.dispose = function() {
-	Exhibit.jQuery(this.getUIContext().getCollection().getElement()).unbind("onItemsChanged.exhibit", this._onItemsChanged);
+	$(this.getUIContext().getCollection().getElement()).unbind("onItemsChanged.exhibit", this._onItemsChanged);
 
 	this._dom.dispose();
 	this._dom = null;
@@ -527,20 +527,20 @@ Exhibit.BarChartView.prototype._flotrConstructor = function(xyDataPub, flotrCoor
 		// initialize it as false since there are no popUps at the beginning
 		var pop = false;
 		
-		Exhibit.jQuery('body').click(function(e) {
+		$('body').click(function(e) {
 			var numtickFn, tickFormatterFn;
 			// if there's popUp
 			//close the existing popUp if the user has clicked outside the popUp
 			if (pop) {
-				if (!Exhibit.jQuery(e.target).closest('.simileAjax-bubble-contentContainer.simileAjax-bubble-contentContainer-pngTranslucent').length) {
+				if (!$(e.target).closest('.simileAjax-bubble-contentContainer.simileAjax-bubble-contentContainer-pngTranslucent').length) {
 					pop = false;
-					Exhibit.jQuery('.simileAjax-bubble-container').hide();
+					$('.simileAjax-bubble-container').hide();
 				};
 			}
 			
 			//if there is no popup, open the popUp
 			if (!pop) {
-				if (Exhibit.jQuery(e.target).closest(container).length){
+				if ($(e.target).closest(container).length){
 					if (line_chart){
 						var items = xyDataPub[Math.abs(accessClosest.point.dataIndex)].items;
 					}else if (!vertical_chart){

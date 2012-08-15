@@ -12,7 +12,7 @@
  */
 Exhibit.ForceDirectedView = function(containerElmt, uiContext) {
     var view = this;
-    $.extend(this, new Exhibit.View(
+    Exhibit.jQuery.extend(this, new Exhibit.View(
         "forcedirected",
         containerElmt,
         uiContext
@@ -22,10 +22,13 @@ Exhibit.ForceDirectedView = function(containerElmt, uiContext) {
     this._accessors = {
         //"getPointLabel":  function(itemID, database, visitor) { visitor(database.getObject(itemID, "label"));},
         "getProxy":       function(itemID, database, visitor) { visitor(itemID); },
-        "getColorKey":    null
+        "getColorKey":    null,
+        "getShapeKey" : null,
+        "getSizeKey" : null
     };
     this._colorCoder = null;
     this._shapeCoder = null;
+    this._sizeCoder = null;
     this._colorKeyCache = new Object();
     this._maxColor = 0;
     this._edgeExpression = null;
@@ -34,7 +37,7 @@ Exhibit.ForceDirectedView = function(containerElmt, uiContext) {
         view._reconstruct(); 
     };
     
-    $(uiContext.getCollection().getElement()).bind(
+    Exhibit.jQuery(uiContext.getCollection().getElement()).bind(
         "onItemsChanged.exhibit",
         view._onItemsChanged
     );
@@ -48,10 +51,12 @@ Exhibit.ForceDirectedView = function(containerElmt, uiContext) {
 Exhibit.ForceDirectedView._settingSpecs = {
     "plotHeight" : {type : "int", defaultValue : 400},
     "plotWidth" : {type : "int", defaultValue : 600},
-    "color" : {type : "text"},
+    "color" : {type : "text", defaultValue : '#D95F0E' },
     "colorCoder" : {type : "text", defaultValue : null},
-    "shape" : {type : "text"},
+    "shape" : {type : "text", defaultValue : "triangle"},
     "shapeCoder" : {type : "text", defaultValue : null},
+    "size" : {type : "text", defaultValue : 6},
+    "sizeCoder" : {type : "text", defaultValue : null},
     "edgeColor" : {type : "text", defaultValue : '#23A4FF'},
     "bubbleWidth":  { type: "int",   defaultValue: 400 },
     "bubbleHeight": { type: "int",   defaultValue: 300 }
@@ -61,8 +66,8 @@ Exhibit.ForceDirectedView._settingSpecs = {
  * @constant 
  */
 Exhibit.ForceDirectedView._accessorSpecs = [
-    {   "accessorName":   "getName",
-        "attributeName":  "name",
+    {   "accessorName":   "getNode",
+        "attributeName":  "node",
         "type":           "text"
     },
     {   "accessorName":   "getColorKey",
@@ -71,6 +76,10 @@ Exhibit.ForceDirectedView._accessorSpecs = [
     },
     {   "accessorName":   "getShapeKey",
         "attributeName":  "shapeKey",
+        "type":           "text"
+    },
+    {   "accessorName":   "getSizeKey",
+        "attributeName":  "sizeKey",
         "type":           "text"
     }
 ];
@@ -137,7 +146,7 @@ Exhibit.ForceDirectedView._configure = function(view, configuration) {
  * 
  */
 Exhibit.ForceDirectedView.prototype.dispose = function() {
-    $(this.getUIContext().getCollection().getElement()).unbind(
+    Exhibit.jQuery(this.getUIContext().getCollection().getElement()).unbind(
         "onItemsChanged.exhibit",
         this._onItemsChanged
     );
@@ -161,10 +170,16 @@ Exhibit.ForceDirectedView.prototype._internalValidate = function() {
             this._colorCoder = new Exhibit.DefaultColorCoder(this.getUIContext());
         }
     }
+
+    if (typeof this._accessors.getShapeKey !== "undefined" && this._accessors.getShapeKey !== null) {
+        if (typeof this._settings.shapeCoder !== "undefined" && this._settings.shapeCoder !== null) {
+            this._shapeCoder = exhibit.getComponent(this._settings.shapeCoder);
+        }
+    }
     
-    if ("getShapeKey" in this._accessors) {
-        if ("shapeCoder" in this._settings) {
-            this._shapeCoder = this.getUIContext().getMain().getComponent(this._settings.shapeCoder);
+    if ("getSizeKey" in this._accessors) {
+        if ("sizeCoder" in this._settings) {
+            this._sizeCoder = this.getUIContext().getMain().getComponent(this._settings.sizeCoder);
         }
     }
 };
@@ -213,38 +228,51 @@ Exhibit.ForceDirectedView.prototype._initializeUI = function() {
  * 
  */
 Exhibit.ForceDirectedView.prototype._reconstruct = function (){
+    var self, accessors, database, edgeToData, edgeExpr, currentSize, colorCoder, colorCodingFlags, hasColorKey, shapeCoder;
+    var shapeCodingFlags, hasShapeKey, sizeCoder, sizeCodingFlags, hasSizeKey, json, currentSet, currentSetIds;
     self = this;
-    var accessors = this._accessors;
-    var database = this.getUIContext().getDatabase();
-    var edgeToData = {};
-    var edgeExpr = this._edgeExpression;
+    accessors = this._accessors;
+    database = this.getUIContext().getDatabase();
+    edgeToData = {};
+    edgeExpr = this._edgeExpression;
     currentSize = this.getUIContext().getCollection().countRestrictedItems();
-    var colorCoder = this._colorCoder;
-    var colorCodingFlags = {
+    colorCoder = this._colorCoder;
+    colorCodingFlags = {
         mixed : false,
         missing : false,
         others : false,
         keys : new Exhibit.Set()
     };
-    var hasColorKey = (this._accessors.getColorKey != null);
-    var shapeCoder = this._shapeCoder;
-    console.log(shapeCoder);
-    var shapeCodingFlags = {
+    hasColorKey = (this._accessors.getColorKey != null);
+    
+    shapeCoder = this._shapeCoder;
+    shapeCodingFlags = {
         mixed : false,
         missing : false,
         others : false,
         keys : new Exhibit.Set()
     }
-    var hasShapeKey = (this._accessors.getShapeKey != null);
+    hasShapeKey = (this._accessors.getShapeKey !== null);
+    
+    sizeCoder = this._sizeCoder;
+    sizeCodingFlags = {
+        mixed : false,
+        missing : false,
+        others : false,
+        keys : new Exhibit.Set()
+    };
+    hasSizeKey = (this._accessors.getSizeKey != null);
     
     //json is the list of items that we pass to the jit graph constructor
-    var json = []
+    json = []
     currentSet = this.getUIContext().getCollection().getRestrictedItems();
     currentSetIds = currentSet.toArray(); // list of ids of all the elements in the current set. 
+    
     prepareData = function(){
-        var color, shape;
+        var color, shape, size;
         color = self._settings.color;
         shape = self._settings.shape;
+        size = self._settings.size;
         
         currentSet.visit(function(itemID){
             var colorInd = 0, colorKeys = [],jitItem = {}, edgeObj, edgeList = [], defaultColors;
@@ -264,14 +292,15 @@ Exhibit.ForceDirectedView.prototype._reconstruct = function (){
                 shape = shapeCoder.translateSet(shapeKeys, shapeCodingFlags);
             }
             
-            defaultColors = Exhibit.ForceDirectedView._colors;         
-            if (typeof color == "undefined"){
-                color = defaultColors[colorInd%5];
+            if (hasSizeKey){
+                sizeKeys = new Exhibit.Set();
+                accessors.getSizeKey(itemID, database, function(v) {
+                    sizeKeys.add(v);
+                });
+                size = sizeCoder.translateSet(sizeKeys, sizeCodingFlags);
             }
             
-            if (typeof shape == "undefined"){
-                shape = "triangle";
-            }
+            defaultColors = Exhibit.ForceDirectedView._colors;         
                 
             edgeObj = edgeExpr.evaluate(
                             { "value" : itemID }, 
@@ -289,11 +318,14 @@ Exhibit.ForceDirectedView.prototype._reconstruct = function (){
                     }
                 }
             });
+            if (shape == "triangle"){
+                console.log(itemID, color, shape, size);
+            }
             
             jitItem["adjacencies"] = edgeList;            
-            jitItem["data"] = {"$color": color, "$type": shape,"$dim": 11};
+            jitItem["data"] = {"$color": color, "$type": shape,"$dim": 10};
             jitItem["id"] = itemID;
-            accessors.getName(itemID, database, function(key){jitItem["name"] = key;});
+            accessors.getNode(itemID, database, function(key){jitItem["name"] = key;});
             colorInd++;
             json.push(jitItem);        
         })   
@@ -363,6 +395,7 @@ Exhibit.ForceDirectedView.prototype._reconstruct = function (){
         }
     }
     
+    this._dom.legendWidget.clear();
     if (currentSize > 0){
         prepareData();
         this._dom.plotContainer.innerHTML = "";
@@ -370,11 +403,11 @@ Exhibit.ForceDirectedView.prototype._reconstruct = function (){
         container.id = "ForceDirectedContainer";
         container.style.height = "100%";
         container.style.width = "100%";
-        container.style.backgroundColor = "black";
+        container.style.backgroundColor = "#1A1A1A";
         this._dom.plotContainer.appendChild(container);
         
         this._createJitFD(container.id, json);
-        createColorLegend();
+        //createColorLegend();
     }
        
 };
@@ -521,14 +554,14 @@ Exhibit.ForceDirectedView.prototype._createJitFD = function(id, json){
       // end
       
       var pop = false;
-      $("body").click(function(e){
-          if (!$(e.target).closest('#ForceDirectedContainer').length){
+      Exhibit.jQuery("body").click(function(e){
+          if (!Exhibit.jQuery(e.target).closest('#ForceDirectedContainer').length){
               _node = null;
           }
          if (pop){
-            if (!$(e.target).closest('.simileAjax-bubble-contentContainer.simileAjax-bubble-contentContainer-pngTranslucent').length) {
+            if (!Exhibit.jQuery(e.target).closest('.simileAjax-bubble-contentContainer.simileAjax-bubble-contentContainer-pngTranslucent').length) {
                 pop = false;
-                $('.simileAjax-bubble-container').hide();
+                Exhibit.jQuery('.simileAjax-bubble-container').hide();
             };
         }
         if (!pop){

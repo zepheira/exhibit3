@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>SIMILE Widgets | Exhibit | Examples | CIA World Factbook - People</title>
+    <link rel='stylesheet'j href='http://www.simile-widgets.org/styles/common.css' type='text/css' />
+	
+    <!--link href="countriesV2.js" type="application/json" rel="exhibit-data" />
+    <link href="people.js" type="application/json" rel="exhibit-data" />
+    <link href="government.js" type="application/json" rel="exhibit-data" /-->
+    <link href="medalData.js" type="application/json" rel="exhibit-data" />
+	
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
+    <!-- Replace the URL here with http://api.simile-widgets.org/exhibit/2.2.0/exhibit-api.js -->
+    <script src="../../src/exhibit-api.js?bundle=false"></script>
+    <script type="text/javascript" src="../../../../../HumbleSoftware/flotr2.js"></script>
+    
+    <!--script src="http://ajax.googleapis.com/ajax/libs/dojo/1.7.2/dojo/dojo.js" 
+    data-dojo-config="async: true, gfxRenderer: 'svg,silverlight,vml,canvas'"></script>
+    <!-- Replace the URL here with http://api.simile-widgets.org/exhibit/2.2.0/extensions/chart/chart-extension.js -->
+    <script src="../../src/extensions/charts/chart-extension.js" type="text/javascript"></script>
+  </head>
+  <body style="background: #f4f4f4">
+    <ul id="path">
+      <li><a href="/">SIMILE Widgets</a></li>
+      <li><a href="/exhibit/">Exhibit</a></li>
+      <li><span>Examples: 2008 Olympics</span></li>
+    </ul>
+    <header style="background: #e0e0e0">
+      <h1 style="padding-left: 20px">Top 20 2008 Olympic Medal Winning Countries</h1>
+    </header>
+    <div id="content"><div style="width: 100%;">
+        <table width="100%" class="spaced-table">
+            <tr>
+            	<td width="15%" style="background: #e0e0e0">
+                    <div ex:role="facet" 
+                        ex:expression=".continent" 
+                        ex:facetLabel="Continents"
+                        ex:height="13em"></div>
+                    <div ex:role="facet" 
+                        ex:expression=".label" 
+                        ex:facetLabel="Countries" 
+                        ex:height="25em"></div>
+                    <!--div ex:role="facet" ex:facetClass="Exhibit.NumericRangeFacet" 
+                        ex:expression=".population" 
+                        ex:interval="10000000" 
+                        ex:facetLabel="Population" 
+                        ex:height="20em"></div-->
+                </td>
+                <div ex:role="coder"  ex:coderClass = "Color" id = "continent">
+                	<span ex:color = "#ff7676">ASIA</span>
+                	<span ex:color = "#ffff28">AFRICA</span>
+                	<span ex:color = "#76bbff">EUROPE</span>
+                	<span ex:color = "#ffa500">NORTH AMERICA</span>
+                	<span ex:color = "#a7ff4e">SOUTH AMERICA</span>
+                	<span ex:color = "#ff77ff">AUSTRALIA</span>
+                </div>
+                <td style="padding-left: 50px">
+                    <div ex:role="viewPanel">
+                    	<div ex:role="view"
+                           ex:viewClass="Exhibit.BarChartView"
+                           ex:label="Vertical View"
+                           ex:values=".totalMedal"
+                           ex:valueLabel="Medals"
+                           ex:groupedBy=".label"
+                           ex:groupLabel="Country Name"
+                           ex:colorCoder = "continent"
+                           ex:colorKey = ".continent"
+                           ex:axisType="linear"
+                           ex:tickNum = "10"
+                           ex:verticalChart="true">
+                        </div>
+                        <div ex:role="view"
+                           ex:viewClass="Exhibit.BarChartView"
+                           ex:label="Horizontal View"
+                           ex:values=".totalMedal"
+                           ex:valueLabel="Medals"
+                           ex:groupedBy=".label"
+                           ex:groupLabel="Country Name"
+                           ex:colorCoder = "continent"
+                           ex:colorKey = ".continent"
+                           ex:axisType="linear"
+                           ex:verticalChart="false">
+                        </div>
+                    	<div ex:role="view"
+                           ex:viewClass="Exhibit.BarChartView"
+                           ex:label="Gold"
+                           ex:values=".goldMedal"
+                           ex:valueLabel="Gold Medals"
+                           ex:groupedBy=".label"
+                           ex:groupLabel="Country Name"
+                           ex:colorCoder = "continent"
+                           ex:colorKey = ".continent"
+                           ex:axisType="linear"
+                           ex:verticalChart="true"
+                           ex:barWidth=".3">
+                        </div>
+                        <div ex:role="view"
+                           ex:viewClass="Exhibit.BarChartView"
+                           ex:label="Silver"
+                           ex:values=".silverMedal"
+                           ex:valueLabel="Silver Medals"
+                           ex:groupedBy=".label"
+                           ex:groupLabel="Country Name"
+                           ex:colorCoder = "continent"
+                           ex:colorKey = ".continent"
+                           ex:axisType="linear"
+                           ex:verticalChart="true">
+                        </div>
+                        <div ex:role="view"
+                           ex:viewClass="Exhibit.BarChartView"
+                           ex:label="Bronze"
+                           ex:values=".bronzeMedal"
+                           ex:valueLabel="Bronze Medals"
+                           ex:groupedBy=".label"
+                           ex:groupLabel="Country Name"
+                           ex:colorCoder = "continent"
+                           ex:colorKey = ".continent"
+                           ex:axisType="linear"
+                           ex:verticalChart="true">
+                        </div>
+                        <div ex:role="view"
+                           ex:viewClass="Exhibit.BarChartView"
+                           ex:label="Line Chart"
+                           ex:values=".totalMedal"
+                           ex:valueLabel="Medals"
+                           ex:groupedBy=".label"
+                           ex:groupLabel="Country Name"
+                           ex:axisType="linear"
+                           ex:lineChart="true"
+                           ex:verticalChart="false">
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div></div>
+  </body>
+</html>
