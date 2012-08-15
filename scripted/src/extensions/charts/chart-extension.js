@@ -14,10 +14,14 @@
     };
 
     var javascriptFiles = [
-        "scatter-plot-view.js",
-        "bar-chart-view.js"
+        "bar-chart-view.js",
+        "force.js",
+        "bubbleScatter.js"
     ];
 
+    var cssFiles = [
+        "forceDirected.css"
+    ]
     
     var paramTypes = { bundle: Boolean };
     if (typeof Exhibit_ChartExtension_urlPrefix == "string") {
@@ -43,10 +47,10 @@
     
     if (Exhibit.ChartExtension.params.bundle) {
         scriptURLs.push(Exhibit.ChartExtension.urlPrefix + "chart-extension-bundle.js");
-        //cssURLs.push(Exhibit.ChartExtension.urlPrefix + "chart-extension-bundle.css");
+        cssURLs.push(Exhibit.ChartExtension.urlPrefix + "chart-extension-bundle.css");
     } else {
         Exhibit.prefixURLs(scriptURLs, Exhibit.ChartExtension.urlPrefix + "scripts/", javascriptFiles);
-        //Exhibit.prefixURLs(cssURLs, Exhibit.ChartExtension.urlPrefix + "styles/", cssFiles);
+        Exhibit.prefixURLs(cssURLs, Exhibit.ChartExtension.urlPrefix + "styles/", cssFiles);
     }
     
     for (var i = 0; i < Exhibit.locales.length; i++) {
@@ -55,6 +59,6 @@
     
     if (!isCompiled) {
         Exhibit.includeJavascriptFiles(document, "", scriptURLs);
-        //Exhibit.includeCssFiles(document, "", cssURLs);
+        Exhibit.includeCssFiles(document, "", cssURLs);
     }
 })();
