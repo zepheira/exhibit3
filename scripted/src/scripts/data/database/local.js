@@ -78,7 +78,7 @@ Exhibit.Database._LocalImpl.prototype.createDatabase = function() {
  * @param {Function} fDone A function to call when finished.
  */
 Exhibit.Database._LocalImpl.prototype.loadLinks = function(fDone) {
-    var links = $("head > link[rel='exhibit-data']")
+    var links = Exhibit.jQuery("head > link[rel='exhibit-data']")
         .add("head > link[rel='exhibit/data']");
     this._loadLinks(links.toArray(), this, fDone);
 };
@@ -114,7 +114,7 @@ Exhibit.Database._LocalImpl.prototype.loadData = function(o, baseURI) {
  * @param {String} baseURI The base URI for normalizing URIs in the object.
  */
 Exhibit.Database._LocalImpl.prototype.loadTypes = function(typeEntries, baseURI) {
-    $(document).trigger('onBeforeLoadingTypes.exhibit');
+    Exhibit.jQuery(document).trigger('onBeforeLoadingTypes.exhibit');
     var lastChar, typeID, typeEntry, type, p;
     try {
         lastChar = baseURI.substr(baseURI.length - 1);
@@ -154,7 +154,7 @@ Exhibit.Database._LocalImpl.prototype.loadTypes = function(typeEntries, baseURI)
             }
         }
         
-        $(document).trigger('onAfterLoadingTypes.exhibit');
+        Exhibit.jQuery(document).trigger('onAfterLoadingTypes.exhibit');
     } catch(e) {
         Exhibit.Debug.exception(e, Exhibit._("%database.error.loadTypesFailure"));
     }
@@ -168,7 +168,7 @@ Exhibit.Database._LocalImpl.prototype.loadTypes = function(typeEntries, baseURI)
  * @param {String} baseURI The base URI for normalizing URIs in the object.
  */
 Exhibit.Database._LocalImpl.prototype.loadProperties = function(propertyEntries, baseURI) {
-    $(document).trigger("onBeforeLoadingProperties.exhibit");
+    Exhibit.jQuery(document).trigger("onBeforeLoadingProperties.exhibit");
     var lastChar, propertyID, prpoertyEntry, property;
     try {
         lastChar = baseURI.substr(baseURI.length - 1);
@@ -232,10 +232,41 @@ Exhibit.Database._LocalImpl.prototype.loadProperties = function(propertyEntries,
 
         this._propertyArray = null;
         
-        $(document).trigger("onAfterLoadingProperties.exhibit");
+        Exhibit.jQuery(document).trigger("onAfterLoadingProperties.exhibit");
     } catch(e) {
         Exhibit.Debug.exception(e, Exhibit._("%database.error.loadPropertiesFailure"));
     }
+};
+
+/**
+ * Prevent browsers from spinning forever while loading data.
+ *
+ * @static
+ * @private
+ * @param {Function} worker Takes one argument, an item to work on
+ * @param {Array} data An array of items fit to pass to the worker function
+ * @param {Numeric} size Chunk size, the number of items to work on in one
+ *     cycle
+ * @param {Numeric} timeout In milliseconds, the time between cycles
+ * @param {Function} [complete] Method to call when done with all data
+ */
+Exhibit.Database._LocalImpl._loadChunked = function(worker, data, size, timeout, complete) {
+    var index, length;
+    index = 0;
+    length = data.length;
+    (function() {
+        var remnant, currentSize;
+        remnant = length - index;
+        currentSize = (remnant >= size) ? size : remnant;
+        if (index < length) {
+            while (currentSize-- > 0) {
+                worker(data[index++]);
+            }
+            setTimeout(arguments.callee, timeout);
+        } else if (typeof complete === "function") {
+            complete();
+        }
+    }());
 };
 
 /**
@@ -245,8 +276,9 @@ Exhibit.Database._LocalImpl.prototype.loadProperties = function(propertyEntries,
  * @param {String} baseURI The base URI for normalizing URIs in the object.
  */
 Exhibit.Database._LocalImpl.prototype.loadItems = function(itemEntries, baseURI) {
-    $(document).trigger("onBeforeLoadingItems.exhibit");
-    var lastChar, spo, ops, indexPut, indexTriple, i, entry;
+    Exhibit.jQuery(document).trigger("onBeforeLoadingItems.exhibit");
+    var self, lastChar, spo, ops, indexPut, indexTriple, finish, loader;
+    self = this;
     try {
         lastChar = baseURI.substr(baseURI.length - 1);
         if (lastChar === "#") {
@@ -262,17 +294,19 @@ Exhibit.Database._LocalImpl.prototype.loadItems = function(itemEntries, baseURI)
             indexPut(spo, s, p, o);
             indexPut(ops, o, p, s);
         };
-        
-        for (i = 0; i < itemEntries.length; i++) {
-            entry = itemEntries[i];
-            if (typeof entry === "object") {
-                this._loadItem(entry, indexTriple, baseURI);
+
+        finish = function() {
+            self._propertyArray = null;
+            Exhibit.jQuery(document).trigger("onAfterLoadingItems.exhibit");
+        };
+
+        loader = function(item) {
+            if (typeof item === "object") {
+                self._loadItem(item, indexTriple, baseURI);
             }
-        }
-        
-        this._propertyArray = null;
-        
-        $(document).trigger("onAfterLoadingItems.exhibit");
+        };
+
+        Exhibit.Database._LocalImpl._loadChunked(loader, itemEntries, 1000, 10, finish);
     } catch(e) {
         Exhibit.Debug.exception(e, Exhibit._("%database.error.loadItemsFailure"));
     }
@@ -702,7 +736,7 @@ Exhibit.Database._LocalImpl.prototype.removeSubjects = function(o, p) {
  * Reset the entire database to its empty state.
  */
 Exhibit.Database._LocalImpl.prototype.removeAllStatements = function() {
-    $(document).trigger("onBeforeRemovingAllStatements.exhibit");
+    Exhibit.jQuery(document).trigger("onBeforeRemovingAllStatements.exhibit");
     var propertyID;
     try {
         this._spo = {};
@@ -716,7 +750,7 @@ Exhibit.Database._LocalImpl.prototype.removeAllStatements = function() {
         }
         this._propertyArray = null;
         
-        $(document).trigger("onAfterRemovingAllStatements.exhibit");
+        Exhibit.jQuery(document).trigger("onAfterRemovingAllStatements.exhibit");
     } catch(e) {
         Exhibit.Debug.exception(e, Exhibit._("%database.error.removeAllStatementsFailure"));
     }
@@ -735,7 +769,7 @@ Exhibit.Database._LocalImpl.prototype._loadLinks = function(links, database, fDo
     fNext = function() {
         while (links.length > 0) {
             link = links.shift();
-            type = $(link).attr("type");
+            type = Exhibit.jQuery(link).attr("type");
             if (typeof type === "undefined" || type === null || type.length === 0) {
                 type = "application/json";
             }
@@ -1081,8 +1115,8 @@ Exhibit.Database._LocalImpl.prototype.labelItemsOfType = function(count, typeID,
         }
     }
 
-    span = $("<span>").html(
-        $("<span>")
+    span = Exhibit.jQuery("<span>").html(
+        Exhibit.jQuery("<span>")
             .attr("class", countStyleClass)
             .html(count)
     ).append(" " + label);

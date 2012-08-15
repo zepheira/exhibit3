@@ -41,7 +41,7 @@ Exhibit.Importer._registerComponent = function(evt, reg) {
     Exhibit.Importer._registry = reg;
     if (!reg.hasRegistry(Exhibit.Importer._registryKey)) {
         reg.createRegistry(Exhibit.Importer._registryKey);
-        $(document).trigger("registerImporters.exhibit", reg);
+        Exhibit.jQuery(document).trigger("registerImporters.exhibit", reg);
     }
 };
 
@@ -119,7 +119,7 @@ Exhibit.Importer.prototype.isRegistered = function() {
  */
 Exhibit.Importer.prototype.load = function(link, database, callback) {
     var resolver, url, postLoad, postParse, self;
-    url = typeof link === "string" ? link : $(link).attr("href");
+    url = typeof link === "string" ? link : Exhibit.jQuery(link).attr("href");
     url = Exhibit.Persistence.resolveURL(url);
 
     switch(this._loadType) {
@@ -139,7 +139,7 @@ Exhibit.Importer.prototype.load = function(link, database, callback) {
             database.loadData(o, Exhibit.Persistence.getBaseURL(url));
         } catch(e) {
             Exhibit.Debug.exception(e);
-            $(document).trigger("error.exhibit", [e, Exhibit._("%import.couldNotLoad", url)]);
+            Exhibit.jQuery(document).trigger("error.exhibit", [e, Exhibit._("%import.couldNotLoad", url)]);
         } finally {
             if (typeof callback === "function") {
                 callback();
@@ -153,7 +153,7 @@ Exhibit.Importer.prototype.load = function(link, database, callback) {
         try {
             self._parse(url, s, postParse);
         } catch(e) {
-            $(document).trigger("error.exhibit", [e, Exhibit._("%import.couldNotParse", url)]);
+            Exhibit.jQuery(document).trigger("error.exhibit", [e, Exhibit._("%import.couldNotParse", url)]);
         }
     };
 
@@ -167,21 +167,39 @@ Exhibit.Importer.prototype.load = function(link, database, callback) {
  * @param {Function} callback
  */
 Exhibit.Importer.prototype._loadURL = function(url, database, callback) {
-    var fError, self;
+    var self = this,
+        callbackOrig = callback,
+        fragmentStart = url.indexOf('#'),
+        fragmentId = url.substring(fragmentStart),
 
-    self = this;
+        fError = function(jqxhr, textStatus, e) {
+            var msg;
+            if (Exhibit.Importer.checkFileURL(url) && jqxhr.status === 404) {
+                msg = Exhibit._("%import.missingOrFilesystem", url);
+            } else {
+                msg = Exhibit._("%import.httpError", url, jqxhr.status);
+            }
+            Exhibit.jQuery(document).trigger("error.exhibit", [e, msg]);
+        };
 
-    fError = function(jqxhr, textStatus, e) {
-        var msg;
-        if (Exhibit.Importer.checkFileURL(url) && jqxhr.status === 404) {
-            msg = Exhibit._("%import.missingOrFilesystem", url);
-        } else {
-            msg = Exhibit._("%import.httpError", url, jqxhr.status);
-        }
-        $(document).trigger("error.exhibit", [e, msg]);
-    };
+    if ((fragmentStart >= 0) && (fragmentStart < url.length - 1)) {
+        url = url.substring(0, fragmentStart);
 
-    $.ajax({
+        callback = function(data, status, jqxhr) {
+            var msg,
+                fragment = Exhibit.jQuery(data).find(fragmentId)
+	                          .andSelf()
+	                          .filter(fragmentId);
+            if (fragment.length < 1) {
+                msg = Exhibit._("%import.missingFragment", url);
+                Exhibit.jQuery(document).trigger("error.exhibit", [new Error(msg), msg]);
+            } else {
+                callbackOrig(fragment.text(), status, jqxhr);
+            }
+        };
+    }
+
+    Exhibit.jQuery.ajax({
         "url": url,
         "dataType": "text",
         "error": fError,
@@ -196,7 +214,7 @@ Exhibit.Importer.prototype._loadURL = function(url, database, callback) {
  * @param {Element} link
  */
 Exhibit.Importer.prototype._loadJSONP = function(url, database, callback, link) {
-    var charset, convertType, jsonpCallback, converter, fDone, ajaxArgs;
+    var charset, convertType, jsonpCallback, converter, fDone, fError, ajaxArgs;
 
     if (typeof link !== "string") {
         convertType = Exhibit.getAttribute(link, "converter");
@@ -223,7 +241,7 @@ Exhibit.Importer.prototype._loadJSONP = function(url, database, callback, link) 
             "%import.failedAccess",
             url,
             (typeof jqxhr.status !== "undefined") ? Exhibit._("%import.failedAccessHttpStatus", jqxhr.status) : "");
-        $(document).trigger("error.exhibit", [e, msg]);
+        Exhibit.jQuery(document).trigger("error.exhibit", [e, msg]);
     };
 
     ajaxArgs = {
@@ -242,7 +260,7 @@ Exhibit.Importer.prototype._loadJSONP = function(url, database, callback, link) 
         ajaxArgs.scriptCharset = charset;
     }
 
-    $.ajax(ajaxArgs);
+    Exhibit.jQuery.ajax(ajaxArgs);
 };
 
 /**
@@ -254,7 +272,7 @@ Exhibit.Importer.prototype._loadJSONP = function(url, database, callback, link) 
 Exhibit.Importer.prototype._loadBabel = function(url, database, callback, link) {
     var mimeType = null;
     if (typeof link !== "string") {
-        mimeType = $(link).attr("type");
+        mimeType = Exhibit.jQuery(link).attr("type");
     }
     this._loadJSONP(
         Exhibit.Importer.BabelBased.makeURL(url, mimeType),
@@ -264,7 +282,7 @@ Exhibit.Importer.prototype._loadBabel = function(url, database, callback, link) 
     );
 };
 
-$(document).one(
+Exhibit.jQuery(document).one(
     "registerStaticComponents.exhibit",
     Exhibit.Importer._registerComponent
 );
