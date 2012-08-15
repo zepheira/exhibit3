@@ -28,7 +28,7 @@ Exhibit.ViewUtilities.openBubbleForItems = function(anchorElmt, arrayOfItemIDs, 
 };
 
 Exhibit.ViewUtilities.openBubbleWithCoords = function(x,y, arrayOfItemIDs, uiContext){
-    var bubble = $.simileBubble("createBubbleForPoint",
+    var bubble = Exhibit.jQuery.simileBubble("createBubbleForPoint",
         x , 
         y , 
         uiContext.getSetting("bubbleWidth"), // px

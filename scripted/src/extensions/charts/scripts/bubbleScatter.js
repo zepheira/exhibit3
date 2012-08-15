@@ -18,7 +18,7 @@
  */
 Exhibit.ScatterPlotView = function(containerElmt, uiContext) {
     var view = this;
-    $.extend(this, new Exhibit.View("scatter", containerElmt, uiContext));
+    Exhibit.jQuery.extend(this, new Exhibit.View("scatter", containerElmt, uiContext));
     this.addSettingSpecs(Exhibit.ScatterPlotView._settingSpecs);
 
     this._accessors = {
@@ -60,7 +60,7 @@ Exhibit.ScatterPlotView = function(containerElmt, uiContext) {
         view._reconstruct();
     };
 
-    $(uiContext.getCollection().getElement()).bind("onItemsChanged.exhibit", view._onItemsChanged);
+    Exhibit.jQuery(uiContext.getCollection().getElement()).bind("onItemsChanged.exhibit", view._onItemsChanged);
 
     this.register();
 };
@@ -278,7 +278,7 @@ Exhibit.ScatterPlotView._getAxisInverseFunc = function(s) {
  * 
  */
 Exhibit.ScatterPlotView.prototype.dispose = function() {
-    $(this.getUIContext().getCollection().getElement()).unbind("onItemsChanged.exhibit", this._onItemsChanged);
+    Exhibit.jQuery(this.getUIContext().getCollection().getElement()).unbind("onItemsChanged.exhibit", this._onItemsChanged);
 
     this._dom.dispose();
     this._dom = null;
@@ -551,15 +551,15 @@ Exhibit.ScatterPlotView.prototype._clickHandler = function(flotr, container, xyT
         }
     });
 
-    $("body").click( function(e) {
+    Exhibit.jQuery("body").click( function(e) {
         console.log("click in scatter");
         var disX, disY, key, items;
         
         //close the existing popUp if the user has clicked outside the popUp
         if (popupPresent) {
-            if (!$(e.target).closest('.simileAjax-bubble-contentContainer.simileAjax-bubble-contentContainer-pngTranslucent').length) {
+            if (!Exhibit.jQuery(e.target).closest('.simileAjax-bubble-contentContainer.simileAjax-bubble-contentContainer-pngTranslucent').length) {
                 popupPresent = false;
-                $('.simileAjax-bubble-container').hide();
+                Exhibit.jQuery('.simileAjax-bubble-container').hide();
             };
         }
 
