@@ -49,6 +49,9 @@ Exhibit.jQuery(document).ready(function() {
 
     Exhibit.jQuery(document).one("scriptsLoaded.exhibit", function(evt) {
         Exhibit.jQuery(document).trigger("registerStaticComponents.exhibit", Exhibit.staticRegistry);
+	//assumption: all handlers for static config queued by previous
+	//trigger, so will run before anything triggered by next line
+	Exhibit.jQuery(document).trigger("staticConfigured.exhibit");
     });
 
     Exhibit.jQuery(document).one("exhibitConfigured.exhibit", function(evt, ex) {
@@ -71,6 +74,11 @@ Exhibit.jQuery(document).ready(function() {
     Exhibit.jQuery("link[rel='exhibit-extension']").each(function(idx, el) {
         Exhibit.loader.script(Exhibit.jQuery(el).attr("href"));
     });
+
+    if (Exhibit.params.autoCreate) {
+	Exhibit.jQuery(document).one("staticConfigured.exhibit",
+				     Exhibit.createFromDOM);
+    }
 
     Exhibit.includeScript(function() {
         Exhibit.jQuery(document).trigger("registerLocalization.exhibit", Exhibit.staticRegistry);
