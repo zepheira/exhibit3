@@ -178,6 +178,7 @@ var Exhibit = {
         "scripts/ui/coders/ordered-color-coder.js",
         "scripts/ui/coders/color-gradient-coder.js",
         "scripts/ui/coders/icon-coder.js",
+        "scripts/ui/coders/shape-coder.js",
         "scripts/ui/coders/size-coder.js",
         "scripts/ui/coders/size-gradient-coder.js",
         "scripts/ui/control-panel.js",
