@@ -343,7 +343,7 @@ Exhibit.TextSearchFacet.prototype._onTimeout = function() {
  */
 Exhibit.TextSearchFacet.prototype._buildMaps = function() {
     var itemToValue, allItems, database, propertyIDs,
-    expressions = this.getExpression() || ""; 
+    expressions = this.getExpression() || []; 
     if (typeof this._itemToValue === "undefined") {
         itemToValue = {};
         allItems = this.getUIContext().getCollection().getAllItems();
