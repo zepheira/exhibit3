@@ -182,6 +182,7 @@ Exhibit.ListFacet._configure = function(facet, configuration) {
  *
  */
 Exhibit.ListFacet.prototype.dispose = function() {
+    this.getUIContext().getCollection().removeFacet(this);
     this._cache.dispose();
     this._cache = null;
     this._colorCoder = null;
