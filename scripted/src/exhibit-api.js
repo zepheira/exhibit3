@@ -360,6 +360,42 @@ Exhibit.includeCssFiles = function(doc, urlPrefix, filenames) {
 
 /**
  * @static
+ * @param {Object} scr
+ * @param {String} prefix
+ */
+Exhibit.includeScript = function(scr, prefix) {
+    if (typeof(prefix) === "undefined") {
+	prefix = Exhibit.urlPrefix;
+    }
+    if (Exhibit.loader === null) {
+	$LAB.setGlobalDefaults({
+		AlwaysPreserveOrder: true,
+		UseLocalXHR: false,
+		AllowDuplicates: false
+	    });
+	Exhibit.loader = $LAB.setOptions({"AlwaysPreserveOrder": true});
+    }
+
+    if (typeof(scr) === "string") {
+	if (scr.indexOf("/") !== 0 &&
+	    (scr.indexOf(":") <= 0 || scr.indexOf("//") <= 0)) {
+	    scr = prefix + scr;
+	}
+	Exhibit.loader = Exhibit.loader.script(scr);
+    } else if (typeof(scr) === "function") {
+	Exhibit.loader = Exhibit.loader.wait(scr);
+    } else {
+	if (Exhibit.Debug) {
+	    Exhibit.Debug.warn(Exhibit._("%general.error.unloadableScript",
+					 typeof(scr)));
+	} else {
+	    throw new Error("error loading scripts");
+	}
+    }
+};
+
+/**
+ * @static
  * @param {Document} doc
  * @param {String} urlPrefix
  * @param {Array} filenames
@@ -367,7 +403,7 @@ Exhibit.includeCssFiles = function(doc, urlPrefix, filenames) {
 Exhibit.includeJavascriptFiles = function(doc, urlPrefix, filenames) {
     var i;
     for (i = 0; i < filenames.length; i++) {
-        Exhibit.loader.script(urlPrefix + filenames[i]);
+        Exhibit.includeScript(filenames[i],urlPrefix);
     }
 };
 
@@ -447,10 +483,6 @@ Exhibit.load = function() {
         Exhibit.scripts = Exhibit.scripts.concat(Exhibit.params.backstage);
     }
 
-    if (Exhibit.params.autoCreate) {
-        Exhibit.scripts.push("scripts/create.js");
-    }
-
     if (typeof Exhibit.params.js === "object") {
         if (Exhibit.params.postLoad) {
             Exhibit.scripts = Exhibit.scripts.concat(Exhibit.params.js);
@@ -469,21 +501,14 @@ Exhibit.load = function() {
         docHead.appendChild(style);
     }
 
-    $LAB.setGlobalDefaults({
-        AlwaysPreserveOrder: true,
-        UseLocalXHR: false,
-        AllowDuplicates: false
-    });
-    Exhibit.loader = $LAB.setOptions({"AlwaysPreserveOrder": true});
-
     for (i in Exhibit._dependencies) {
         if (typeof Exhibit._dependencies[i] === "undefined") {
-            Exhibit.loader.script(Exhibit.urlPrefix + i);
+            Exhibit.includeScript(i);
         } else if (Exhibit._dependencies.hasOwnProperty(i)) {
             dep = Exhibit._dependencies[i].split(".");
             if (dep.length === 1) {
                 if (!Object.prototype.hasOwnProperty.call(window, dep[0])) {
-                    Exhibit.loader.script(Exhibit.urlPrefix + i);
+                    Exhibit.includeScript(i);
                 }
             } else {
                 for (j = 0; j < dep.length; j++) {
@@ -493,7 +518,7 @@ Exhibit.load = function() {
                     }
                     if (!o.hasOwnProperty(dep[j])) {
                         if (j === dep.length - 1) {
-                            Exhibit.loader.script(Exhibit.urlPrefix + i);
+                            Exhibit.includeScript(i);
                         } else {
                             break;
                         }
@@ -505,12 +530,7 @@ Exhibit.load = function() {
 
     scr = Exhibit.scripts;
     for (i = 0; i < scr.length; i++) {
-        if (scr[i].indexOf("/") === 0 ||
-            (scr[i].indexOf(":") > 0 && scr[i].indexOf("//") > 0)) {
-            Exhibit.loader.script(scr[i]);
-        } else {
-            Exhibit.loader.script(Exhibit.urlPrefix + scr[i]);
-        }
+	Exhibit.includeScript(scr[i]);
     }
 };
 
