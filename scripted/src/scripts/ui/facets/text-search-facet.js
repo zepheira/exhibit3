@@ -342,14 +342,14 @@ Exhibit.TextSearchFacet.prototype._onTimeout = function() {
  *
  */
 Exhibit.TextSearchFacet.prototype._buildMaps = function() {
-    var itemToValue, allItems, database, expressions, propertyIDs;
+    var itemToValue, allItems, database, propertyIDs,
+    expressions = this.getExpression() || []; 
     if (typeof this._itemToValue === "undefined") {
         itemToValue = {};
         allItems = this.getUIContext().getCollection().getAllItems();
         database = this.getUIContext().getDatabase();
         
-        if (this.getExpression().length > 0) {
-            expressions = this.getExpression();
+        if (expressions.length > 0) {
             allItems.visit(function(item) {
                 var values, x, expression;
                 values = [];
