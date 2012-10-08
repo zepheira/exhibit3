@@ -24,6 +24,7 @@ Exhibit.Localization.importLocale("en", {
     "%general.error.lensSelectorNotFunction": "lensSelector is not a function",
     "%general.error.lensSelectorExpressionNotFunction": "lensSelector expression %1$s is not a function",
     "%general.error.badLensSelectorExpression": "Bad lensSelector expression: %1$s",
+    "%general.error.dataloadExecution": "Could not run your ondataload function; consider using a jQuery event listener for 'dataload.exhibit' instead of embedding it in the document body.",
 
     "%lens.error.unknownLensType": "Unknown lens type: %1$s",
     "%lens.error.failedToLoad": "Failed to load view template from %1$s\n%2$s",
@@ -181,6 +182,7 @@ Exhibit.Localization.importLocale("en", {
     "%orderedViewFrame.error.orderObject": "Bad order object: %1$s",
     "%orderedViewFrame.error.possibleOrderExpression": "Bad possible order expression: %1$s",
     "%orderedViewFrame.error.possibleOrderObject": "Bad possible order object: %1$s",
+    "%orderedViewFrame.error.noSuchPropertyOrderWarning": "No such property %1$s available for ordering",
 
     "%widget.bookmark.tooltip": "Click to generate a bookmark for your current browsing state",
 

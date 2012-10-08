@@ -12,7 +12,7 @@
  */
 Exhibit.TimelineView = function(containerElmt, uiContext) {
     var view = this;
-    $.extend(this, new Exhibit.View(
+    Exhibit.jQuery.extend(this, new Exhibit.View(
         "time",
         containerElmt,
         uiContext
@@ -42,7 +42,7 @@ Exhibit.TimelineView = function(containerElmt, uiContext) {
         view._reconstruct(); 
     };
 
-    $(uiContext.getCollection().getElement()).bind(
+    Exhibit.jQuery(uiContext.getCollection().getElement()).bind(
         "onItemsChanged.exhibit",
         view._onItemsChanged
     );
@@ -153,7 +153,7 @@ Exhibit.TimelineView.create = function(configuration, containerElmt, uiContext) 
  * @returns {Exhibit.TimelineView}
  */
 Exhibit.TimelineView.createFromDOM = function(configElmt, containerElmt, uiContext) {
-    var configuraton, view;
+    var configuration, view;
     configuration = Exhibit.getConfigurationFromDOM(configElmt);
     view = new Exhibit.TimelineView(
         containerElmt !== null ? containerElmt : configElmt, 
@@ -190,7 +190,7 @@ Exhibit.TimelineView._configure = function(view, configuration) {
  *
  */
 Exhibit.TimelineView.prototype.dispose = function() {
-    $(this.getUIContext().getCollection().getElement()).unbind(
+    Exhibit.jQuery(this.getUIContext().getCollection().getElement()).unbind(
         "onItemsChanged.exhibit",
         this._onItemsChanged
     );
@@ -212,7 +212,7 @@ Exhibit.TimelineView.prototype.dispose = function() {
  *
  */
 Exhibit.TimelineView.prototype._internalValidate = function() {
-    var selectCoordinator;
+    var selectCoordinator, self;
     if (typeof this._accessors.getColorKey !== "undefined") {
         if (typeof this._settings.colorCoder !== "undefined") {
             this._colorCoder = this.getUIContext().getMain().getComponent(this._settings.colorCoder);
@@ -231,7 +231,7 @@ Exhibit.TimelineView.prototype._internalValidate = function() {
     if (typeof this._settings.selectCoordinator !== "undefined") {
         selectCoordinator = exhibit.getComponent(this._settings.selectCoordinator);
         if (selectCoordinator !== null) {
-            var self = this;
+            self = this;
             this._selectListener = selectCoordinator.addListener(function(o) {
                 self._select(o);
             });
@@ -249,13 +249,13 @@ Exhibit.TimelineView.prototype._initializeUI = function() {
     
     legendWidgetSettings.colorGradient = (this._colorCoder !== null && typeof this._colorCoder._gradientPoints !== "undefined");
     legendWidgetSettings.iconMarkerGenerator = function(iconURL) {
-        var elmt = $("<img>")
+        var elmt = Exhibit.jQuery("<img>")
             .attr("src", iconURL)
             .css("verticalAlign", "middle");
         return elmt.get(0);
-    }
+    };
     
-    $(this.getContainer()).empty();
+    Exhibit.jQuery(this.getContainer()).empty();
 
     this._dom = Exhibit.ViewUtilities.constructPlottingViewDom(
         this.getContainer(), 
@@ -294,7 +294,7 @@ Exhibit.TimelineView.prototype._reconstructTimeline = function(newEvents) {
     if (settings.timelineConstructor !== null) {
         this._timeline = settings.timelineConstructor(timelineDiv, this._eventSource);
     } else {
-        $(timelineDiv)
+        Exhibit.jQuery(timelineDiv)
             .css("height", settings.timelineHeight + "px")
             .attr("class", "exhibit-timelineView-timeline");
 
@@ -303,7 +303,7 @@ Exhibit.TimelineView.prototype._reconstructTimeline = function(newEvents) {
         theme.event.bubble.height = this.getUIContext().getSetting("bubbleHeight");
         
         if ((typeof settings.topBandUnit !== "undefined" && settings.topBandUnit !== null) || (typeof settings.bottomBandUnit !== "undefined" && settings.bottomBandUnit !== null)) {
-            if (Exhibit.TimelineView._intervalLabelMap === null) {
+            if (typeof Exhibit.TimelineView._intervalLabelMap === "undefined" || Exhibit.TimelineView._intervalLabelMap === null) {
                 Exhibit.TimelineView._intervalLabelMap = {
                     "millisecond":      Exhibit.DateTime.MILLISECOND,
                     "second":           Exhibit.DateTime.SECOND,
@@ -383,7 +383,7 @@ Exhibit.TimelineView.prototype._reconstructTimeline = function(newEvents) {
         if (self._selectListener !== null) {
             self._selectListener.fire({ itemIDs: [ eventID ] });
         }
-    }
+    };
     for (i = 0; i < this._timeline.getBandCount(); i++) {
         this._timeline.getBand(i).getEventPainter().addOnSelectListener(listener);
     }
@@ -451,7 +451,11 @@ Exhibit.TimelineView.prototype._reconstruct = function() {
         currentSet.visit(function(itemID) {
             var durations, color, icon, hoverText, colorKeys, iconKeys, hoverKeys, i;
             durations = [];
-            self._getDuration(itemID, database, function(duration) { if (typeof duration.start !== "undefined") durations.push(duration); });
+            self._getDuration(itemID, database, function(duration) {
+                if (typeof duration.start !== "undefined") {
+                    durations.push(duration);
+                }
+            });
 
             if (durations.length > 0) {
                 color = null;
@@ -531,7 +535,7 @@ Exhibit.TimelineView.prototype._reconstruct = function() {
             legendWidget = this._dom.legendWidget;
             iconCoder = this._iconCoder;
             keys = iconCodingFlags.keys.toArray().sort();    
-            if (settings.iconLegendLabel !== null) {
+            if (typeof settings.iconLegendLabel !== "undefined" && settings.iconLegendLabel !== null) {
                 legendWidget.addLegendLabel(settings.iconLegendLabel, 'icon');
             }
             for (k = 0; k < keys.length; k++) {
@@ -596,5 +600,5 @@ Exhibit.TimelineView.prototype._select = function(selection) {
  * @param {Object} [labeller] Ignored.
  */
 Exhibit.TimelineView.prototype._fillInfoBubble = function(evt, elmt, theme, labeller) {
-    this.getUIContext().getLensRegistry().createLens(evt._itemID, $(elmt), this.getUIContext());
+    this.getUIContext().getLensRegistry().createLens(evt._itemID, Exhibit.jQuery(elmt), this.getUIContext());
 };

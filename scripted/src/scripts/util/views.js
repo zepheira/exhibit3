@@ -17,14 +17,14 @@ Exhibit.ViewUtilities = {};
  */
 Exhibit.ViewUtilities.openBubbleForItems = function(anchorElmt, arrayOfItemIDs, uiContext) {
     var coords, bubble;
-    coords = $(anchorElmt).offset();
-    bubble = $.simileBubble("createBubbleForPoint",
+    coords = Exhibit.jQuery(anchorElmt).offset();
+    bubble = Exhibit.jQuery.simileBubble("createBubbleForPoint",
         coords.left + Math.round(anchorElmt.offsetWidth / 2), 
         coords.top + Math.round(anchorElmt.offsetHeight / 2), 
         uiContext.getSetting("bubbleWidth"), // px
         uiContext.getSetting("bubbleHeight") // px
     );
-    Exhibit.ViewUtilities.fillBubbleWithItems(bubble.content, arrayOfItemIDs, uiContext);
+    Exhibit.ViewUtilities.fillBubbleWithItems(bubble.content, arrayOfItemIDs, null, uiContext);
 };
 
 /**
@@ -32,36 +32,39 @@ Exhibit.ViewUtilities.openBubbleForItems = function(anchorElmt, arrayOfItemIDs, 
  * @static
  * @param {Element} bubbleElmt
  * @param {Array} arrayOfItemIDs
+ * @param {Exhibit.Expression._Impl} labelExpression
  * @param {Exhibit.UIContext} uiContext
  * @returns {Element}
  */
-Exhibit.ViewUtilities.fillBubbleWithItems = function(bubbleElmt, arrayOfItemIDs, uiContext) {
-    var ul, i, itemLensDiv, itemLens;
+Exhibit.ViewUtilities.fillBubbleWithItems = function(bubbleElmt, arrayOfItemIDs, labelExpression, uiContext) {
+    var ul, i, makeItem, itemLensDiv, itemLens;
     if (typeof bubbleElmt === "undefined" || bubbleElmt === null) {
-        bubbleElmt = $("<div>");
+        bubbleElmt = Exhibit.jQuery("<div>");
     }
     
     if (arrayOfItemIDs.length > 1) {
-        $(bubbleElmt).addClass("exhibit-views-bubbleWithItems");
+        Exhibit.jQuery(bubbleElmt).addClass("exhibit-views-bubbleWithItems");
         
-        ul = $("<ul>");
+        ul = Exhibit.jQuery("<ul>");
         makeItem = function(elmt) {
-            $("<li>")
+            Exhibit.jQuery("<li>")
                 .append(elmt)
                 .appendTo(ul);
-                
         };
+        if (typeof labelExpression !== "undefined" && labelExpression !== null) {
+            uiContext.putSetting("format/item/title", labelExpression);
+        }
         for (i = 0; i < arrayOfItemIDs.length; i++) {
             uiContext.format(arrayOfItemIDs[i], "item", makeItem);
         }
-        $(bubbleElmt).append(ul);
+        Exhibit.jQuery(bubbleElmt).append(ul);
     } else {
-        itemLensDiv = $("<div>").get(0);
+        itemLensDiv = Exhibit.jQuery("<div>").get(0);
         itemLens = uiContext.getLensRegistry().createLens(arrayOfItemIDs[0], itemLensDiv, uiContext);
-        $(bubbleElmt).append(itemLensDiv);
+        Exhibit.jQuery(bubbleElmt).append(itemLensDiv);
     }
     
-    return $(bubbleElmt).get(0);
+    return Exhibit.jQuery(bubbleElmt).get(0);
 };
 
 /**
@@ -74,13 +77,13 @@ Exhibit.ViewUtilities.fillBubbleWithItems = function(bubbleElmt, arrayOfItemIDs,
  * @returns {Object}
  */
 Exhibit.ViewUtilities.constructPlottingViewDom = function(
-    div, 
+    div,
     uiContext, 
     showSummary,
     resizableDivWidgetSettings, 
     legendWidgetSettings
 ) { 
-    var dom = $.simileDOM("string",
+    var dom = Exhibit.jQuery.simileDOM("string",
         div,
         '<div class="exhibit-views-header">' +
             (showSummary ? '<div id="collectionSummaryDiv"></div>' : "") +
@@ -106,15 +109,15 @@ Exhibit.ViewUtilities.constructPlottingViewDom = function(
     );
     dom.plotContainer = dom.resizableDivWidget.getContentDiv();
     
+    dom.legendWidget = Exhibit.LegendWidget.create(
+        legendWidgetSettings,
+        dom.legendDiv, 
+        uiContext
+    );
+
     if (legendWidgetSettings.colorGradient === true) {
         dom.legendGradientWidget = Exhibit.LegendGradientWidget.create(
             dom.legendDiv,
-            uiContext
-        );
-    } else {
-        dom.legendWidget = Exhibit.LegendWidget.create(
-            legendWidgetSettings,
-            dom.legendDiv, 
             uiContext
         );
     }
@@ -144,19 +147,19 @@ Exhibit.ViewUtilities._setUnplottableMessage = function(dom, totalCount, unplott
     var div;
     div = dom.unplottableMessageDiv;
     if (unplottableItems.length === 0) {
-        $(div).hide();
+        Exhibit.jQuery(div).hide();
     } else {
-        $(div).empty();
+        Exhibit.jQuery(div).empty();
     
-        dom = $.simileDOM("string",
+        dom = Exhibit.jQuery.simileDOM("string",
             div,
             Exhibit.ViewUtilities.unplottableMessageFormatter(totalCount, unplottableItems),
             {}
         );
-        $(dom.unplottableCountLink).bind("click", function(evt) {
+        Exhibit.jQuery(dom.unplottableCountLink).bind("click", function(evt) {
             Exhibit.ViewUtilities.openBubbleForItems(evt.target, unplottableItems, uiContext);
         });
-        $(div).show();
+        Exhibit.jQuery(div).show();
     }
 };
 
@@ -206,5 +209,5 @@ Exhibit.ViewUtilities.makePagingActionTitle = function(index) {
  * @returns {String}
  */
 Exhibit.ViewUtilities.makePagingLinkTooltip = function(index) {
-    return Exhibit._("%orderedViewFrame.pagingActionTooltip", index + 1);
+    return Exhibit._("%orderedViewFrame.pagingLinkTooltip", index + 1);
 };

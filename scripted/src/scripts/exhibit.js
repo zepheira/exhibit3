@@ -5,12 +5,71 @@
  */
 
 /**
+ * Starting using Exhibit.jQuery instead of jQuery or $
+ */
+(function() {
+    Exhibit.jQuery = jQuery;
+    if (!Exhibit._jQueryExists) {
+        jQuery.noConflict();
+    }
+}());
+
+/**
  * @static
  * @param {Exhibit.Database} database
  * @returns {Exhibit._Impl}
  */
 Exhibit.create = function(database) {
     return new Exhibit._Impl(database);
+};
+
+/**
+ * Code to automatically create the database, load the data links in
+ * <head>, and then to create an exhibit if there's no Exhibit ondataload 
+ * attribute on the body element.
+ *
+ * You can avoid running this code by adding the URL parameter
+ * autoCreate=false when you include exhibit-api.js.
+ * @public
+ * @see Exhibit.Database._LocalImpl.prototype._loadLinks
+ */
+Exhibit.autoCreate = function() {
+    var s, f, fDone;
+
+    fDone = function() {
+        window.exhibit = Exhibit.create();
+        window.exhibit.configureFromDOM();
+        // The semantics of dataload indicate it should wholly replace the
+        // Exhibit initialization steps above; but if autoCreate is true,
+        // perhaps it should run in parallel with them or be fired after
+        // them.  It's unclear how widespread this is and how useful one
+        // alternative is over the other.  If in the future the below block
+        // is eliminated as it should be, wholesale replacement of this fDone
+        // would currently not be possible.
+    };
+
+    try {
+        // Using functions embedded in elements is bad practice and support for
+        // it may disappear in the future.  Convert instances of this usage to
+        // attach to the dataload.exhibit event triggered on your own, as this
+        // now does (see line below this try-catch block).
+        s = Exhibit.getAttribute(document.body, "ondataload");
+        if (s !== null && typeof s === "string" && s.length > 0) {
+            // eval is evil, which is why this is going to disappear.
+            f = eval(s);
+            if (typeof f === "function") {
+                fDone = f;
+            }
+        }
+    } catch (e) {
+        Exhibit.Debug.warn(Exhibit._("%general.error.dataloadExecution"));
+        Exhibit.Debug.warn(e);
+    }
+
+    Exhibit.jQuery(document.body).one("dataload.exhibit", fDone);
+
+    window.database = Exhibit.Database.create();
+    window.database.loadLinks();
 };
 
 /**
@@ -23,8 +82,8 @@ Exhibit.create = function(database) {
  */
 Exhibit.checkBackwardsCompatibility = function() {
     var exroles;
-    exroles = $("*").filter(function() {
-        return typeof $(this).attr("ex:role") !== "undefined";
+    exroles = Exhibit.jQuery("*").filter(function() {
+        return typeof Exhibit.jQuery(this).attr("ex:role") !== "undefined";
     });
     if (exroles.length > 0) {
         Exhibit.Backwards.enable("Attributes");
@@ -47,12 +106,15 @@ Exhibit.getAttribute = function(elmt, name, splitOn) {
     var value, i, values;
 
     try {
-        value = $(elmt).attr(name);
+        value = Exhibit.jQuery(elmt).attr(name);
         if (typeof value === "undefined" || value === null || value.length === 0) {
-            value = $(elmt).data("ex-"+name);
+            value = Exhibit.jQuery(elmt).data("ex-"+name);
             if (typeof value === "undefined" || value === null || value.length === 0) {
                 return null;
             }
+        }
+        if (typeof value.toString !== "undefined") {
+            value = value.toString();
         }
         if (typeof splitOn === "undefined" || splitOn === null) {
             return value;
@@ -152,7 +214,7 @@ Exhibit.getConfigurationFromDOM = function(elmt) {
 Exhibit.extractOptionsFromElement = function(elmt) {
     var opts, dataset, i;
     opts = {};
-    dataset = $(elmt).data();
+    dataset = Exhibit.jQuery(elmt).data();
     for (i in dataset) {
         if (dataset.hasOwnProperty(i)) {
             if (i.startsWith("ex")) {
@@ -174,13 +236,13 @@ Exhibit.extractOptionsFromElement = function(elmt) {
 Exhibit._Impl = function(database) {
     this._database = (database !== null && typeof database !== "undefined") ? 
         database : 
-        (typeof window["database"] !== "undefined" ?
+        (typeof window.database !== "undefined" ?
             window.database :
             Exhibit.Database.create());
             
     this._uiContext = Exhibit.UIContext.createRootContext({}, this);
     this._registry = new Exhibit.Registry();
-    $(document).trigger("registerComponents.exhibit", this._registry);
+    Exhibit.jQuery(document).trigger("registerComponents.exhibit", this._registry);
     this._collectionMap = {};
 };
 
@@ -284,8 +346,8 @@ Exhibit._Impl.prototype.getComponent = function(id) {
  * @param {Object} configuration
  */
 Exhibit._Impl.prototype.configure = function(configuration) {
-    var i, config, id;
-    if (typeof configuration["collections"] !== "undefined") {
+    var i, config, id, component;
+    if (typeof configuration.collections !== "undefined") {
         for (i = 0; i < configuration.collections.length; i++) {
             config = configuration.collections[i];
             id = config.id;
@@ -295,7 +357,7 @@ Exhibit._Impl.prototype.configure = function(configuration) {
             this.setCollection(id, Exhibit.Collection.create2(id, config, this._uiContext));
         }
     }
-    if (typeof configuration["components"] !== "undefined") {
+    if (typeof configuration.components !== "undefined") {
         for (i = 0; i < configuration.components.length; i++) {
             config = configuration.components[i];
             component = Exhibit.UI.create(config, config.elmt, this._uiContext);
@@ -309,7 +371,7 @@ Exhibit._Impl.prototype.configure = function(configuration) {
  *                      (defaults to document.body, when none provided)
  */
 Exhibit._Impl.prototype.configureFromDOM = function(root) {
-    var controlPanelElmts, collectionElmts, coderElmts, coordinatorElmts, lensElmts, facetElmts, otherElmts, f, uiContext, i, elmt, id, self, processElmts, exporters, expr, exporter, hash, itemID;
+    var controlPanelElmts, collectionElmts, coderElmts, coordinatorElmts, lensElmts, facetElmts, otherElmts, f, uiContext, i, elmt, id, self, processElmts, panel, exporters, expr, exporter, hash, itemID;
 
     collectionElmts = [];
     coderElmts = [];
@@ -377,7 +439,7 @@ Exhibit._Impl.prototype.configureFromDOM = function(root) {
 
     if (controlPanelElmts.length === 0) {
         panel = Exhibit.ControlPanel.createFromDOM(
-            $("<div>").prependTo(document.body),
+            Exhibit.jQuery("<div>").prependTo(document.body),
             null,
             uiContext
         );
@@ -420,7 +482,7 @@ Exhibit._Impl.prototype.configureFromDOM = function(root) {
             this._showFocusDialogOnItem(itemID);
         }
     }
-    $(document).trigger("exhibitConfigured.exhibit", this);
+    Exhibit.jQuery(document).trigger("exhibitConfigured.exhibit", this);
 };
 
 /**
@@ -429,7 +491,7 @@ Exhibit._Impl.prototype.configureFromDOM = function(root) {
  */
 Exhibit._Impl.prototype._showFocusDialogOnItem = function(itemID) {
     var dom, itemLens;
-    dom = $.simileDOM("string",
+    dom = Exhibit.jQuery.simileDOM("string",
         "div",
         "<div class='exhibit-focusDialog-viewContainer' id='lensContainer'>" +
         "</div>" +
@@ -439,16 +501,16 @@ Exhibit._Impl.prototype._showFocusDialogOnItem = function(itemID) {
             "</button>" +
         "</div>"
     );
-    $(dom.elmt).attr("class", "exhibit-focusDialog exhibit-ui-protection");
+    Exhibit.jQuery(dom.elmt).attr("class", "exhibit-focusDialog exhibit-ui-protection");
     Exhibit.UI.setupDialog(dom, true);
     
     itemLens = this._uiContext.getLensRegistry().createLens(itemID, dom.lensContainer, this._uiContext);
     
-    $(dom.elmt).css("top", (document.body.scrollTop + 100) + "px");
-    $(document.body).append($(dom.elmt));
-    $(document).trigger("modalSuperseded.exhibit");
+    Exhibit.jQuery(dom.elmt).css("top", (document.body.scrollTop + 100) + "px");
+    Exhibit.jQuery(document.body).append(Exhibit.jQuery(dom.elmt));
+    Exhibit.jQuery(document).trigger("modalSuperseded.exhibit");
 
-    $(dom.closeButton).bind("click", function(evt) {
+    Exhibit.jQuery(dom.closeButton).bind("click", function(evt) {
         dom.close();
     });
 };

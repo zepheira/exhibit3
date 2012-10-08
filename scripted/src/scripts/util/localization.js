@@ -46,7 +46,7 @@ Exhibit._ = function() {
     if (args.length > 0) {
         key = args.shift();
         s = Exhibit.Localization.lookup(key);
-        if (typeof s !== "undefined") {
+        if (typeof s !== "undefined" &&  typeof s !== "object") {
             return vsprintf(s, args);
         } else {
             return s;
@@ -104,7 +104,7 @@ Exhibit.Localization._registerComponent = function(evt, reg) {
 
     if (!reg.hasRegistry(Exhibit.Localization._registryKey)) {
         reg.createRegistry(Exhibit.Localization._registryKey);
-        $(document).trigger("registerLocales.exhibit");
+        Exhibit.jQuery(document).trigger("registerLocales.exhibit");
     }
 };
 
@@ -123,7 +123,7 @@ Exhibit.Localization.registerLocale = function(locale, l10n) {
             locale,
             l10n
         );
-        $(document).trigger("localeRegistered.exhibit");
+        Exhibit.jQuery(document).trigger("localeRegistered.exhibit");
         return true;
     } else {
         return false;
@@ -170,7 +170,7 @@ Exhibit.Localization.setLocale = function(locales) {
         }
     }
 
-    $(document).trigger(
+    Exhibit.jQuery(document).trigger(
         "localeSet.exhibit",
         [urls]
     );
@@ -211,7 +211,7 @@ Exhibit.Localization.getLoadableLocales = function(possibles) {
 Exhibit.Localization.importLocale = function(locale, hash) {
     if (typeof Exhibit.l10n[locale] === "undefined") {
         Exhibit.l10n[locale] = hash;
-        $(document).trigger("localeLoaded.exhibit", [locale]);
+        Exhibit.jQuery(document).trigger("localeLoaded.exhibit", [locale]);
     }
 };
 
@@ -222,19 +222,40 @@ Exhibit.Localization.importLocale = function(locale, hash) {
  */
 Exhibit.Localization.importExtensionLocale = function(locale, hash) {
     if (typeof Exhibit.l10n[locale] !== "undefined") {
-        $.extend(Exhibit.l10n[locale], hash);
+        Exhibit.jQuery.extend(Exhibit.l10n[locale], hash);
     } else {
         Exhibit.l10n[locale] = hash;
     }
 };
 
 /**
+ * Decodes UTF-8 strings or arrays of strings to output in HTML
+ * @param {String|Array} s A string or array of strings to decode for HTML
+ * @returns {String}
+ */
+Exhibit.Localization.decodeUTF8 = function(s) {
+    var r, i;
+    if (typeof s === "string") {
+        r = Exhibit.Localization._decodeUTF8(s);
+    } else if (typeof s === "object") {
+        r = new Array(s.length);
+        for (i = 0; i < s.length; i++) {
+            r[i] = Exhibit.Localization._decodeUTF8(s[i]);
+        }
+    } else {
+        r = s;
+    }
+    return r;
+};
+
+/**
  * Decodes UTF-8 strings to output in HTML
+ * @private
  * @param {String} s
  * @returns {String}
  * @see http://ecmanaut.blogspot.com/2006/07/encoding-decoding-utf8-in-javascript.html
  */
-Exhibit.Localization.decodeUTF8 = function(s) {
+Exhibit.Localization._decodeUTF8 = function(s) {
     var r;
     try {
         r = decodeURIComponent(escape(s));
@@ -248,7 +269,7 @@ Exhibit.Localization.decodeUTF8 = function(s) {
  * Looks up a key in the set of localization and returns the corresponding
  * message; may return undefined if not found.
  * @param {String} key
- * @returns {String}
+ * @returns {String|Array}
  */
 Exhibit.Localization.lookup = function(key) {
     var i, locale;
@@ -263,12 +284,12 @@ Exhibit.Localization.lookup = function(key) {
     return undefined;
 };
 
-$(document).one(
+Exhibit.jQuery(document).one(
     "registerLocalization.exhibit",
     Exhibit.Localization._registerComponent
 );
 
-$(document).bind(
+Exhibit.jQuery(document).bind(
     "localesRegistered.exhibit",
     function() {
         Exhibit.Localization.setLocale(Exhibit.locales);

@@ -7,11 +7,16 @@
 /**
  * @constructor
  * @class
+ * @param {Element|jQuery} containerElmt
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.ColorGradientCoder = function(uiContext) {
-    this._uiContext = uiContext;
-    this._settings = {};
+Exhibit.ColorGradientCoder = function(containerElmt, uiContext) {
+    Exhibit.jQuery.extend(this, new Exhibit.Coder(
+        "colorgradient",
+        containerElmt,
+        uiContext
+    ));
+    this.addSettingSpecs(Exhibit.ColorGradientCoder._settingSpecs);
     
     this._gradientPoints = [];
     this._mixedCase = { 
@@ -26,8 +31,13 @@ Exhibit.ColorGradientCoder = function(uiContext) {
         "label": Exhibit._("%coders.othersCaseLabel"),
         "color": Exhibit.Coders.othersCaseColor 
     };
+
+    this.register();
 };
 
+/**
+ * @constant
+ */
 Exhibit.ColorGradientCoder._settingSpecs = {
 };
 
@@ -37,7 +47,14 @@ Exhibit.ColorGradientCoder._settingSpecs = {
  * @returns {Exhibit.ColorGradientCoder}
  */
 Exhibit.ColorGradientCoder.create = function(configuration, uiContext) {
-    var coder = new Exhibit.ColorGradientCoder(Exhibit.UIContext.create(configuration, uiContext));
+    var div, coder;
+    div = Exhibit.jQuery("<div>")
+        .hide()
+        .appendTo("body");
+    coder = new Exhibit.ColorGradientCoder(
+        div,
+        Exhibit.UIContext.create(configuration, uiContext)
+    );
     
     Exhibit.ColorGradientCoder._configure(coder, configuration);
     return coder;
@@ -51,12 +68,19 @@ Exhibit.ColorGradientCoder.create = function(configuration, uiContext) {
 Exhibit.ColorGradientCoder.createFromDOM = function(configElmt, uiContext) {
     var configuration, coder, gradientPoints, i, point, value, colorIndex, red, green, blue;
 
-    $(configElmt).hide();
+    Exhibit.jQuery(configElmt).hide();
     
     configuration = Exhibit.getConfigurationFromDOM(configElmt);
-    coder = new Exhibit.ColorGradientCoder(Exhibit.UIContext.create(configuration, uiContext));
+    coder = new Exhibit.ColorGradientCoder(
+        configElmt,
+        Exhibit.UIContext.create(configuration, uiContext)
+    );
     
-    Exhibit.SettingsUtilities.collectSettingsFromDOM(configElmt, Exhibit.ColorGradientCoder._settingSpecs, coder._settings);
+    Exhibit.SettingsUtilities.collectSettingsFromDOM(
+        configElmt,
+        coder.getSettingSpecs(),
+        coder._settings
+    );
     
     try {
 		gradientPoints = Exhibit.getAttribute(configElmt, "gradientPoints", ";");
@@ -70,10 +94,10 @@ Exhibit.ColorGradientCoder.createFromDOM = function(configElmt, uiContext) {
 			coder._gradientPoints.push({ value: value, red: red, green: green, blue: blue });
 		}
 		
-        $(configElmt).children().each(function(index, elmt) {
+        Exhibit.jQuery(configElmt).children().each(function(index, elmt) {
             coder._addEntry(
                 Exhibit.getAttribute(this,  "case"),
-                $(this).text().trim(),
+                Exhibit.jQuery(this).text().trim(),
                 Exhibit.getAttribute(this, "color")
             );
         });
@@ -91,7 +115,11 @@ Exhibit.ColorGradientCoder.createFromDOM = function(configElmt, uiContext) {
  */
 Exhibit.ColorGradientCoder._configure = function(coder, configuration) {
     var entries, i;
-    Exhibit.SettingsUtilities.collectSettings(configuration, Exhibit.ColorGradientCoder._settingSpecs, coder._settings);
+    Exhibit.SettingsUtilities.collectSettings(
+        configuration,
+        coder.getSettingSpecs(),
+        coder._settings
+    );
     
     if (typeof configuration.entries !== "undefined") {
         entries = configuration.entries;
@@ -105,8 +133,8 @@ Exhibit.ColorGradientCoder._configure = function(coder, configuration) {
  *
  */
 Exhibit.ColorGradientCoder.prototype.dispose = function() {
-    this._uiContext = null;
-    this._settings = null;
+    this._gradientPoints = null;
+    this._dispose();
 };
 
 /**

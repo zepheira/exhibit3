@@ -24,18 +24,14 @@ Exhibit.UIContext = function() {
     this._editModeRegistry = {};
     
     this._popupFunc = null;
+};
 
-    this._settingSpecs = {
-        "bubbleWidth": { type: "int" },
-        "bubbleHeight": { type: "int" }
-    };
-
-    // This used to be localized but it is unclear as to why; moving it
-    // here.
-    this.initialSettings = {
-        "bubbleWidth": 400,
-        "bubbleHeight": 300
-    };
+/**
+ * @constant
+ */
+Exhibit.UIContext._settingSpecs = {
+    "bubbleWidth": { "type": "int", "defaultValue": 400 },
+    "bubbleHeight": { "type": "int", "defaultValue": 300 }
 };
 
 /**
@@ -319,7 +315,7 @@ Exhibit.UIContext.registerLens = function(configuration, lensRegistry) {
 Exhibit.UIContext.registerLensFromDOM = function(elmt, lensRegistry) {
     var itemTypes, template, url, id, elmt2, i;
 
-    $(elmt).hide();
+    Exhibit.jQuery(elmt).hide();
     
     itemTypes = Exhibit.getAttribute(elmt, "itemTypes", ",");
     template = null;
@@ -376,7 +372,7 @@ Exhibit.UIContext.registerLenses = function(configuration, lensRegistry) {
 Exhibit.UIContext.registerLensesFromDOM = function(parentNode, lensRegistry) {
     var node, role, lensSelectorString, lensSelector;
 
-    node = $(parentNode).children().get(0);
+    node = Exhibit.jQuery(parentNode).children().get(0);
     while (typeof node !== "undefined" && node !== null) {
         if (node.nodeType === 1) {
             role = Exhibit.getRoleAttribute(node);

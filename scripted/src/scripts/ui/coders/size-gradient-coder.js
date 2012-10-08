@@ -7,12 +7,17 @@
 /**
  * @class
  * @constructor
+ * @param {Element|jQuery} containerElmt
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.SizeGradientCoder = function(uiContext) {
-    this._uiContext = uiContext;
-    this._settings = {};
-    
+Exhibit.SizeGradientCoder = function(containerElmt, uiContext) {
+    Exhibit.jQuery.extend(this, new Exhibit.Coder(
+        "sizegradient",
+        containerElmt,
+        uiContext
+    ));
+    this.addSettingSpecs(Exhibit.SizeGradientCoder._settingSpecs);
+
     this._log = { 
         func: function(size) { return Math.ceil(Math.log(size)); },
         invFunc: function(size) { return Math.ceil(Math.exp(size)); }
@@ -45,8 +50,12 @@ Exhibit.SizeGradientCoder = function(uiContext) {
         "label": Exhibit._("%coders.othersCaseLabel"),
         "size": 20
     };
+    this.register();
 };
 
+/**
+ * @constant
+ */
 Exhibit.SizeGradientCoder._settingSpecs = {
 };
 
@@ -56,7 +65,14 @@ Exhibit.SizeGradientCoder._settingSpecs = {
  * @param {Exhibit.SizeGradientCoder}
  */
 Exhibit.SizeGradientCoder.create = function(configuration, uiContext) {
-    var coder = new Exhibit.SizeGradientCoder(Exhibit.UIContext.create(configuration, uiContext));
+    var coder, div;
+    div = Exhibit.jQuery("<div>")
+        .hide()
+        .appendTo("body");
+    coder = new Exhibit.SizeGradientCoder(
+        div,
+        Exhibit.UIContext.create(configuration, uiContext)
+    );
     
     Exhibit.SizeGradientCoder._configure(coder, configuration);
     return coder;
@@ -70,12 +86,15 @@ Exhibit.SizeGradientCoder.create = function(configuration, uiContext) {
 Exhibit.SizeGradientCoder.createFromDOM = function(configElmt, uiContext) {
     var configuration, coder, markerScale, gradientPoints, i, point, value, size;
 
-    $(configElmt).hide();
+    Exhibit.jQuery(configElmt).hide();
     
     configuration = Exhibit.getConfigurationFromDOM(configElmt);
-    coder = new Exhibit.SizeGradientCoder(Exhibit.UIContext.create(configuration, uiContext));
+    coder = new Exhibit.SizeGradientCoder(configElmt, Exhibit.UIContext.create(configuration, uiContext));
     
-    Exhibit.SettingsUtilities.collectSettingsFromDOM(configElmt, Exhibit.SizeGradientCoder._settingSpecs, coder._settings);
+    Exhibit.SettingsUtilities.collectSettingsFromDOM(
+        configElmt,
+        coder.getSettingSpecs(),
+        coder._settings);
     
     try {
 		markerScale = coder._settings.markerScale; 
@@ -91,10 +110,10 @@ Exhibit.SizeGradientCoder.createFromDOM = function(configElmt, uiContext) {
 			coder._gradientPoints.push({ value: value, size: size});
 		}
 		
-        $(configElmt).children().each(function(index, elmt) {
+        Exhibit.jQuery(configElmt).children().each(function(index, elmt) {
             coder._addEntry(
                 Exhibit.getAttribute(this,  "case"),
-                $(this).text().trim(),
+                Exhibit.jQuery(this).text().trim(),
                 Exhibit.getAttribute(this, "size")
             );
         });
@@ -113,7 +132,10 @@ Exhibit.SizeGradientCoder.createFromDOM = function(configElmt, uiContext) {
 Exhibit.SizeGradientCoder._configure = function(coder, configuration) {
     var entries, i;
 
-    Exhibit.SettingsUtilities.collectSettings(configuration, Exhibit.SizeGradientCoder._settingSpecs, coder._settings);
+    Exhibit.SettingsUtilities.collectSettings(
+        configuration,
+        coder.getSettingSpecs(),
+        coder._settings);
     
     if (typeof configuration.entries !== "undefined") {
         entries = configuration.entries;
@@ -127,8 +149,8 @@ Exhibit.SizeGradientCoder._configure = function(coder, configuration) {
  *
  */
 Exhibit.SizeGradientCoder.prototype.dispose = function() {
-    this._uiContext = null;
-    this._settings = null;
+    this._gradientPoints = null;
+    this._dispose();
 };
 
 /**

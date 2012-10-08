@@ -11,7 +11,7 @@
  * @param {Exhibit.UIContext} uiContext
  */
 Exhibit.View = function(key, div, uiContext) {
-    var self, _id, _instanceKey, _toolbox, _label, _viewPanel, _settingSpecs, _div, _uiContext, _registered, _setIdentifier;
+    var self, _id, _instanceKey, _toolbox, _label, _viewPanel, _div, _uiContext, _registered, _setIdentifier;
 
     /**
      * @private
@@ -31,7 +31,7 @@ Exhibit.View = function(key, div, uiContext) {
     /**
      * @private
      */
-    _div = $(div);
+    _div = Exhibit.jQuery(div);
 
     /**
      * @private
@@ -59,9 +59,9 @@ Exhibit.View = function(key, div, uiContext) {
     _viewPanel = null;
 
     /**
-     * @private
+     * @public
      */
-    _settingSpecs = {};
+    this._settingSpecs = {};
 
     /**
      * @public
@@ -105,7 +105,7 @@ Exhibit.View = function(key, div, uiContext) {
      * @param {Object} specs
      */
     this.addSettingSpecs = function(specs) {
-        $.extend(true, _settingSpecs, specs);
+        Exhibit.jQuery.extend(true, this._settingSpecs, specs);
     };
     
     /**
@@ -113,7 +113,7 @@ Exhibit.View = function(key, div, uiContext) {
      * @returns {Object}
      */
     this.getSettingSpecs = function() {
-        return _settingSpecs;
+        return this._settingSpecs;
     };
 
     /**
@@ -194,14 +194,14 @@ Exhibit.View = function(key, div, uiContext) {
     this._dispose = function() {
         _viewPanel = null;
         _label = null;
-        _settingSpecs = null;
+        this._settingSpecs = null;
         if (_toolbox !== null) {
             _toolbox.dispose();
         }
         _toolbox = null;
         this._settings = null;
 
-        $(_div).empty();
+        Exhibit.jQuery(_div).empty();
         _div = null;
 
         this.unregister();
@@ -212,7 +212,7 @@ Exhibit.View = function(key, div, uiContext) {
      * @private
      */
     _setIdentifier = function() {
-        _id = $(_div).attr("id");
+        _id = Exhibit.jQuery(_div).attr("id");
         if (typeof _id === "undefined" || _id === null) {
             _id = _instanceKey
                 + "-"
@@ -272,7 +272,7 @@ Exhibit.View.getRegistryKey = function() {
 
 /**
  * @static
- * @private
+ * @public
  * @param {jQuery.Event} evt
  * @param {Exhibit.Registry} reg
  */
@@ -281,6 +281,7 @@ Exhibit.View.registerComponent = function(evt, reg) {
         reg.createRegistry(Exhibit.View.getRegistryKey());
     }
 };
+
 
 /**
  * @static
@@ -301,7 +302,7 @@ Exhibit.View.addViewState = function(id, state) {
             };
             Exhibit.History.replaceState(fullState.data);
         } else {
-            $(document).trigger(
+            Exhibit.jQuery(document).trigger(
                 "importReady.exhibit",
                 [Exhibit.View.getRegistryKey(), id]
             );
@@ -309,7 +310,7 @@ Exhibit.View.addViewState = function(id, state) {
     }
 };
 
-$(document).one(
+Exhibit.jQuery(document).one(
     "registerComponents.exhibit",
     Exhibit.View.registerComponent
 );

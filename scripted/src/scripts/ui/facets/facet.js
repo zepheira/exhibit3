@@ -11,7 +11,7 @@
  * @param {Exhibit.UIContext} uiContext
  */
 Exhibit.Facet = function(key, div, uiContext) {
-    var self, _id, _instanceKey, _div, _uiContext, _registered, _expression, _expressionString, _settingspecs, _setIdentifier;
+    var self, _id, _instanceKey, _div, _uiContext, _registered, _expression, _expressionString, _setIdentifier;
 
     /**
      * @private
@@ -31,7 +31,7 @@ Exhibit.Facet = function(key, div, uiContext) {
     /**
      * @private
      */
-    _div = $(div);
+    _div = Exhibit.jQuery(div);
 
     /**
      * @private
@@ -54,9 +54,9 @@ Exhibit.Facet = function(key, div, uiContext) {
     _expressionString = "";
 
     /**
-     * @private
+     * @public
      */
-    _settingSpecs = {};
+    this._settingSpecs = {};
 
     /**
      * @public
@@ -113,7 +113,7 @@ Exhibit.Facet = function(key, div, uiContext) {
      * @param {Object} specs
      */
     this.addSettingSpecs = function(specs) {
-        $.extend(true, _settingSpecs, specs);
+        Exhibit.jQuery.extend(true, this._settingSpecs, specs);
     };
 
     /**
@@ -121,7 +121,7 @@ Exhibit.Facet = function(key, div, uiContext) {
      * @returns {Object}
      */
     this.getSettingSpecs = function() {
-        return _settingSpecs;
+        return this._settingSpecs;
     };
 
     /**
@@ -179,9 +179,13 @@ Exhibit.Facet = function(key, div, uiContext) {
     /**
      * Free up all references to objects, empty related elements, unregister.
      */
-    this._dispose = function() {
-        $(_div).empty();
+    this.dispose = function() {
+        Exhibit.jQuery(_div).empty();
         this.getUIContext().getCollection().removeFacet(this);
+        // if instance defines _dispose for localized material, call it
+        if (typeof this._dispose !== "undefined") {
+            this._dispose();
+        }
         this.unregister();
 
         _id = null;
@@ -190,7 +194,7 @@ Exhibit.Facet = function(key, div, uiContext) {
         _expression = null;
         _expressionString = null;
         _settings = null;
-        _settingSpecs = null;
+        this._settingSpecs = null;
         self = null;
     };
 
@@ -198,7 +202,7 @@ Exhibit.Facet = function(key, div, uiContext) {
      * @private
      */
     _setIdentifier = function() {
-        _id = $(_div).attr("id");
+        _id = Exhibit.jQuery(_div).attr("id");
         if (typeof _id === "undefined" || _id === null) {
             _id = Exhibit.Facet.getRegistryKey()
                 + "-"
@@ -243,11 +247,11 @@ Exhibit.Facet.getRegistryKey = function() {
 Exhibit.Facet.registerComponent = function(evt, reg) {
     if (!reg.hasRegistry(Exhibit.Facet.getRegistryKey())) {
         reg.createRegistry(Exhibit.Facet.getRegistryKey());
-        $(document).trigger("registerFacets.exhibit");
+        Exhibit.jQuery(document).trigger("registerFacets.exhibit");
     }
 };
 
-$(document).one(
+Exhibit.jQuery(document).one(
     "registerComponents.exhibit",
     Exhibit.Facet.registerComponent
 );
