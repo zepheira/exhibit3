@@ -47,8 +47,10 @@ Exhibit.History = {
 /**
  * @depends History.js
  * @param {Exhibit._Impl} ex
+ * @param {Boolean} persist Expected to be true in production mode; set to
+ *     false while in developer mode to prevent reading from history.
  */
-Exhibit.History.init = function(ex) {
+Exhibit.History.init = function(ex, persist) {
     var state, types, i, j, keys, component;
 
     if (typeof History !== "undefined" && History.enabled) {
@@ -61,6 +63,9 @@ Exhibit.History.init = function(ex) {
         if (Exhibit.Bookmark.runBookmark()) {
             Exhibit.Bookmark.implementBookmark(Exhibit.Bookmark.state);
         } else {
+            if (!persist) {
+                Exhibit.History.eraseState();
+            }
             Exhibit.History._processEmptyState();
             Exhibit.History.stateListener();
         }
@@ -72,7 +77,7 @@ Exhibit.History.init = function(ex) {
  * @static
  */
 Exhibit.History._processEmptyState = function() {
-    var state, types, reg, keys, component, i;
+    var state, types, reg, keys, component, i, j;
     types = Exhibit.History._activeTypes;
     reg = Exhibit.History._registry;
     state = Exhibit.History.getState();
@@ -164,15 +169,24 @@ Exhibit.History.getState = function() {
     }
 };
 
+/**
+ * @static
+ * @param {Object} state
+ * @param {Object} component
+ * @param {Exhibit.Registry} registry
+ * @param {Object} data
+ * @param {Boolean} lengthy
+ * @returns {Object}
+ */
 Exhibit.History.setComponentState = function(state, component, registry, data, lengthy) {
     if (typeof state === "undefined" || state === null) {
         state = { "data": { "components": {} } };
     }
 
-    if (typeof state["data"] === "undefined") {
+    if (typeof state.data === "undefined") {
         state.data = { "components": {} };
     }
-    if (typeof state.data["components"] === "undefined") {
+    if (typeof state.data.components === "undefined") {
         state.data.components = {};
     }
 
@@ -185,6 +199,14 @@ Exhibit.History.setComponentState = function(state, component, registry, data, l
     return state;
 };
 
+/**
+ * @static
+ * @param {Object} component
+ * @param {Exhibit.Registry} registry
+ * @param {Object} data
+ * @param {String} subtitle
+ * @param {Boolean} lengthy
+ */
 Exhibit.History.pushComponentState = function(component, registry, data, subtitle, lengthy) {
     var state = Exhibit.History.getState();
     Exhibit.History.setComponentState(state, component, registry, data, lengthy);
@@ -263,5 +285,7 @@ Exhibit.History.eraseState = function() {
     Exhibit.History.pushState({ "components": {} });
 };
 
-Exhibit.jQuery(document).bind("importReady.exhibit",
-                 Exhibit.History.componentStateListener);
+Exhibit.jQuery(document).bind(
+    "importReady.exhibit",
+    Exhibit.History.componentStateListener
+);

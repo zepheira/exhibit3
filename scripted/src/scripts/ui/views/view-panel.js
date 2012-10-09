@@ -51,7 +51,7 @@ Exhibit.ViewPanel._registerComponent = function(evt, reg) {
  * @returns {Exhibit.ViewPanel}
  */
 Exhibit.ViewPanel.create = function(configuration, div, uiContext) {
-    var viewPanel, i, viewconfig, viewClass, label, tooltip, id, viewClassName;
+    var viewPanel, i, viewConfig, viewClass, label, tooltip, id, viewClassName;
     viewPanel = new Exhibit.ViewPanel(div, uiContext);
     
     if (typeof configuration.views !== "undefined") {
@@ -119,7 +119,7 @@ Exhibit.ViewPanel.create = function(configuration, div, uiContext) {
  * @returns {Exhibit.ViewPanel}
  */
 Exhibit.ViewPanel.createFromDOM = function(div, uiContext) {
-    var viewPanel, role, viewClass, viewClassName, viewLabel, tooltip, label, id, intialView, n;
+    var viewPanel, role, viewClass, viewClassName, viewLabel, tooltip, label, id, initialView, n;
     viewPanel = new Exhibit.ViewPanel(div, Exhibit.UIContext.createFromDOM(div, uiContext, false));
     
     Exhibit.jQuery(div).children().each(function(index, elmt) {

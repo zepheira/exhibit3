@@ -34,6 +34,7 @@ Exhibit.GoogleMaps2View = function(containerElmt, uiContext) {
     
     this._selectListener = null;
     this._itemIDToMarker = {};
+    this._markerLabelExpression = null;
     this._markerCache = {};
     
     this._shown = false;
@@ -46,115 +47,127 @@ Exhibit.GoogleMaps2View = function(containerElmt, uiContext) {
         "onItemsChanged.exhibit",
         view._onItemsChanged
     );
+
+    this.register();
 };
 
 /**
  * @constant
  */
-Exhibit.MapView._settingSpecs = {
-    "center":           { type: "float",    defaultValue: [20,0],   dimensions: 2 },
-    "zoom":             { type: "float",    defaultValue: 2         },
-    "size":             { type: "text",     defaultValue: "small"   },
-    "scaleControl":     { type: "boolean",  defaultValue: true      },
-    "overviewControl":  { type: "boolean",  defaultValue: false     },
-    "type":             { type: "enum",     defaultValue: "normal", choices: [ "normal", "satellite", "hybrid" ] },
-    "bubbleTip":        { type: "enum",     defaultValue: "top",    choices: [ "top", "bottom" ] },
-    "mapHeight":        { type: "int",      defaultValue: 400       },
-    "mapConstructor":   { type: "function", defaultValue: null      },
-    "color":            { type: "text",     defaultValue: "#FF9000" },
-    "colorCoder":       { type: "text",     defaultValue: null      },
-    "sizeCoder":        { type: "text",     defaultValue: null      },
-    "iconCoder":        { type: "text",     defaultValue: null      },
-    "selectCoordinator":  { type: "text",   defaultValue: null      },
-    "iconSize":         { type: "int",      defaultValue: 0         },
-    "iconFit":          { type: "text",     defaultValue: "smaller" },
-    "iconScale":        { type: "float",    defaultValue: 1         },
-    "iconOffsetX":      { type: "float",    defaultValue: 0         },
-    "iconOffsetY":      { type: "float",    defaultValue: 0         },
-    "shape":            { type: "text",     defaultValue: "circle"  },
-    "shapeWidth":       { type: "int",      defaultValue: 24        },
-    "shapeHeight":      { type: "int",      defaultValue: 24        },
-    "shapeAlpha":       { type: "float",    defaultValue: 0.7       },
-    "pin":              { type: "boolean",  defaultValue: true      },
-    "pinHeight":        { type: "int",      defaultValue: 6         },
-    "pinWidth":         { type: "int",      defaultValue: 6         },
-    "sizeLegendLabel":  { type: "text",     defaultValue: null      },
-    "colorLegendLabel": { type: "text",     defaultValue: null      },
-    "iconLegendLabel":  { type: "text",     defaultValue: null      },
-    "markerScale":      { type: "text",     defaultValue: null      },
-    "showHeader":       { type: "boolean",  defaultValue: true      },
-    "showSummary":      { type: "boolean",  defaultValue: true      },
-    "showFooter":       { type: "boolean",  defaultValue: true      },
+Exhibit.GoogleMaps2View._settingSpecs = {
+    "center":           { "type": "float",    "defaultValue": [20,0],   "dimensions": 2 },
+    "zoom":             { "type": "float",    "defaultValue": 2         },
+    "size":             { "type": "text",     "defaultValue": "small"   },
+    "scaleControl":     { "type": "boolean",  "defaultValue": true      },
+    "overviewControl":  { "type": "boolean",  "defaultValue": false     },
+    "type":             { "type": "enum",     "defaultValue": "normal", "choices": [ "normal", "satellite", "hybrid" ] },
+    "bubbleTip":        { "type": "enum",     "defaultValue": "top",    "choices": [ "top", "bottom" ] },
+    "mapHeight":        { "type": "int",      "defaultValue": 400       },
+    "mapConstructor":   { "type": "function", "defaultValue": null      },
+    "markerLabel":      { "type": "text",     "defaultValue": ".label"  },
+    "color":            { "type": "text",     "defaultValue": "#FF9000" },
+    "colorCoder":       { "type": "text",     "defaultValue": null      },
+    "sizeCoder":        { "type": "text",     "defaultValue": null      },
+    "iconCoder":        { "type": "text",     "defaultValue": null      },
+    "selectCoordinator":  { "type": "text",   "defaultValue": null      },
+    "iconSize":         { "type": "int",      "defaultValue": 0         },
+    "iconFit":          { "type": "text",     "defaultValue": "smaller" },
+    "iconScale":        { "type": "float",    "defaultValue": 1         },
+    "iconOffsetX":      { "type": "float",    "defaultValue": 0         },
+    "iconOffsetY":      { "type": "float",    "defaultValue": 0         },
+    "shape":            { "type": "text",     "defaultValue": "circle"  },
+    "shapeWidth":       { "type": "int",      "defaultValue": 24        },
+    "shapeHeight":      { "type": "int",      "defaultValue": 24        },
+    "shapeAlpha":       { "type": "float",    "defaultValue": 0.7       },
+    "pin":              { "type": "boolean",  "defaultValue": true      },
+    "pinHeight":        { "type": "int",      "defaultValue": 6         },
+    "pinWidth":         { "type": "int",      "defaultValue": 6         },
+    "sizeLegendLabel":  { "type": "text",     "defaultValue": null      },
+    "colorLegendLabel": { "type": "text",     "defaultValue": null      },
+    "iconLegendLabel":  { "type": "text",     "defaultValue": null      },
+    "markerScale":      { "type": "text",     "defaultValue": null      },
+    "markerFontFamily": { "type": "text",     "defaultValue": "12pt sans-serif" },
+    "markerFontColor":  { "type": "text",     "defaultValue": "black"   },
+    "showHeader":       { "type": "boolean",  "defaultValue": true      },
+    "showSummary":      { "type": "boolean",  "defaultValue": true      },
+    "showFooter":       { "type": "boolean",  "defaultValue": true      }
 };
 
 /**
  * @constant
  */
-Exhibit.MapView._accessorSpecs = [
-    {   accessorName:   "getProxy",
-        attributeName:  "proxy"
+Exhibit.GoogleMaps2View._accessorSpecs = [
+    {   "accessorName":   "getProxy",
+        "attributeName":  "proxy"
     },
-    {   accessorName: "getLatlng",
-        alternatives: [
-            {   bindings: [
-                    {   attributeName:  "latlng",
-                        types:          [ "float", "float" ],
-                        bindingNames:   [ "lat", "lng" ]
+    {   "accessorName": "getLatlng",
+        "alternatives": [
+            {   "bindings": [
+                    {   "attributeName":  "latlng",
+                        "types":          [ "float", "float" ],
+                        "bindingNames":   [ "lat", "lng" ]
                     },
-                    {   attributeName:  "maxAutoZoom",
-                        type:           "float",
-                        bindingName:    "maxAutoZoom",
-                        optional:       true
+                    {   "attributeName":  "maxAutoZoom",
+                        "type":           "float",
+                        "bindingName":    "maxAutoZoom",
+                        "optional":       true
                     }
                 ]
             },
-            {   bindings: [
-                    {   attributeName:  "lat",
-                        type:           "float",
-                        bindingName:    "lat"
+            {   "bindings": [
+                    {   "attributeName":  "lat",
+                        "type":           "float",
+                        "bindingName":    "lat"
                     },
-                    {   attributeName:  "lng",
-                        type:           "float",
-                        bindingName:    "lng"
+                    {   "attributeName":  "lng",
+                        "type":           "float",
+                        "bindingName":    "lng"
                     },
-                    {   attributeName:  "maxAutoZoom",
-                        type:           "float",
-                        bindingName:    "maxAutoZoom",
-                        optional:       true
+                    {   "attributeName":  "maxAutoZoom",
+                        "type":           "float",
+                        "bindingName":    "maxAutoZoom",
+                        "optional":       true
                     }
                 ]
             }
         ]
     },
-    {   accessorName:   "getColorKey",
-        attributeName:  "marker", // backward compatibility
-        type:           "text"
+    {   "accessorName":   "getPolygon",
+        "attributeName":  "polygon",
+        "type":           "text"
     },
-    {   accessorName:   "getColorKey",
-        attributeName:  "colorKey",
-        type:           "text"
+    {   "accessorName":   "getPolyline",
+        "attributeName":  "polyline",
+        "type":           "text"
     },
-    {   accessorName:   "getSizeKey",
-        attributeName:  "sizeKey",
-        type:           "text"
+    {   "accessorName":   "getColorKey",
+        "attributeName":  "marker", // backward compatibility
+        "type":           "text"
     },
-    {   accessorName:   "getIconKey",
-        attributeName:  "iconKey",
-        type:           "text"
+    {   "accessorName":   "getColorKey",
+        "attributeName":  "colorKey",
+        "type":           "text"
     },
-    {   accessorName:   "getIcon",
-        attributeName:  "icon",
-        type:           "url"
+    {   "accessorName":   "getSizeKey",
+        "attributeName":  "sizeKey",
+        "type":           "text"
+    },
+    {   "accessorName":   "getIconKey",
+        "attributeName":  "iconKey",
+        "type":           "text"
+    },
+    {   "accessorName":   "getIcon",
+        "attributeName":  "icon",
+        "type":           "url"
     }
 ];
 
 /**
  *
  */
-Exhibit.MapView._initialize = function() {
-    var links = [];
+Exhibit.GoogleMaps2View._initialize = function() {
+    var links = [], rel, canvas;
     if (!Exhibit.MapExtension.initialized) {
-        var rel, canvas;
         Exhibit.jQuery('head link').each(function(i, el) {
             rel = Exhibit.jQuery(el).attr("rel");
             if (rel.match(/\b(exhibit-map-painter|exhibit\/map-painter)\b/)) {
@@ -171,14 +184,14 @@ Exhibit.MapView._initialize = function() {
  * @param {Object} configuration
  * @param {Element} containerElmt
  * @param {Exhibit.UIContext} uiContext
- * @returns {Exhibit.MapView}
+ * @returns {Exhibit.GoogleMaps2View}
  */
-Exhibit.MapView.create = function(configuration, containerElmt, uiContext) {
-    var view = new Exhibit.MapView(
+Exhibit.GoogleMaps2View.create = function(configuration, containerElmt, uiContext) {
+    var view = new Exhibit.GoogleMaps2View(
         containerElmt,
         Exhibit.UIContext.create(configuration, uiContext)
     );
-    Exhibit.MapView._configure(view, configuration);
+    Exhibit.GoogleMaps2View._configure(view, configuration);
     
     view._internalValidate();
     view._initializeUI();
@@ -189,19 +202,19 @@ Exhibit.MapView.create = function(configuration, containerElmt, uiContext) {
  * @param {Element} configElmt
  * @param {Element} containerElmt
  * @param {Exhibit.UIContext} uiContext
- * @returns {Exhibit.MapView}
+ * @returns {Exhibit.GoogleMaps2View}
  */
-Exhibit.MapView.createFromDOM = function(configElmt, containerElmt, uiContext) {
+Exhibit.GoogleMaps2View.createFromDOM = function(configElmt, containerElmt, uiContext) {
     var configuration, view;
     configuration = Exhibit.getConfigurationFromDOM(configElmt);
-    view = new Exhibit.MapView(
-        containerElmt != null ? containerElmt : configElmt, 
+    view = new Exhibit.GoogleMaps2View(
+        containerElmt !== null ? containerElmt : configElmt, 
         Exhibit.UIContext.createFromDOM(configElmt, uiContext)
     );
     
-    Exhibit.SettingsUtilities.createAccessorsFromDOM(configElmt, Exhibit.MapView._accessorSpecs, view._accessors);
+    Exhibit.SettingsUtilities.createAccessorsFromDOM(configElmt, Exhibit.GoogleMaps2View._accessorSpecs, view._accessors);
     Exhibit.SettingsUtilities.collectSettingsFromDOM(configElmt, view.getSettingSpecs(), view._settings);
-    Exhibit.MapView._configure(view, configuration);
+    Exhibit.GoogleMaps2View._configure(view, configuration);
     
     view._internalValidate();
     view._initializeUI();
@@ -210,12 +223,12 @@ Exhibit.MapView.createFromDOM = function(configElmt, containerElmt, uiContext) {
 
 /**
  * @static
- * @param {Exhibit.MapView} view
+ * @param {Exhibit.GoogleMaps2View} view
  * @param {Object} configuration
  */
-Exhibit.MapView._configure = function(view, configuration) {
+Exhibit.GoogleMaps2View._configure = function(view, configuration) {
     var accessors;
-    Exhibit.SettingsUtilities.createAccessors(configuration, Exhibit.MapView._accessorSpecs, view._accessors);
+    Exhibit.SettingsUtilities.createAccessors(configuration, Exhibit.GoogleMaps2View._accessorSpecs, view._accessors);
     Exhibit.SettingsUtilities.collectSettings(configuration, view.getSettingSpecs(), view._settings);
     
     accessors = view._accessors;
@@ -226,6 +239,8 @@ Exhibit.MapView._configure = function(view, configuration) {
             });
         } :
         null;
+
+    view._markerLabelExpression = Exhibit.ExpressionParser.parse(view._settings.markerLabel);
 };
 
 /**
@@ -237,7 +252,7 @@ Exhibit.MapView._configure = function(view, configuration) {
  * @param {Exhibit.Database} database
  * @param {Numeric} accuracy
  */
-Exhibit.MapView.lookupLatLng = function(set, addressExpressionString, outputProperty, outputTextArea, database, accuracy) {
+Exhibit.GoogleMaps2View.lookupLatLng = function(set, addressExpressionString, outputProperty, outputTextArea, database, accuracy) {
     var expression, jobs, results, geocoder, cont;
 
     if (typeof accuracy === "undefined" || accuracy === null) {
@@ -267,6 +282,7 @@ Exhibit.MapView.lookupLatLng = function(set, addressExpressionString, outputProp
             geocoder.getLocations(
                 job.address,
                 function(json) {
+                    var coords, lat, lng, segments;
                     if (typeof json.Placemark !== "undefined") {
                         json.Placemark.sort(function(p1, p2) {
                             return p2.AddressDetails.Accuracy - p1.AddressDetails.Accuracy;
@@ -302,7 +318,7 @@ Exhibit.MapView.lookupLatLng = function(set, addressExpressionString, outputProp
 /**
  *
  */
-Exhibit.MapView.prototype.dispose = function() {
+Exhibit.GoogleMaps2View.prototype.dispose = function() {
     var view = this;
     Exhibit.jQuery(this.getUIContext().getCollection().getElement()).unbind(
         "onItemsChanged.exhibit",
@@ -312,7 +328,7 @@ Exhibit.MapView.prototype.dispose = function() {
     this._map.clearOverlays();
     this._map = null;
     
-    if (this._selectListener != null) {
+    if (this._selectListener !== null) {
         this._selectListener.dispose();
         this._selectListener = null;
     }
@@ -330,9 +346,9 @@ Exhibit.MapView.prototype.dispose = function() {
 /**
  * @private
  */
-Exhibit.MapView.prototype._internalValidate = function() {
+Exhibit.GoogleMaps2View.prototype._internalValidate = function() {
     var exhibit, selectCoordinator, self;
-    exhibit = this.getUIContext().getExhibit();
+    exhibit = this.getUIContext().getMain();
     if (typeof this._accessors.getColorKey !== "undefined" && this._accessors.getColorKey !== null) {
         if (typeof this._settings.colorCoder !== "undefined" && this._settings.colorCoder !== null) {
             this._colorCoder = exhibit.getComponent(this._settings.colorCoder);
@@ -342,7 +358,7 @@ Exhibit.MapView.prototype._internalValidate = function() {
         }
     }
     if (typeof this._accessors.getSizeKey !== "undefined" && this._accessors.getSizeKey !== null) {
-        if (tyepof this._settings.sizeCoder !== "undefined" && this._esttings.sizeCoder !== null) {
+        if (typeof this._settings.sizeCoder !== "undefined" && this._settings.sizeCoder !== null) {
             this._sizeCoder = exhibit.getComponent(this._settings.sizeCoder);
             if (typeof this._settings.markerScale !== "undefined" && this._settings.markerScale !== null) {
                 this._sizeCoder._settings.markerScale = this._settings.markerScale;
@@ -368,7 +384,7 @@ Exhibit.MapView.prototype._internalValidate = function() {
 /**
  * @private
  */
-Exhibit.MapView.prototype._initializeUI = function() {
+Exhibit.GoogleMaps2View.prototype._initializeUI = function() {
     var self, legendWidgetSettings, mapDiv;
     self = this;
     
@@ -405,14 +421,14 @@ Exhibit.MapView.prototype._initializeUI = function() {
  * @param {Element} mapDiv
  * @returns {GMap2}
  */
-Exhibit.MapView.prototype._constructGMap = function(mapDiv) {
+Exhibit.GoogleMaps2View.prototype._constructGMap = function(mapDiv) {
     var settings, mapOptions, map;
     settings = this._settings;
     if (typeof settings.mapConstructor !== "undefined" &&
-        setings.mapConstructor !== null) {
+        settings.mapConstructor !== null) {
         return settings.mapConstructor(mapDiv);
     } else {
-        var map = new GMap2(mapDiv);
+        map = new GMap2(mapDiv);
         map.enableDoubleClickZoom();
         map.enableContinuousZoom();
 
@@ -447,15 +463,13 @@ Exhibit.MapView.prototype._constructGMap = function(mapDiv) {
  * @private
  * @returns {Function}
  */
-Exhibit.MapView.prototype._createColorMarkerGenerator = function() {
+Exhibit.GoogleMaps2View.prototype._createColorMarkerGenerator = function() {
     var settings = this._settings;
 
     return function(color) {
         return Exhibit.jQuery.simileBubble(
             "createTranslucentImage",
-            (Exhibit.MapExtension.hasCanvas) ?
-                Exhibit.MapExtension.Canvas.makeIcon(settings.shapeWidth, settings.shapeHeight, color, null, null, settings.iconSize, settings).iconURL :
-                Exhibit.MapExtension.Painter.makeIcon(settings.shapeWidth, settings.shapeHeight, color, null, null, settings.iconSize, settings).iconURL,
+            Exhibit.MapExtension.Marker.makeIcon(settings.shapeWidth, settings.shapeHeight, color, null, null, settings.iconSize, settings).iconURL,
             "middle"
         );
     };
@@ -465,14 +479,13 @@ Exhibit.MapView.prototype._createColorMarkerGenerator = function() {
  * @private
  * @returns {Function}
  */
-Exhibit.MapView.prototype._createSizeMarkerGenerator = function() {
+Exhibit.GoogleMaps2View.prototype._createSizeMarkerGenerator = function() {
     var settings = Exhibit.jQuery.extend({}, this._settings);
     settings.pinHeight = 0;
     return function(iconSize) {
-        return Exhibit.jQuery.simileBubble("createTranslucentImage",
-            (Exhibit.MapExtension.hasCanvas) ?
-                Exhibit.MapExtension.Canvas.makeIcon(settings.shapeWidth, settings.shapeHeight, settings.color, null, null, iconSize, settings).iconURL :
-                Exhibit.MapExtension.Painter.makeIcon(settings.shapeWidth, settings.shapeHeight, settings.color, null, null, iconSize, settings).iconURL,
+        return Exhibit.jQuery.simileBubble(
+            "createTranslucentImage",
+            Exhibit.MapExtension.Marker.makeIcon(settings.shapeWidth, settings.shapeHeight, settings.color, null, null, iconSize, settings).iconURL,
             "middle"
         );
     };
@@ -482,7 +495,7 @@ Exhibit.MapView.prototype._createSizeMarkerGenerator = function() {
  * @private
  * @returns {Function}
  */
-Exhibit.MapView.prototype._createIconMarkerGenerator = function() {
+Exhibit.GoogleMaps2View.prototype._createIconMarkerGenerator = function() {
     return function(iconURL) {
         var elmt = Exhibit.jQuery("img")
             .attr("src", iconURL)
@@ -495,7 +508,7 @@ Exhibit.MapView.prototype._createIconMarkerGenerator = function() {
 /**
  * @private
  */
-Exhibit.MapView.prototype._reconstruct = function() {
+Exhibit.GoogleMaps2View.prototype._reconstruct = function() {
     var currentSize, unplottableItems;
  
     this._map.clearOverlays();
@@ -523,8 +536,8 @@ Exhibit.MapView.prototype._reconstruct = function() {
  * @private
  * @param {Array} unplottableItems
  */
-Exhibit.MapView.prototype._rePlotItems = function(unplottableItems) {
-    var self, collection, database, settings, accessors, currentSet, locationToData, hasColorKey, hasSizeKey, hasIconKey, hasIcon, hasPoints, hasPolygons, hasPolylines, makeLatLng, bounds, maxAutoZoom, colorCodingFlags, sizeCodingFlags, iconCodingFlags, addMarkerAtLocation, latlngKey, legendWidget, colorCoder, keys, legendGradientWidget, k, key, color, sizeCoder, points, space, i, size, iconCoder, icon;
+Exhibit.GoogleMaps2View.prototype._rePlotItems = function(unplottableItems) {
+    var self, collection, database, settings, accessors, currentSet, locationToData, hasColorKey, hasSizeKey, hasIconKey, hasIcon, hasPoints, hasPolygons, hasPolylines, makeLatLng, bounds, maxAutoZoom, colorCodingFlags, sizeCodingFlags, iconCodingFlags, addMarkerAtLocation, latlngKey, legendWidget, colorCoder, keys, legendGradientWidget, k, key, color, sizeCoder, points, space, i, size, iconCoder, icon, zoom;
 
     self = this;
     collection = this.getUIContext().getCollection();
@@ -543,7 +556,6 @@ Exhibit.MapView.prototype._rePlotItems = function(unplottableItems) {
     hasPolygons = (accessors.getPolygon !== null);
     hasPolylines = (accessors.getPolyline !== null);
     
-    // @@@ back down to v2
     makeLatLng = (settings.latlngOrder === "latlng") ?
         function (first, second) {
             return new GLatLng(first, second);
@@ -649,7 +661,7 @@ Exhibit.MapView.prototype._rePlotItems = function(unplottableItems) {
                             locationData.iconKeys.addSet(iconKeys);
                         }
                     } else {
-                        var locationData = {
+                        locationData = {
                             "latlng":     latlng,
                             "items":      [ itemID ]
                         };
@@ -747,7 +759,7 @@ Exhibit.MapView.prototype._rePlotItems = function(unplottableItems) {
             }
         }
     } catch (e) {
-        // @@@ handle this properly
+        Exhibit.Debug.exception(e);
     }
 
     if (hasColorKey) {
@@ -864,7 +876,7 @@ Exhibit.MapView.prototype._rePlotItems = function(unplottableItems) {
  * @param {Function} makeLatLng
  * @returns {GPolygon}
  */
-Exhibit.MapView.prototype._plotPolygon = function(itemID, polygonString, color, makeLatLng) {
+Exhibit.GoogleMaps2View.prototype._plotPolygon = function(itemID, polygonString, color, makeLatLng) {
     var coords, settings, borderColor, polygon;
 
     coords = this._parsePolygonOrPolyline(polygonString, makeLatLng);
@@ -895,7 +907,7 @@ Exhibit.MapView.prototype._plotPolygon = function(itemID, polygonString, color, 
  * @param {Function} makeLatLng
  * @returns {GPolyline}
  */
-Exhibit.MapView.prototype._plotPolyline = function(itemID, polylineString, color, makeLatLng) {
+Exhibit.GoogleMaps2View.prototype._plotPolyline = function(itemID, polylineString, color, makeLatLng) {
     var coords, settings, borderColor, polyline;
     coords = this._parsePolygonOrPolyline(polylineString, makeLatLng);
     if (coords.length > 1) {
@@ -918,14 +930,14 @@ Exhibit.MapView.prototype._plotPolyline = function(itemID, polylineString, color
  * @param {GPolygon|GPolyline} poly
  * @returns {GPolygon|GPolyline}
  */
-Exhibit.MapView.prototype._addPolygonOrPolyline = function(itemID, poly) {
+Exhibit.GoogleMaps2View.prototype._addPolygonOrPolyline = function(itemID, poly) {
     var self = this;
 
     self._map.addOverlay(poly);
     GEvent.addListener(poly, "click", function(p) { 
-        map.openInfoWindow(p, self._createInfoWindow(locationData.items));
+        self._map.openInfoWindow(p, self._createInfoWindow([ itemID ]));
         if (self._selectListener !== null) {
-            self._selectListener.fire({ "itemIDs": locationData.items });
+            self._selectListener.fire({ "itemIDs": [itemID] });
         }
     });
     
@@ -939,7 +951,7 @@ Exhibit.MapView.prototype._addPolygonOrPolyline = function(itemID, poly) {
  * @param {Function} makeLatLng
  * @returns {Array}
  */
-Exhibit.MapView.prototype._parsePolygonOrPolyline = function(s, makeLatLng) {
+Exhibit.GoogleMaps2View.prototype._parsePolygonOrPolyline = function(s, makeLatLng) {
     var coords, a, i, pair;
     coords = [];
     
@@ -955,7 +967,7 @@ Exhibit.MapView.prototype._parsePolygonOrPolyline = function(s, makeLatLng) {
 /**
  * @param {Object} selection
  */
-Exhibit.MapView.prototype._select = function(selection) {
+Exhibit.GoogleMaps2View.prototype._select = function(selection) {
     var itemID, marker;
     itemID = selection.itemIDs[0];
     marker = this._itemIDToMarker[itemID];
@@ -968,10 +980,11 @@ Exhibit.MapView.prototype._select = function(selection) {
  * @param {Array} items
  * @returns {Element} 
  */
-Exhibit.MapView.prototype._createInfoWindow = function(items) {
+Exhibit.GoogleMaps2View.prototype._createInfoWindow = function(items) {
     return Exhibit.ViewUtilities.fillBubbleWithItems(
         null, 
-        items, 
+        items,
+        this._settings.markerLabelExpression,
         this.getUIContext()
     );
 };
@@ -979,12 +992,10 @@ Exhibit.MapView.prototype._createInfoWindow = function(items) {
 /**
  * @static
  * @param {Exhibit.MapExtension.Marker} marker
- * @param {Object} position
- * @param {Numeric} position.lat
- * @param {Numeric} position.lng
+ * @param {GLatLng} position
  * @returns {GMarker}
  */
-Exhibit.MapView.markerToMap = function(marker, position) {
+Exhibit.GoogleMaps2View.markerToMap = function(marker, position) {
     var icon, shadow, gicon;
     icon = marker.getIcon();
     shadow = marker.getShadow();
@@ -996,17 +1007,25 @@ Exhibit.MapView.markerToMap = function(marker, position) {
     gicon.shadowSize = new GSize(shadow.size[0], shadow.size[1]);
     gicon.imageMap = marker.getShape().coords;
     gicon.infoWindowAnchor = new GPoint(icon.infoWindowAnchor[0], icon.infoWindowAnchor[1]);
-    return new GMarker(
-        new GLatLng(position.lat, position.lng),
-        {
-	        "icon": gicon
-        }
-	});
+    return new GMarker(position, gicon);
+};
+
+/**
+ * Update a cached marker's display icon.
+ * @param {String} key
+ * @param {String} iconURL
+ */
+Exhibit.GoogleMaps2View.prototype.updateMarkerIcon = function(key, iconURL) {
+    var cached;
+    cached = this._markerCache[key];
+    if (typeof cached !== "undefined" && cached !== null) {
+        cached.setImage(iconURL);
+    }
 };
 
 /**
  * @private
- * @param {Object} position
+ * @param {GLatLng} position
  * @param {String} shape
  * @param {String} color
  * @param {Numeric} iconSize
@@ -1015,20 +1034,23 @@ Exhibit.MapView.markerToMap = function(marker, position) {
  * @param {Object} settings
  * @returns {GMarker}
  */
-Exhibit.MapView.prototype._makeMarker = function(position, shape, color, iconSize, iconURL, label, settings) {
+Exhibit.GoogleMaps2View.prototype._makeMarker = function(position, shape, color, iconSize, iconURL, label, settings) {
     var key, cached, marker, gmarker;
 
     key = Exhibit.MapExtension.Marker._makeMarkerKey(shape, color, iconSize, iconURL, label);
 
     cached = this._markerCache[key];
 
-    // @@@ settings comparison is of dubious use
+    // The settings comparison is of dubious use; ideally the settings would
+    // be an actual type and have a comparison method instead of assuming all
+    // settings refer to the same location in memory.  Also, it's a bit unclear
+    // under what circumstances it would ever be different.
     if (typeof cached !== "undefined" && (cached.settings === settings)) {
-	    gmarker = Exhibit.MapView.markerToMap(cached, position);
+	    gmarker = Exhibit.GoogleMaps2View.markerToMap(cached, position);
     } else {
-        marker = Exhibit.MapExtension.Marker.makeMarker(shape, color, iconSize, null, label, settings, this);
-	    this._markerCache[key] = marker;
-        gmarker = Exhibit.MapView.markerToMap(marker, position);
+        marker = Exhibit.MapExtension.Marker.makeMarker(shape, color, iconSize, iconURL, label, settings, this);
+        gmarker = Exhibit.GoogleMaps2View.markerToMap(marker, position);
+	    this._markerCache[key] = gmarker;
     }
     return gmarker;
 };

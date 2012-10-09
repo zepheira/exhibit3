@@ -101,7 +101,7 @@
         
         if (Exhibit.TimeExtension.params.bundle) {
             scriptURLs.push(Exhibit.TimeExtension.urlPrefix + "time-extension-bundle.js");
-            cssURLs.push(Exhibit.TimeExtension.urlPrefix + "time-extension-bundle.css");
+            cssURLs.push(Exhibit.TimeExtension.urlPrefix + "styles/time-extension-bundle.css");
         } else {
             Exhibit.prefixURLs(scriptURLs, Exhibit.TimeExtension.urlPrefix + "scripts/", javascriptFiles);
             Exhibit.prefixURLs(cssURLs, Exhibit.TimeExtension.urlPrefix + "styles/", cssFiles);
@@ -112,8 +112,8 @@
             scriptURLs.push(Exhibit.TimeExtension.urlPrefix + "locales/" + localesToLoad[i] + "/locale.js");
         }
         
-        Exhibit.includeCssFiles(document, "", cssURLs);
-        Exhibit.includeJavascriptFiles(document, "", scriptURLs);
+        Exhibit.includeCssFiles(document, null, cssURLs);
+        Exhibit.includeJavascriptFiles(null, scriptURLs);
 
         // Ugly polling hack
         finishedLoading = function() {

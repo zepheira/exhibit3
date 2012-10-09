@@ -12,7 +12,7 @@ var Exhibit = {
      * The version number for Exhibit.
      * @constant
      */
-    version: "3.0.0rc1",
+    version: "3.0.0",
 
     /**
      * The XML namespace for Exhibit.
@@ -66,12 +66,13 @@ var Exhibit = {
      * Settable parameters within the query string of loading this file.
      */
     params: {
-        bundle: true,
-        autoCreate: true,
-        safe: false,
-        babel: undefined,
-        backstage: undefined,
-        locale: undefined
+        "bundle": true,
+        "autoCreate": true,
+        "safe": false,
+        "babel": undefined,
+        "backstage": undefined,
+        "locale": undefined,
+        "persist": true
     },
 
     /**
@@ -102,6 +103,11 @@ var Exhibit = {
      * How Exhibit refers to jQuery
      */
     jQuery: undefined,
+
+    /**
+     * Whether jQuery exists in the global context already
+     */
+    _jQueryExists: typeof jQuery !== "undefined",
 
     /**
      * Scripts Exhibit will load.
@@ -189,6 +195,7 @@ var Exhibit = {
         "scripts/ui/widgets/reset-history-widget.js",
         "scripts/ui/widgets/logo.js",
         "scripts/ui/widgets/legend-widget.js",
+        "scripts/ui/widgets/legend-gradient-widget.js",
         "locales/manifest.js",
         "scripts/final.js"
     ],
@@ -294,7 +301,7 @@ Exhibit.parseURLParameters = function(url, to, types) {
  * @returns {String}
  */
 Exhibit.findScript = function(doc, frag) {
-    var scripts, i;
+    var script, scripts, i, url;
     scripts = doc.getElementsByTagName("script");
     for (i = 0; i < scripts.length; i++) {
         script = scripts[i];
@@ -348,27 +355,67 @@ Exhibit.includeCssFile = function(doc, url) {
 /**
  * @static
  * @param {Document} doc
- * @param {String} urlPrefix
+ * @param {String} urlPrefix Path prefix to add to the list of filenames; use
+ *     null or an empty string if no prefix is needed.
  * @param {Array} filenames
  */
 Exhibit.includeCssFiles = function(doc, urlPrefix, filenames) {
     var i;
     for (i = 0; i < filenames.length; i++) {
-        Exhibit.includeCssFile(doc, urlPrefix + filenames[i]);
+        if (urlPrefix !== null && urlPrefix !== "") {
+            Exhibit.includeCssFile(doc, urlPrefix + filenames[i]);
+        } else {
+            Exhibit.includeCssFile(doc, filenames[i]);
+        }
     }
 };
 
 /**
  * @static
- * @param {Document} doc
- * @param {String} urlPrefix
+ * @param {String} urlPrefix Path prefix to add to the list of filenames; use
+ *     null or an empty string if no prefix is needed.
  * @param {Array} filenames
+ * @param {Boolean} [serial]
  */
-Exhibit.includeJavascriptFiles = function(doc, urlPrefix, filenames) {
+Exhibit.includeJavascriptFiles = function(urlPrefix, filenames, serial) {
     var i;
     for (i = 0; i < filenames.length; i++) {
-        Exhibit.loader.script(urlPrefix + filenames[i]);
+        Exhibit.includeJavascriptFile(urlPrefix, filenames[i], serial);
     }
+};
+
+/**
+ * @static
+ * @param {String} urlPrefix Path prefix to add to the list of filenames; use
+ *     null or an empty string if no prefix is needed.
+ * @param {String} filename The remainder of the script URL following the
+ *     urlPrefix; a script to add to Exhibit's ordered loading.
+ * @param {Boolean} [serial] Whether to wait for a script to load before
+ *      loading the next in line.  True by default.
+ */
+Exhibit.includeJavascriptFile = function(urlPrefix, filename, serial) {
+    if (typeof serial === "undefined" || serial === null) {
+        serial = true;
+    }
+
+    if (urlPrefix !== null && urlPrefix !== "") {
+        filename = urlPrefix + filename;
+    }
+
+    if (serial) {
+        Exhibit.loader = Exhibit.loader.script(filename).wait();
+    } else {
+        Exhibit.loader = Exhibit.loader.script(filename);
+    }
+};
+
+/**
+ * @static
+ * @param {Function} fn A Javascript function to insert into Exhibit's
+ *     ordered file loading process.
+ */
+Exhibit.wait = function(fn) {
+    Exhibit.loader = Exhibit.loader.wait(fn);
 };
 
 /**
@@ -385,7 +432,7 @@ Exhibit.generateDelayID = function() {
  * @static
  */
 Exhibit.load = function() {
-    var i, j, k, o, dep, script, url, paramTypes, scr, docHead, style;
+    var i, j, k, o, dep, url, paramTypes, scr, docHead, style, linkElmts, link;
 
     paramTypes = {
         "bundle": Boolean,
@@ -396,7 +443,8 @@ Exhibit.load = function() {
         "safe": Boolean,
         "babel": String,
         "backstage": String,
-        "locale": String
+        "locale": String,
+        "persist": Boolean
     };
 
     if (typeof Exhibit_urlPrefix === "string") {
@@ -436,7 +484,7 @@ Exhibit.load = function() {
 
     if (Exhibit.params.bundle) {
         Exhibit.scripts = ["exhibit-scripted-bundle.js"];
-        Exhibit.styles = ["exhibit-scripted-bundle.css"];
+        Exhibit.styles = ["styles/exhibit-scripted-bundle.css"];
     }
     
     if (typeof Exhibit.params.backstage !== "undefined") {
@@ -445,10 +493,6 @@ Exhibit.load = function() {
         // Babel, the Backstage scripts should set Exhibit.babelPrefix.
         Exhibit.params.autoCreate = false;
         Exhibit.scripts = Exhibit.scripts.concat(Exhibit.params.backstage);
-    }
-
-    if (Exhibit.params.autoCreate) {
-        Exhibit.scripts.push("scripts/create.js");
     }
 
     if (typeof Exhibit.params.js === "object") {
@@ -470,7 +514,6 @@ Exhibit.load = function() {
     }
 
     $LAB.setGlobalDefaults({
-        AlwaysPreserveOrder: true,
         UseLocalXHR: false,
         AllowDuplicates: false
     });
@@ -478,12 +521,12 @@ Exhibit.load = function() {
 
     for (i in Exhibit._dependencies) {
         if (typeof Exhibit._dependencies[i] === "undefined") {
-            Exhibit.loader.script(Exhibit.urlPrefix + i);
+            Exhibit.includeJavascriptFile(Exhibit.urlPrefix, i);
         } else if (Exhibit._dependencies.hasOwnProperty(i)) {
             dep = Exhibit._dependencies[i].split(".");
             if (dep.length === 1) {
                 if (!Object.prototype.hasOwnProperty.call(window, dep[0])) {
-                    Exhibit.loader.script(Exhibit.urlPrefix + i);
+                    Exhibit.includeJavascriptFile(Exhibit.urlPrefix, i);
                 }
             } else {
                 for (j = 0; j < dep.length; j++) {
@@ -493,7 +536,7 @@ Exhibit.load = function() {
                     }
                     if (!o.hasOwnProperty(dep[j])) {
                         if (j === dep.length - 1) {
-                            Exhibit.loader.script(Exhibit.urlPrefix + i);
+                            Exhibit.includeJavascriptFile(Exhibit.urlPrefix, i);
                         } else {
                             break;
                         }
@@ -507,9 +550,9 @@ Exhibit.load = function() {
     for (i = 0; i < scr.length; i++) {
         if (scr[i].indexOf("/") === 0 ||
             (scr[i].indexOf(":") > 0 && scr[i].indexOf("//") > 0)) {
-            Exhibit.loader.script(scr[i]);
+            Exhibit.includeJavascriptFile(null, scr[i]);
         } else {
-            Exhibit.loader.script(Exhibit.urlPrefix + scr[i]);
+            Exhibit.includeJavascriptFile(Exhibit.urlPrefix, scr[i]);
         }
     }
 };

@@ -18,7 +18,7 @@ Exhibit.jQuery(document).ready(function() {
     Exhibit.jQuery(document).bind("delayFinished.exhibit", function(evt, delayID) {
         var idx = delays.indexOf(delayID);
         if (idx >= 0) {
-            delays.splice(idx);
+            delays.splice(idx, 1);
             if (delays.length === 0 && localeLoaded) {
                 delays = null;
                 Exhibit.jQuery(document).trigger("scriptsLoaded.exhibit");
@@ -29,7 +29,7 @@ Exhibit.jQuery(document).ready(function() {
     Exhibit.jQuery(document).bind("localeSet.exhibit", function(evt, localeURLs) {
         var i;
         for (i = 0; i < localeURLs.length; i++) {
-            Exhibit.loader.script(localeURLs[i]);
+            Exhibit.includeJavascriptFile(null, localeURLs[i]);
         }
         Exhibit.jQuery(document).trigger("loadExtensions.exhibit");
     });
@@ -49,11 +49,18 @@ Exhibit.jQuery(document).ready(function() {
 
     Exhibit.jQuery(document).one("scriptsLoaded.exhibit", function(evt) {
         Exhibit.jQuery(document).trigger("registerStaticComponents.exhibit", Exhibit.staticRegistry);
+        Exhibit.jQuery(document).trigger("staticComponentsRegistered.exhibit");
     });
+
+    if (Exhibit.params.autoCreate) {
+        Exhibit.jQuery(document).one("staticComponentsRegistered.exhibit", function(evt) {
+            Exhibit.autoCreate();
+        });
+    }
 
     Exhibit.jQuery(document).one("exhibitConfigured.exhibit", function(evt, ex) {
         Exhibit.Bookmark.init();
-        Exhibit.History.init(ex);
+        Exhibit.History.init(ex, Exhibit.params.persist);
     });
 
     // Signal recording
@@ -69,10 +76,10 @@ Exhibit.jQuery(document).ready(function() {
     Exhibit.staticRegistry = new Exhibit.Registry(true);
 
     Exhibit.jQuery("link[rel='exhibit-extension']").each(function(idx, el) {
-        Exhibit.loader.script(Exhibit.jQuery(el).attr("href"));
+        Exhibit.includeJavascriptFile(null, Exhibit.jQuery(el).attr("href"), false);
     });
 
-    Exhibit.loader.wait(function() {
+    Exhibit.wait(function() {
         Exhibit.jQuery(document).trigger("registerLocalization.exhibit", Exhibit.staticRegistry);
     });
 });

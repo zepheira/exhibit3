@@ -351,16 +351,36 @@ Exhibit.OrderedViewFrame.prototype._internalReconstruct = function(allItems) {
             processNonNumericLevel(items, index, values, valueType) :
             processNumericLevel(items, index, values, valueType);
         
+        /** all-grouping
+        grouped = true;
+        */
+        // The idea here appears to be to avoid considering a set of
+        // one item a group; but this ends up producing very confusing
+        // grouping with multiple ordering - a single-item set without a group
+        // has no label and subsequent sibling entities (items or groups) then
+        // end up appearing as children instead, depending on position
+        // relative to the end of the supergroup.  A hybrid between the two
+        // approaches appears to be necessary - grouping single items only
+        // when multiple orderings are in play.
+
+        // mono-grouping
         grouped = false;
         for (k = 0; k < keys.length; k++) {
             if (keys[k].items.size() > 1) {
                 grouped = true;
             }
         }
+        // end mono-grouping
 
+        /** all-grouping
+        hasSomeGrouping = true;
+        */
+
+        // mono-grouping
         if (grouped) {
             hasSomeGrouping = true;
         }
+        // end mono-grouping
         
         for (k = 0; k < keys.length; k++) {
             key = keys[k];
@@ -602,49 +622,53 @@ Exhibit.OrderedViewFrame.prototype._openSortPopup = function(evt, index) {
     if (index >= 0) {
         order = configuredOrders[index];
         property = database.getProperty(order.property);
-        propertyLabel = order.forward ? property.getPluralLabel() : property.getReversePluralLabel();
-        valueType = order.forward ? property.getValueType() : "item";
-        sortLabels = Exhibit.ViewUtilities.getSortLabels(valueType);
+        if (property === null) {
+            Exhibit.Debug.warn(Exhibit._("%orderedViewFrame.error.noSuchPropertyOrderWarning", order.property));
+        } else {
+            propertyLabel = order.forward ? property.getPluralLabel() : property.getReversePluralLabel();
+            valueType = order.forward ? property.getValueType() : "item";
+            sortLabels = Exhibit.ViewUtilities.getSortLabels(valueType);
 
-        popupDom.appendMenuItem(
-            sortLabels.ascending, 
-            Exhibit.urlPrefix +
-                (order.ascending ? "images/option-check.png" : "images/option.png"),
-            order.ascending ?
-                function() {} :
-                function() {
-                    self._reSort(
-                        index, 
-                        order.property, 
-                        order.forward, 
-                        true,
-                        false
-                    );
-                }
-        );
-        popupDom.appendMenuItem(
-            sortLabels.descending, 
-            Exhibit.urlPrefix +
-                (order.ascending ? "images/option.png" : "images/option-check.png"),
-            order.ascending ?
-                function() {
-                    self._reSort(
-                        index, 
-                        order.property, 
-                        order.forward, 
-                        false,
-                        false
-                    );
-                } :
-                function() {}
-        );
-        if (configuredOrders.length > 1) {
-            popupDom.appendSeparator();
             popupDom.appendMenuItem(
-                Exhibit._("%orderedViewFrame.removeOrderLabel"),
-                null,
-                function() {self._removeOrder(index);}
+                sortLabels.ascending, 
+                Exhibit.urlPrefix +
+                    (order.ascending ? "images/option-check.png" : "images/option.png"),
+                order.ascending ?
+                    function() {} :
+                    function() {
+                        self._reSort(
+                            index, 
+                            order.property, 
+                            order.forward, 
+                            true,
+                            false
+                        );
+                    }
             );
+            popupDom.appendMenuItem(
+                sortLabels.descending, 
+                Exhibit.urlPrefix +
+                    (order.ascending ? "images/option.png" : "images/option-check.png"),
+                order.ascending ?
+                    function() {
+                        self._reSort(
+                            index, 
+                            order.property, 
+                            order.forward, 
+                            false,
+                            false
+                        );
+                    } :
+                    function() {}
+            );
+            if (configuredOrders.length > 1) {
+                popupDom.appendSeparator();
+                popupDom.appendMenuItem(
+                    Exhibit._("%orderedViewFrame.removeOrderLabel"),
+                    null,
+                    function() {self._removeOrder(index);}
+                );
+            }
         }
     }
     
@@ -667,14 +691,16 @@ Exhibit.OrderedViewFrame.prototype._openSortPopup = function(evt, index) {
         
         if (!skip) {
             property = database.getProperty(possibleOrder.property);
-            orders.push({
-                property:   possibleOrder.property,
-                forward:    possibleOrder.forward,
-                ascending:  possibleOrder.ascending,
-                label:      possibleOrder.forward ? 
-                                property.getPluralLabel() : 
-                                property.getReversePluralLabel()
-            });
+            if (property !== null) {
+                orders.push({
+                    property:   possibleOrder.property,
+                    forward:    possibleOrder.forward,
+                    ascending:  possibleOrder.ascending,
+                    label:      possibleOrder.forward ? 
+                        property.getPluralLabel() : 
+                        property.getReversePluralLabel()
+                });
+            }
         }
     }
     
