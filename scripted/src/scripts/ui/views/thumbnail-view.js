@@ -221,12 +221,12 @@ Exhibit.ThumbnailView.prototype._reconstructWithFloats = function() {
 
     closeGroups = function(groupLevel) {
         for (i = groupLevel; i < state.groupDoms.length; i++) {
-            state.groupDoms[i].countSpan.innerHTML = state.groupCounts[i];
+            Exhibit.jQuery(state.groupDoms[i].countSpan).html(state.groupCounts[i]);
         }
         state.groupDoms = state.groupDoms.slice(0, groupLevel);
         state.groupCounts = state.groupCounts.slice(0, groupLevel);
 
-        if (groupLevel > 0) {
+        if (groupLevel > 0 && groupLevel <= state.groupDoms.length) {
             state.div = state.groupDoms[groupLevel - 1].contentDiv;
         } else {
             state.div = view._dom.bodyDiv;
@@ -292,12 +292,12 @@ Exhibit.ThumbnailView.prototype._reconstructWithTable = function() {
     closeGroups = function(groupLevel) {
         var i;
         for (i = groupLevel; i < state.groupDoms.length; i++) {
-            state.groupDoms[i].countSpan.innerHTML = state.groupCounts[i];
+            Exhibit.jQuery(state.groupDoms[i].countSpan).html(state.groupCounts[i]);
         }
         state.groupDoms = state.groupDoms.slice(0, groupLevel);
         state.groupCounts = state.groupCounts.slice(0, groupLevel);
 
-        if (groupLevel > 0) {
+        if (groupLevel > 0 && groupLevel <= state.groupDoms.length) {
             state.div = state.groupDoms[groupLevel - 1].contentDiv;
         } else {
             state.div = view._dom.bodyDiv;
@@ -426,28 +426,28 @@ Exhibit.ThumbnailView.prototype.stateDiffers = function(state) {
  */
 Exhibit.ThumbnailView.constructGroup = function(groupLevel, label) {
     var template = {
-        tag: "div",
+        "tag": "div",
         "class": "exhibit-thumbnailView-group",
-        children: [
-            {   tag: "h" + (groupLevel + 1),
-                children: [ 
+        "children": [
+            {   "tag": "h" + (groupLevel + 1),
+                "children": [ 
                     label,
-                    {   tag:        "span",
+                    {   "tag":        "span",
                         "class":  "exhibit-collectionView-group-count",
-                        children: [
+                        "children": [
                             " (",
-                            {   tag: "span",
-                                field: "countSpan"
+                            {   "tag": "span",
+                                "field": "countSpan"
                             },
                             ")"
                         ]
                     }
                 ],
-                field: "header"
+                "field": "header"
             },
-            {   tag: "div",
+            {   "tag": "div",
                 "class": "exhibit-collectionView-group-content",
-                field: "contentDiv"
+                "field": "contentDiv"
             }
         ]
     };

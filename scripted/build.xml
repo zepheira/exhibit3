@@ -14,6 +14,7 @@
   <property name="docs" value="${build}/docs"/>
   <property name="demos" value="${build}/demos"/>
   <property name="bundle" value="${build}/bundle"/>
+  <property name="bundleStyle" value="${bundle}/styles"/>
   <property name="compress" value="${build}/compress"/>
   <property name="node" value="${build}/node"/>
   <property name="demosSrc" value="demos"/>
@@ -82,7 +83,6 @@
         <exclude name="lib/*.js"/>
         <exclude name="exhibit-api.js"/>
         <exclude name="scripts/util/util.js"/>
-        <exclude name="scripts/create.js"/>
         <include name="scripts/util/*.js"/>
         <include name="scripts/data/*.js"/>
         <include name="scripts/ui/*.js"/>
@@ -98,6 +98,7 @@
   <!-- Code concatenation in prep for compression -->
   <target name="bundle" description="Combine source files in the right order">
     <mkdir dir="${bundle}"/>
+    <mkdir dir="${bundleStyle}"/>
 
     <concat destfile="${bundle}/exhibit-scripted-bundle.js" force="no">
       <filelist dir="${src}/">
@@ -160,7 +161,7 @@
       </filelist>
     </concat>
 
-    <concat destfile="${bundle}/exhibit-scripted-bundle.css" force="no">
+    <concat destfile="${bundleStyle}/exhibit-scripted-bundle.css" force="no">
       <fileset dir="${src}/styles/">
         <include name="**/*.css"/>
       </fileset>
@@ -199,6 +200,7 @@
   <!-- Modular bundling of extensions -->
   <target name="extension-bundle" description="Combine extension source files">
     <mkdir dir="${bundle}/extensions/${extension}"/>
+    <mkdir dir="${bundle}/extensions/${extension}/styles"/>
 
     <concat destfile="${bundle}/extensions/${extension}/${extension}-extension-bundle.js" force="no">
       <fileset dir="${src}/extensions/${extension}">
@@ -210,7 +212,7 @@
       </fileset>
     </concat>
 
-    <concat destfile="${bundle}/extensions/${extension}/${extension}-extension-bundle.css" force="no">
+    <concat destfile="${bundle}/extensions/${extension}/styles/${extension}-extension-bundle.css" force="no">
       <fileset dir="${src}/extensions/${extension}">
         <include name="**/*.css"/>
       </fileset>
@@ -226,6 +228,9 @@
     <antcall target="bundle"/>
     <antcall target="extension-bundle">
       <param name="extension" value="time"/>
+    </antcall>
+    <antcall target="extension-bundle">
+      <param name="extension" value="map"/>
     </antcall>
     <!-- invalid-json is self contained in one file, no need to add here -->
   </target>
