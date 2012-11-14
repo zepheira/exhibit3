@@ -145,7 +145,7 @@ Exhibit.DateTime.setIso8601Date = function(dateObject, string) {
  * @param {String} string An ISO 8601 string to parse.
  * @returns {Date} The modified date object.
  */
-Exhibit.DateTime.setIso8601Time = function (dateObject, string) {
+Exhibit.DateTime.setIso8601Time = function(dateObject, string) {
     /*
      *  This function has been adapted from dojo.date, v.0.3.0
      *  http://dojotoolkit.org/.
@@ -182,7 +182,7 @@ Exhibit.DateTime.timezoneOffset = new Date().getTimezoneOffset();
  * @param {String} string An ISO 8601 string to parse.
  * @returns {Date} The modified date object.
  */
-Exhibit.DateTime.setIso8601 = function (dateObject, string){
+Exhibit.DateTime.setIso8601 = function(dateObject, string) {
     /*
      *  This function has been adapted from dojo.date, v.0.3.0
      *  http://dojotoolkit.org/.
@@ -222,12 +222,33 @@ Exhibit.DateTime.setIso8601 = function (dateObject, string){
  * @param {String} string An ISO 8601 string to parse.
  * @returns {Date} A new date object created from the string.
  */
-Exhibit.DateTime.parseIso8601DateTime = function (string) {
+Exhibit.DateTime.parseIso8601DateTime = function(string) {
     try {
         return Exhibit.DateTime.setIso8601(new Date(0), string);
     } catch (e) {
         return null;
     }
+};
+
+/**
+ * Return a Date object's date part only as an ISO 8601 formatted string.
+ *
+ * @param {Date} d Date to format
+ * @returns {String}
+ */
+Exhibit.DateTime.toISODateString = function(d) {
+    var s, f;
+    if (typeof Date.prototype.toISOString !== "undefined") {
+        s = date.toISOString().split("T")[0];
+    } else {
+        f = function(i) {
+            return i < 10 ? '0' + i : i;
+        }
+        s = d.getUTCFullYear() + "-"
+            + f(d.getUTCMonth() + 1) + "-"
+            + f(d.getUTCDate());
+    }
+    return s;
 };
 
 /**

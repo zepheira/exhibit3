@@ -96,6 +96,22 @@ test("parseIso8601DateTime", function() {
     equal(d.getUTCHours(),3,'Parse Date/time 1 hours');
 });
 
+test("toISODateString", function() {
+    expect(7);
+
+    var d = new Date();
+    var s = Exhibit.DateTime.toISODateString(d);
+    var sArr = s.split("-");
+
+    equal(sArr.length, 3, "General ISO formatting");
+    equal(sArr[0].length, d.getUTCFullYear().toString().length, "ISO year formatting");
+    equal(sArr[1].length, 2, "ISO month formatting");
+    equal(sArr[2].length, 2, "ISO day of month formatting");
+    equal(parseInt(sArr[0], 10), d.getUTCFullYear(), "Year");
+    equal(parseInt(sArr[1], 10), d.getUTCMonth() + 1, "Month");
+    equal(parseInt(sArr[2], 10), d.getUTCDate(), "Day of month");
+});
+
 test("parseGregorianDateTime", function() {
     expect(2);
 
