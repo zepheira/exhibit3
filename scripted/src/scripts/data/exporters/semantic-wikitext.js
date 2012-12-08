@@ -4,6 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["lib/jquery", "exhibit", "data/exporter"], function($, Exhibit) {
 /**
  * @namespace
  */
@@ -75,5 +76,11 @@ Exhibit.Exporter.SemanticWikiText._register = function() {
     );
 };
 
-Exhibit.jQuery(document).one("registerExporters.exhibit",
-                Exhibit.Exporter.SemanticWikiText._register);
+$(document).one(
+    "registerExporters.exhibit",
+    Exhibit.Exporter.SemanticWikiText._register
+);
+
+    // end define
+    return Exhibit;
+});

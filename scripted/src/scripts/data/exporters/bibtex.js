@@ -4,6 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["lib/jquery", "exhibit", "data/exporter"], function($, Exhibit) {
 /**
  * @namespace
  */
@@ -92,5 +93,11 @@ Exhibit.Exporter.BibTex._register = function() {
     );
 };
 
-Exhibit.jQuery(document).one("registerExporters.exhibit",
-                Exhibit.Exporter.BibTex._register);
+$(document).one(
+    "registerExporters.exhibit",
+    Exhibit.Exporter.BibTex._register
+);
+
+    // end define
+    return Exhibit;
+});

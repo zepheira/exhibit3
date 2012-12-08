@@ -3,6 +3,9 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(
+    ["lib/jquery", "exhibit", "lib/sprintf"],
+    function($, Exhibit, vsprintf) {
 /**
  * @class
  * @constructor
@@ -104,7 +107,7 @@ Exhibit.Localization._registerComponent = function(evt, reg) {
 
     if (!reg.hasRegistry(Exhibit.Localization._registryKey)) {
         reg.createRegistry(Exhibit.Localization._registryKey);
-        Exhibit.jQuery(document).trigger("registerLocales.exhibit");
+        $(document).trigger("registerLocales.exhibit");
     }
 };
 
@@ -123,7 +126,7 @@ Exhibit.Localization.registerLocale = function(locale, l10n) {
             locale,
             l10n
         );
-        Exhibit.jQuery(document).trigger("localeRegistered.exhibit");
+        $(document).trigger("localeRegistered.exhibit");
         return true;
     } else {
         return false;
@@ -170,7 +173,7 @@ Exhibit.Localization.setLocale = function(locales) {
         }
     }
 
-    Exhibit.jQuery(document).trigger(
+    $(document).trigger(
         "localeSet.exhibit",
         [urls]
     );
@@ -211,7 +214,7 @@ Exhibit.Localization.getLoadableLocales = function(possibles) {
 Exhibit.Localization.importLocale = function(locale, hash) {
     if (typeof Exhibit.l10n[locale] === "undefined") {
         Exhibit.l10n[locale] = hash;
-        Exhibit.jQuery(document).trigger("localeLoaded.exhibit", [locale]);
+        $(document).trigger("localeLoaded.exhibit", [locale]);
     }
 };
 
@@ -222,7 +225,7 @@ Exhibit.Localization.importLocale = function(locale, hash) {
  */
 Exhibit.Localization.importExtensionLocale = function(locale, hash) {
     if (typeof Exhibit.l10n[locale] !== "undefined") {
-        Exhibit.jQuery.extend(Exhibit.l10n[locale], hash);
+        $.extend(Exhibit.l10n[locale], hash);
     } else {
         Exhibit.l10n[locale] = hash;
     }
@@ -284,14 +287,18 @@ Exhibit.Localization.lookup = function(key) {
     return undefined;
 };
 
-Exhibit.jQuery(document).one(
+$(document).one(
     "registerLocalization.exhibit",
     Exhibit.Localization._registerComponent
 );
 
-Exhibit.jQuery(document).bind(
+$(document).bind(
     "localesRegistered.exhibit",
     function() {
         Exhibit.Localization.setLocale(Exhibit.locales);
     }
 );
+
+    // end define
+    return Exhibit;
+});

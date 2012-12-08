@@ -4,6 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["exhibit"], function(Exhibit) {
 /**
  * @namespace
  */
@@ -23,3 +24,7 @@ Exhibit.Coders = {
      */
     "missingCaseColor": "#888"
 };
+
+    // end define
+    return Exhibit;
+});

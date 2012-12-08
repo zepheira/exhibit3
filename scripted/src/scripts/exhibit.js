@@ -4,15 +4,109 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["lib/jquery"], function($) {
 /**
- * Starting using Exhibit.jQuery instead of jQuery or $
+ * @namespace The base namespace for Exhibit.
  */
-(function() {
-    Exhibit.jQuery = jQuery;
-    if (!Exhibit._jQueryExists) {
-        jQuery.noConflict();
-    }
-}());
+var Exhibit = {
+    /**
+     * The version number for Exhibit.
+     * @constant
+     */
+    version: "3.0.0",
+
+    /**
+     * The XML namespace for Exhibit.
+     * @constant
+     */
+    namespace: "http://simile.mit.edu/2006/11/exhibit#",
+
+    /***
+     * Viable user-agent reported locales.
+     */
+    locales: [],
+
+    /**
+     * Whether Exhibit has been loaded yet.
+     */
+    loaded: false,
+
+    /**
+     * Indicates for listeners whether the event they're listening
+     * for has fired already or not.  Not all events are currently
+     * recorded here.  This is predominantly for the benefit of
+     * extensions.
+     */
+    signals: {
+        "loadExtensions.exhibit": false,
+        "exhibitConfigured.exhibit": false
+    },
+
+    /**
+     * Where Exhibit is served from.
+     */
+    urlPrefix: undefined,
+
+    /**
+     * Where to find Babel, if at all.
+     */
+    babelPrefix: undefined,
+
+    /**
+     * Where to submit JSON for validation.  Uses jsonlint.com by
+     * default, will use Babel instead of babelPrefix is given.
+     */
+    validateJSON: "http://jsonlint.com/?json=",
+
+    /**
+     * Where to find out more about Exhibit.
+     */
+    exhibitLink: "http://www.simile-widgets.org/exhibit/",
+
+    /**
+     * Settable parameters within the query string of loading this file.
+     */
+    params: {
+        "bundle": false,
+        "autoCreate": true,
+        "safe": false,
+        "babel": undefined,
+        "backstage": undefined,
+        "locale": undefined,
+        "persist": true
+    },
+
+    /**
+     * @namespace Prepare for official Exhibit extensions.
+     */
+    Extension: {},
+
+    "styles": [
+        "styles/graphics.css",
+        "styles/exhibit.css",
+        "styles/browse-panel.css",
+        "styles/lens.css",
+        "styles/control-panel.css",
+        "styles/util/facets.css",
+        "styles/util/views.css",
+        "styles/views/view-panel.css",
+        "styles/views/tile-view.css",
+        "styles/views/tabular-view.css",
+        "styles/views/thumbnail-view.css",
+        "styles/widgets/collection-summary-widget.css",
+        "styles/widgets/resizable-div-widget.css",
+        "styles/widgets/bookmark-widget.css",
+        "styles/widgets/toolbox-widget.css",
+        "styles/widgets/legend-widget.css",
+        "styles/widgets/option-widget.css",
+        "styles/widgets/reset-history-widget.css"
+    ],
+
+    /**
+     * @constant An Exhibit.Registry of static components.
+     */
+    registry: null
+};
 
 /**
  * @static
@@ -66,7 +160,7 @@ Exhibit.autoCreate = function() {
         Exhibit.Debug.warn(e);
     }
 
-    Exhibit.jQuery(document.body).one("dataload.exhibit", fDone);
+    $(document.body).one("dataload.exhibit", fDone);
 
     window.database = Exhibit.Database.create();
     window.database.loadLinks();
@@ -82,8 +176,8 @@ Exhibit.autoCreate = function() {
  */
 Exhibit.checkBackwardsCompatibility = function() {
     var exroles;
-    exroles = Exhibit.jQuery("*").filter(function() {
-        return typeof Exhibit.jQuery(this).attr("ex:role") !== "undefined";
+    exroles = $("*").filter(function() {
+        return typeof $(this).attr("ex:role") !== "undefined";
     });
     if (exroles.length > 0) {
         Exhibit.Backwards.enable("Attributes");
@@ -106,9 +200,9 @@ Exhibit.getAttribute = function(elmt, name, splitOn) {
     var value, i, values;
 
     try {
-        value = Exhibit.jQuery(elmt).attr(name);
+        value = $(elmt).attr(name);
         if (typeof value === "undefined" || value === null || value.length === 0) {
-            value = Exhibit.jQuery(elmt).data("ex-"+name);
+            value = $(elmt).data("ex-"+name);
             if (typeof value === "undefined" || value === null || value.length === 0) {
                 return null;
             }
@@ -214,7 +308,7 @@ Exhibit.getConfigurationFromDOM = function(elmt) {
 Exhibit.extractOptionsFromElement = function(elmt) {
     var opts, dataset, i;
     opts = {};
-    dataset = Exhibit.jQuery(elmt).data();
+    dataset = $(elmt).data();
     for (i in dataset) {
         if (dataset.hasOwnProperty(i)) {
             if (i.startsWith("ex")) {
@@ -242,7 +336,7 @@ Exhibit._Impl = function(database) {
             
     this._uiContext = Exhibit.UIContext.createRootContext({}, this);
     this._registry = new Exhibit.Registry();
-    Exhibit.jQuery(document).trigger("registerComponents.exhibit", this._registry);
+    $(document).trigger("registerComponents.exhibit", this._registry);
     this._collectionMap = {};
 };
 
@@ -439,7 +533,7 @@ Exhibit._Impl.prototype.configureFromDOM = function(root) {
 
     if (controlPanelElmts.length === 0) {
         panel = Exhibit.ControlPanel.createFromDOM(
-            Exhibit.jQuery("<div>").prependTo(document.body),
+            $("<div>").prependTo(document.body),
             null,
             uiContext
         );
@@ -482,7 +576,7 @@ Exhibit._Impl.prototype.configureFromDOM = function(root) {
             this._showFocusDialogOnItem(itemID);
         }
     }
-    Exhibit.jQuery(document).trigger("exhibitConfigured.exhibit", this);
+    $(document).trigger("exhibitConfigured.exhibit", this);
 };
 
 /**
@@ -491,7 +585,7 @@ Exhibit._Impl.prototype.configureFromDOM = function(root) {
  */
 Exhibit._Impl.prototype._showFocusDialogOnItem = function(itemID) {
     var dom, itemLens;
-    dom = Exhibit.jQuery.simileDOM("string",
+    dom = $.simileDOM("string",
         "div",
         "<div class='exhibit-focusDialog-viewContainer' id='lensContainer'>" +
         "</div>" +
@@ -501,16 +595,272 @@ Exhibit._Impl.prototype._showFocusDialogOnItem = function(itemID) {
             "</button>" +
         "</div>"
     );
-    Exhibit.jQuery(dom.elmt).attr("class", "exhibit-focusDialog exhibit-ui-protection");
+    $(dom.elmt).attr("class", "exhibit-focusDialog exhibit-ui-protection");
     Exhibit.UI.setupDialog(dom, true);
     
     itemLens = this._uiContext.getLensRegistry().createLens(itemID, dom.lensContainer, this._uiContext);
     
-    Exhibit.jQuery(dom.elmt).css("top", (document.body.scrollTop + 100) + "px");
-    Exhibit.jQuery(document.body).append(Exhibit.jQuery(dom.elmt));
-    Exhibit.jQuery(document).trigger("modalSuperseded.exhibit");
+    $(dom.elmt).css("top", (document.body.scrollTop + 100) + "px");
+    $(document.body).append($(dom.elmt));
+    $(document).trigger("modalSuperseded.exhibit");
 
-    Exhibit.jQuery(dom.closeButton).bind("click", function(evt) {
+    $(dom.closeButton).bind("click", function(evt) {
         dom.close();
     });
 };
+
+// @@@ from exhibit-api.js, here to bottom
+// most of this is obsolete with RequireJS
+
+/**
+ * @static
+ * @param {String} url
+ * @param {Object} to
+ * @param {Object} types
+ * @returns {Object}
+ */
+Exhibit.parseURLParameters = function(url, to, types) {
+    var q, param, parsed, params, decode, i, eq, name, old, replacement, type, data;
+    to = to || {};
+    types = types || {};
+
+    if (typeof url === "undefined") {
+        url = document.location.href;
+    }
+
+    q = url.indexOf("?");
+    if (q < 0) {
+        return to;
+    }
+
+    url = (url+"#").slice(q+1, url.indexOf("#")); // remove URL fragment
+    params = url.split("&");
+    parsed = {};
+    decode = window.decodeURIComponent || unescape;
+    for (i = 0; i < params.length; i++) {
+        param = params[i];
+        eq = param.indexOf("=");
+        name = decode(param.slice(0, eq));
+        old = parsed[name];
+        replacement = decode(param.slice(eq+1));
+ 
+        if (typeof old === "undefined") {
+            old = [];
+        } else if (!(old instanceof Array)) {
+            old = [old];
+        }
+        parsed[name] = old.concat(replacement);
+    }
+
+    for (i in parsed) {
+        if (parsed.hasOwnProperty(i)) {
+            type = types[i] || String;
+            data = parsed[i];
+            if (!(data instanceof Array)) {
+                data = [data];
+            }
+            if (type === Boolean && data[0] === "false") {
+                to[i] = false;
+            } else {
+                to[i] = type.apply(this, data);
+            }
+        }
+    }
+
+    return to;
+};
+
+/**
+ * Locate the script tag that called for a component and return its src.
+ *
+ * @param {Document} doc
+ * @param {String} frag
+ * @returns {String}
+ */
+Exhibit.findScript = function(doc, frag) {
+    var script, scripts, i, url;
+    scripts = doc.getElementsByTagName("script");
+    for (i = 0; i < scripts.length; i++) {
+        script = scripts[i];
+        url = script.getAttribute("src");
+        if (url !== null) {
+            if (url.indexOf(frag) >= 0) {
+                return url;
+            }
+        }
+    }
+    return null;
+};
+
+/**
+ * Append into urls each string in suffixes after prefixing it with urlPrefix.
+ * @static
+ * @param {Array} urls
+ * @param {String} urlPrefix
+ * @param {Array} suffixes
+ */
+Exhibit.prefixURLs = function(urls, urlPrefix, suffixes) {
+    // no op
+};
+
+/**
+ * @static
+ * @param {Document} doc
+ * @param {String} url
+ */
+Exhibit.includeCssFile = function(doc, url) {
+    var link;
+    if (doc.body === null) {
+        try {
+            doc.write('<link rel="stylesheet" href="' + url + '" type="text/css"/>');
+            return;
+        } catch (e) {
+                // fall through
+        }
+    }
+        
+    link = doc.createElement("link");
+    link.setAttribute("rel", "stylesheet");
+    link.setAttribute("type", "text/css");
+    link.setAttribute("href", url);
+    doc.getElementsByTagName("head")[0].appendChild(link);
+};
+
+/**
+ * @static
+ * @param {Document} doc
+ * @param {String} urlPrefix Path prefix to add to the list of filenames; use
+ *     null or an empty string if no prefix is needed.
+ * @param {Array} filenames
+ */
+Exhibit.includeCssFiles = function(doc, urlPrefix, filenames) {
+    var i;
+    for (i = 0; i < filenames.length; i++) {
+        if (urlPrefix !== null && urlPrefix !== "") {
+            Exhibit.includeCssFile(doc, urlPrefix + filenames[i]);
+        } else {
+            Exhibit.includeCssFile(doc, filenames[i]);
+        }
+    }
+};
+
+/**
+ * @static
+ * @param {String} urlPrefix Path prefix to add to the list of filenames; use
+ *     null or an empty string if no prefix is needed.
+ * @param {Array} filenames
+ * @param {Boolean} [serial]
+ */
+Exhibit.includeJavascriptFiles = function(urlPrefix, filenames, serial) {
+    // no op
+};
+
+/**
+ * @static
+ * @param {String} urlPrefix Path prefix to add to the list of filenames; use
+ *     null or an empty string if no prefix is needed.
+ * @param {String} filename The remainder of the script URL following the
+ *     urlPrefix; a script to add to Exhibit's ordered loading.
+ * @param {Boolean} [serial] Whether to wait for a script to load before
+ *      loading the next in line.  True by default.
+ */
+Exhibit.includeJavascriptFile = function(urlPrefix, filename, serial) {
+    // no op
+};
+
+/**
+ * @static
+ * @returns {String}
+ */
+Exhibit.generateDelayID = function() {
+    return "delay" + Math.round(Math.random()*100000);
+};
+
+/**
+ * Load all scripts associated with Exhibit.
+ * 
+ * @static
+ */
+Exhibit.load = function() {
+    var i, j, k, o, dep, url, paramTypes, scr, docHead, style, linkElmts, link;
+
+    paramTypes = {
+        "bundle": Boolean,
+        "js": Array,
+        "postLoad": Boolean,
+        "css": Array,
+        "autoCreate": Boolean,
+        "safe": Boolean,
+        "babel": String,
+        "backstage": String,
+        "locale": String,
+        "persist": Boolean
+    };
+
+    if (typeof Exhibit_urlPrefix === "string") {
+        Exhibit.urlPrefix = Exhibit_urlPrefix;
+        if (Object.prototype.hasOwnProperty.call(
+            window,
+            "Exhibit_parameters"
+        )) {
+            Exhibit.parseURLParameters(Exhibit_parameters,
+                                       Exhibit.params,
+                                       paramTypes);
+        }
+    } else {
+        // url = Exhibit.findScript(document, "/exhibit-api.js");
+        // Exhibit.urlPrefix = url.substr(0, url.indexOf("exhibit-api.js"));
+        // Exhibit.parseURLParameters(url, Exhibit.params, paramTypes);
+        Exhibit.urlPrefix = "http://localhost/~ryanlee/dev/src/";
+    }
+
+    if (typeof Exhibit.params.babel !== "undefined") {
+        Exhibit.babelPrefix = Exhibit.params.babel;
+    }
+
+    // Using the <link> version takes precedence; this is a holdover from
+    // the Babel-based importer where only Babel's translator URL mattered,
+    // but here the root of Babel is more important.
+    // <link rel="exhibit/babel-translator" src="..." />
+    //   or
+    // <link rel="exhibit-babel" src="..." />
+    // will do it.
+    linkElmts = document.getElementsByTagName("link");
+    for (i = 0; i < linkElmts.length; i++) {
+        link = linkElmts[i];
+        if (link.rel.search(/\b(exhibit\/babel-translator|exhibit-babel)\b/) > 0) {
+            Exhibit.babelPrefix = link.href.replace(/\/translator\/$/, "");
+        }
+    }
+
+    if (Exhibit.params.bundle) {
+        Exhibit.scripts = ["exhibit-scripted-bundle.js"];
+        Exhibit.styles = ["styles/exhibit-scripted-bundle.css"];
+    }
+    
+    if (typeof Exhibit.params.backstage !== "undefined") {
+        // If using Backstage, force non-auto creation and force Backstage
+        // to load after Exhibit.  If the Backstage install also includes
+        // Babel, the Backstage scripts should set Exhibit.babelPrefix.
+        Exhibit.params.autoCreate = false;
+        Exhibit.scripts = Exhibit.scripts.concat(Exhibit.params.backstage);
+    }
+
+    // @@@ write up different script inclusion, won't work here
+
+    // load styles first
+    docHead = document.getElementsByTagName("head")[0];
+    for (i = 0; i < Exhibit.styles.length; i++) {
+        style = document.createElement("link");
+        style.setAttribute("rel", "stylesheet");
+        style.setAttribute("type", "text/css");
+        // style.setAttribute("href", Exhibit.urlPrefix + Exhibit.styles[i]);
+        docHead.appendChild(style);
+    }
+};
+
+Exhibit.load();
+
+    // end define
+    return Exhibit;
+});

@@ -4,6 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["lib/jquery", "exhibit", "data/importer"], function($, Exhibit) {
 /**
  * @namespace
  */
@@ -42,5 +43,12 @@ Exhibit.Importer.ExhibitJSON._register = function() {
     );
 };
 
-Exhibit.jQuery(document).one("registerImporters.exhibit",
-                Exhibit.Importer.ExhibitJSON._register);
+$(document).one(
+    "registerImporters.exhibit",
+    Exhibit.Importer.ExhibitJSON._register
+);
+
+
+    // end define
+    return Exhibit;
+});

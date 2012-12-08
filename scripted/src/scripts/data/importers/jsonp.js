@@ -4,6 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["lib/jquery", "exhibit", "data/importer"], function($, Exhibit) {
 /**
  * @namespace
  */
@@ -94,14 +95,18 @@ Exhibit.Importer.JSONP._register = function(evt, reg) {
     );
     if (!reg.hasRegistry(Exhibit.Importer.JSONP._registryKey)) {
         reg.createRegistry(Exhibit.Importer.JSONP._registryKey);
-        Exhibit.jQuery(document).trigger(
+        $(document).trigger(
             "registerJSONPImporters.exhibit",
             reg
         );
     }
 };
 
-Exhibit.jQuery(document).one(
+$(document).one(
     "registerImporters.exhibit",
     Exhibit.Importer.JSONP._register
 );
+
+    // end define
+    return Exhibit;
+});

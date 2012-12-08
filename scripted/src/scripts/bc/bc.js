@@ -3,6 +3,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["exhibit"], function(Exhibit) {
 /**
  * @namespace
  */
@@ -19,3 +20,7 @@ Exhibit.Backwards = {
 Exhibit.Backwards.enable = function(module) {
     Exhibit.Backwards[module].enable();
 };
+
+    // end define
+    return Exhibit;
+});

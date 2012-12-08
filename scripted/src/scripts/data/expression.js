@@ -4,6 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["exhibit"], function(Exhibit) {
 /**
  * @namespace
  */
@@ -126,3 +127,7 @@ Exhibit.Expression._Impl.prototype.getPath = function() {
         this._rootNode :
         null;
 };
+
+    // end define
+    return Exhibit;
+});

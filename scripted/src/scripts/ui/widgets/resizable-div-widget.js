@@ -4,6 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["lib/jquery", "exhibit"], function($, Exhibit) {
 /**
  * @param {Object} configuration
  * @param {Element} elmt
@@ -37,7 +38,7 @@ Exhibit.ResizableDivWidget.create = function(configuration, elmt, uiContext) {
  *
  */
 Exhibit.ResizableDivWidget.prototype.dispose = function() {
-    Exhibit.jQuery(this._div).empty();
+    $(this._div).empty();
     this._contentDiv = null;
     this._resizerDiv = null;
     this._div = null;
@@ -56,38 +57,42 @@ Exhibit.ResizableDivWidget.prototype.getContentDiv = function() {
 Exhibit.ResizableDivWidget.prototype._initializeUI = function() {
     var self = this;
     
-    Exhibit.jQuery(this._div).html(
+    $(this._div).html(
         "<div></div>" +
         '<div class="exhibit-resizableDivWidget-resizer">' +
             Exhibit.UI.createTranslucentImageHTML("images/down-arrow.png") +
             "</div>");
         
-    this._contentDiv = Exhibit.jQuery(this._div).children().get(0);
-    this._resizerDiv = Exhibit.jQuery(this._div).children().get(1);
+    this._contentDiv = $(this._div).children().get(0);
+    this._resizerDiv = $(this._div).children().get(1);
 
-    Exhibit.jQuery(this._resizerDiv).bind("mousedown", function(evt) {
+    $(this._resizerDiv).bind("mousedown", function(evt) {
         self._dragging = true;
-        self._height = Exhibit.jQuery(self._contentDiv).height();
+        self._height = $(self._contentDiv).height();
         self._origin = { "x": evt.pageX, "y": evt.pageY };
 
         self._ondrag = function(evt2) {
             var height = self._height + evt2.pageY - self._origin.y;
             evt.preventDefault();
             evt.stopPropagation();
-            Exhibit.jQuery(self._contentDiv).height(Math.max(
+            $(self._contentDiv).height(Math.max(
                 height,
                 self._configuration.minHeight
             ));
         };
-        Exhibit.jQuery(document).bind("mousemove", self._ondrag);
+        $(document).bind("mousemove", self._ondrag);
 
         self._dragdone = function(evt) {
             self._dragging = false;
-            Exhibit.jQuery(document).unbind("mousemove", self._ondrag);
+            $(document).unbind("mousemove", self._ondrag);
             if (typeof self._configuration.onResize === "function") {
                 self._configuration.onResize();
             }
         };
-        Exhibit.jQuery(self._resizerDiv).one("mouseup", self._dragdone);
+        $(self._resizerDiv).one("mouseup", self._dragdone);
     });
 };
+
+    // end define
+    return Exhibit;
+});

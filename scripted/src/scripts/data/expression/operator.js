@@ -4,6 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["exhibit", "data/expression"], function(Exhibit) {
 /**
  * @class
  * @constructor
@@ -130,3 +131,7 @@ Exhibit.Expression._operators = {
         f: function(a, b) { return a >= b; }
     }
 };
+
+    // end define
+    return Exhibit;
+});

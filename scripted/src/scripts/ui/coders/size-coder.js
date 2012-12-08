@@ -4,6 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["lib/jquery", "exhibit"], function($, Exhibit) {
 /**
  * @class
  * @constructor
@@ -11,7 +12,7 @@
  * @param {Exhibit.UIContext} uiContext
  */
 Exhibit.SizeCoder = function(containerElmt, uiContext) {
-    Exhibit.jQuery.extend(this, new Exhibit.Coder(
+    $.extend(this, new Exhibit.Coder(
         "size",
         containerElmt,
         uiContext
@@ -48,7 +49,7 @@ Exhibit.SizeCoder._settingSpecs = {
  */
 Exhibit.SizeCoder.create = function(configuration, uiContext) {
     var coder, div;
-    div = Exhibit.jQuery("<div>")
+    div = $("<div>")
         .hide()
         .appendTo("body");
     coder = new Exhibit.SizeCoder(
@@ -68,7 +69,7 @@ Exhibit.SizeCoder.create = function(configuration, uiContext) {
 Exhibit.SizeCoder.createFromDOM = function(configElmt, uiContext) {
     var configuration, coder;
 
-    Exhibit.jQuery(configElmt).hide();
+    $(configElmt).hide();
     
     configuration = Exhibit.getConfigurationFromDOM(configElmt);
     coder = new Exhibit.SizeCoder(
@@ -83,10 +84,10 @@ Exhibit.SizeCoder.createFromDOM = function(configElmt, uiContext) {
     );
     
     try {
-        Exhibit.jQuery(configElmt).children().each(function(index, elmt) {
+        $(configElmt).children().each(function(index, elmt) {
             coder._addEntry(
                 Exhibit.getAttribute(this,  "case"),
-                Exhibit.jQuery(this).text().trim(),
+                $(this).text().trim(),
                 Exhibit.getAttribute(this, "size")
             );
         });
@@ -245,3 +246,7 @@ Exhibit.SizeCoder.prototype.getMixedLabel = function() {
 Exhibit.SizeCoder.prototype.getMixedSize = function() {
     return this._mixedCase.size;
 };
+
+    // end define
+    return Exhibit;
+});

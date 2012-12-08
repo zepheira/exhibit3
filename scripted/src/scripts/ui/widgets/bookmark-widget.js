@@ -5,6 +5,7 @@
 
 // @@@ integrate bit.ly or some other url shortener?
 
+define(["lib/jquery", "exhibit"], function($, Exhibit) {
 /**
  * @class
  * @constructor
@@ -63,10 +64,10 @@ Exhibit.BookmarkWidget._configure = function(widget, configuration) {
  */
 Exhibit.BookmarkWidget.prototype._initializeUI = function() {
     var popup;
-    popup = Exhibit.jQuery("<div>")
+    popup = $("<div>")
         .attr("class", "exhibit-bookmarkWidget-popup");
     this._fillPopup(popup);
-    Exhibit.jQuery(this.getContainer()).append(popup);
+    $(this.getContainer()).append(popup);
     this._popup = popup;
 };
 
@@ -87,7 +88,7 @@ Exhibit.BookmarkWidget.prototype._fillPopup = function(popup) {
 
     self = this;
     img = Exhibit.UI.createTranslucentImage("images/bookmark-icon.png");
-    Exhibit.jQuery(img)
+    $(img)
         .attr("class", "exhibit-bookmarkWidget-button")
         .attr("title", Exhibit._("%widget.bookmark.tooltip"))
         .bind("click", function(evt) {
@@ -105,22 +106,22 @@ Exhibit.BookmarkWidget.prototype._showBookmark = function(elmt, evt) {
     self = this;
     self._controlPanel.childOpened();
     popupDom = Exhibit.UI.createPopupMenuDom(elmt);
-    el = Exhibit.jQuery('<input type="text" />').
+    el = $('<input type="text" />').
         attr("value", Exhibit.Bookmark.generateBookmark()).
         attr("size", 40);
-    Exhibit.jQuery(popupDom.elmt).append(Exhibit.jQuery(el));
-    Exhibit.jQuery(popupDom.elmt).one("closed.exhibit", function(evt) {
+    $(popupDom.elmt).append($(el));
+    $(popupDom.elmt).one("closed.exhibit", function(evt) {
         self.dismiss();
     });
     popupDom.open(evt);
-    Exhibit.jQuery(el).get(0).select();
+    $(el).get(0).select();
 };
 
 /**
  * @returns {jQuery}
  */
 Exhibit.BookmarkWidget.prototype.getContainer = function() {
-    return Exhibit.jQuery(this._div);
+    return $(this._div);
 };
 
 /**
@@ -146,3 +147,7 @@ Exhibit.BookmarkWidget.prototype.setControlPanel = function(panel) {
 Exhibit.BookmarkWidget.prototype.dismiss = function() {
     this._controlPanel.childClosed();
 };
+
+    // end define
+    return Exhibit;
+});

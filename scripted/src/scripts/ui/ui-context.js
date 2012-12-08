@@ -4,9 +4,8 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["lib/jquery", "exhibit"], function($, Exhibit) {
 /**
- * 
- * 
  * @class
  * @constructor
  */
@@ -315,7 +314,7 @@ Exhibit.UIContext.registerLens = function(configuration, lensRegistry) {
 Exhibit.UIContext.registerLensFromDOM = function(elmt, lensRegistry) {
     var itemTypes, template, url, id, elmt2, i;
 
-    Exhibit.jQuery(elmt).hide();
+    $(elmt).hide();
     
     itemTypes = Exhibit.getAttribute(elmt, "itemTypes", ",");
     template = null;
@@ -372,7 +371,7 @@ Exhibit.UIContext.registerLenses = function(configuration, lensRegistry) {
 Exhibit.UIContext.registerLensesFromDOM = function(parentNode, lensRegistry) {
     var node, role, lensSelectorString, lensSelector;
 
-    node = Exhibit.jQuery(parentNode).children().get(0);
+    node = $(parentNode).children().get(0);
     while (typeof node !== "undefined" && node !== null) {
         if (node.nodeType === 1) {
             role = Exhibit.getRoleAttribute(node);
@@ -423,3 +422,7 @@ Exhibit.UIContext.createLensRegistryFromDOM = function(parentNode, configuration
     
     return lensRegistry;
 };
+
+    // end define
+    return Exhibit;
+});

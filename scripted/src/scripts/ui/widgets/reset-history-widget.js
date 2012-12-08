@@ -3,7 +3,7 @@
  *     can get in an odd state if the Exhibit is being designed.
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
-
+define(["lib/jquery", "exhibit"], function($, Exhibit) {
 /**
  * @constructor
  * @class
@@ -78,13 +78,13 @@ Exhibit.ResetHistoryWidget.prototype._initializeUI = function() {
     var img;
 
     img = Exhibit.UI.createTranslucentImage("images/reset-history-icon.png");
-    Exhibit.jQuery(img)
+    $(img)
         .attr("class", "exhibit-resetHistoryWidget-button")
         .attr("title", "Click to clear state and refresh window")
         .bind("click", function(evt) {
             Exhibit.ResetHistoryWidget.resetHistory();
         });
-    Exhibit.jQuery(this._containerElmt).append(img);
+    $(this._containerElmt).append(img);
 };
 
 /**
@@ -104,3 +104,7 @@ Exhibit.ResetHistoryWidget.prototype.dispose = function() {
     this._div = null;
     this._settings = null;
 };
+
+    // end define
+    return Exhibit;
+});

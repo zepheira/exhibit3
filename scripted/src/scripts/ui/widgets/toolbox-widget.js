@@ -4,6 +4,9 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(
+    ["lib/jquery", "exhibit", "lib/jquery.simile.dom"],
+    function($, Exhibit) {
 /**
  * @constructor
  * @class
@@ -78,7 +81,7 @@ Exhibit.ToolboxWidget._configure = function(widget, configuration) {
  *
  */
 Exhibit.ToolboxWidget.prototype.dispose = function() {
-    Exhibit.jQuery(this._containerElmt).unbind("mouseover mouseout");
+    $(this._containerElmt).unbind("mouseover mouseout");
     this._dismiss();
     this._settings = null;
     this._containerElmt = null;
@@ -91,10 +94,10 @@ Exhibit.ToolboxWidget.prototype.dispose = function() {
 Exhibit.ToolboxWidget.prototype._initializeUI = function() {
     var self = this;
     if (this._settings.toolboxHoverReveal) {
-        Exhibit.jQuery(this._containerElmt).bind("mouseover", function(evt) {
+        $(this._containerElmt).bind("mouseover", function(evt) {
             self._onContainerMouseOver(evt);
         })
-        Exhibit.jQuery(this._containerElmt).bind("mouseout", function(evt) {
+        $(this._containerElmt).bind("mouseout", function(evt) {
             self._onContainerMouseOut(evt);
         });
     } else {
@@ -109,16 +112,16 @@ Exhibit.ToolboxWidget.prototype._makePopup = function() {
     var coords, docWidth, popup, self, right;
     self = this;
 
-    coords = Exhibit.jQuery(this._containerElmt).offset();
-    docWidth = Exhibit.jQuery(document.body).width();
+    coords = $(this._containerElmt).offset();
+    docWidth = $(document.body).width();
 
     // Don't widen the page
-    right = docWidth - coords.left - Exhibit.jQuery(this._containerElmt).width();
+    right = docWidth - coords.left - $(this._containerElmt).width();
     if (right <= 0) {
         right = 1;
     }
 
-    popup = Exhibit.jQuery("<div>")
+    popup = $("<div>")
         .attr("class", "exhibit-toolboxWidget-popup screen")
         .css("position", "absolute")
         .css("top", coords.top + "px")
@@ -126,7 +129,7 @@ Exhibit.ToolboxWidget.prototype._makePopup = function() {
 
     this._popup = popup;
     this._fillPopup(popup);
-    Exhibit.jQuery(this._containerElmt).append(popup);
+    $(this._containerElmt).append(popup);
 };
 
 /**
@@ -136,18 +139,18 @@ Exhibit.ToolboxWidget.prototype._onContainerMouseOver = function(evt) {
     var self, coords, docWidth, popup;
     if (!this._hovering) {
         self = this;
-        coords = Exhibit.jQuery(this._containerElmt).offset();
-        docWidth = Exhibit.jQuery(document.body).width();
+        coords = $(this._containerElmt).offset();
+        docWidth = $(document.body).width();
 
-        popup = Exhibit.jQuery("<div>")
+        popup = $("<div>")
             .hide()
             .attr("class", "exhibit-toolboxWidget-popup screen")
             .css("position", "absolute")
             .css("top", coords.top + "px")
-            .css("right", (docWidth - coords.left - Exhibit.jQuery(this._containerElmt).width()) + "px");
+            .css("right", (docWidth - coords.left - $(this._containerElmt).width()) + "px");
         this._fillPopup(popup);
-        Exhibit.jQuery(popup).fadeIn();
-        Exhibit.jQuery(document.body).append(popup);
+        $(popup).fadeIn();
+        $(document.body).append(popup);
         popup.bind("mouseover", function(evt) {
             self._onPopupMouseOver(evt);
         });
@@ -224,17 +227,17 @@ Exhibit.ToolboxWidget.prototype._fillPopup = function(elmt) {
     self = this;
     
     exportImg = Exhibit.UI.createTranslucentImage("images/liveclipboard-icon.png");
-    Exhibit.jQuery(exportImg).attr("class", "exhibit-toolboxWidget-button");
-    Exhibit.jQuery(exportImg).bind("click", function(evt) {
+    $(exportImg).attr("class", "exhibit-toolboxWidget-button");
+    $(exportImg).bind("click", function(evt) {
         self._showExportMenu(exportImg, evt);
     });
-    Exhibit.jQuery(elmt).append(exportImg);
+    $(elmt).append(exportImg);
 };
 
 Exhibit.ToolboxWidget.prototype._dismiss = function() {
     if (this._popup !== null) {
-        Exhibit.jQuery(this._popup).fadeOut("fast", function() {
-            Exhibit.jQuery(this).remove();
+        $(this._popup).fadeOut("fast", function() {
+            $(this).remove();
         });
         this._popup = null;
     }
@@ -249,7 +252,7 @@ Exhibit.ToolboxWidget.prototype._dismiss = function() {
 Exhibit.ToolboxWidget._mouseOutsideElmt = function(evt, elmt) {
     var eventCoords, coords;
     eventCoords = { "x": evt.pageX, "y": evt.pageY };
-    coords = Exhibit.jQuery(elmt).offset();
+    coords = $(elmt).offset();
     return (eventCoords.x < coords.left ||
             eventCoords.x > coords.left + elmt.offsetWidth ||
             eventCoords.y < coords.top ||
@@ -326,25 +329,25 @@ Exhibit.ToolboxWidget.createExportDialogBox = function(string) {
             }
         ]
     };
-    dom = Exhibit.jQuery.simileDOM("template", template);
-    Exhibit.jQuery(dom.textAreaContainer).html("<textarea wrap='off' rows='15'>" + string + "</textarea>");
+    dom = $.simileDOM("template", template);
+    $(dom.textAreaContainer).html("<textarea wrap='off' rows='15'>" + string + "</textarea>");
         
     Exhibit.UI.setupDialog(dom, true);
 
     dom.open = function() {
         var textarea;
 
-        Exhibit.jQuery(dom.elmt).css("top", (document.body.scrollTop + 100) + "px");
+        $(dom.elmt).css("top", (document.body.scrollTop + 100) + "px");
         
-        Exhibit.jQuery(document.body).append(Exhibit.jQuery(dom.elmt));
-        Exhibit.jQuery(document).trigger("modalSuperseded.exhibit");
+        $(document.body).append($(dom.elmt));
+        $(document).trigger("modalSuperseded.exhibit");
         
-        textarea = Exhibit.jQuery(dom.textAreaContainer).children().get(0);
+        textarea = $(dom.textAreaContainer).children().get(0);
         textarea.select();
-        Exhibit.jQuery(dom.closeButton).bind("click", function(evt) {
+        $(dom.closeButton).bind("click", function(evt) {
             dom.close();
         });
-        Exhibit.jQuery(textarea).bind("keyup", function(evt) {
+        $(textarea).bind("keyup", function(evt) {
             if (evt.keyCode === 27) { // ESC
                 dom.close();
             }
@@ -353,3 +356,7 @@ Exhibit.ToolboxWidget.createExportDialogBox = function(string) {
     
     return dom;
 };
+
+    // end define
+    return Exhibit;
+});

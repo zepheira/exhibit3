@@ -4,6 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["exhibit", "data/expression"], function(Exhibit) {
 /**
  * @class
  * @constructor
@@ -41,3 +42,7 @@ Exhibit.Expression._FunctionCall.prototype.evaluate = function(
         throw new Error(Exhibit._("%expression.noSuchFunction", this._name));
     }
 };
+
+    // end define
+    return Exhibit;
+});

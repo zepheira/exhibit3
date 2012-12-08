@@ -3,6 +3,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["lib/jquery", "exhibit"], function($, Exhibit) {
 /**
  * @class
  * @constructor
@@ -21,7 +22,7 @@ Exhibit.Coder = function(key, div, uiContext) {
     /**
      * @private
      */
-    _div = Exhibit.jQuery(div);
+    _div = $(div);
 
     /**
      * @private
@@ -58,7 +59,7 @@ Exhibit.Coder = function(key, div, uiContext) {
      * @param {Object} specs
      */
     this.addSettingSpecs = function(specs) {
-        Exhibit.jQuery.extend(true, this._settingSpecs, specs);
+        $.extend(true, this._settingSpecs, specs);
     };
 
     /**
@@ -115,7 +116,7 @@ Exhibit.Coder = function(key, div, uiContext) {
         this._settingSpecs = null;
 
         this._settings = null;
-        Exhibit.jQuery(_div).empty();
+        $(_div).empty();
         _div = null;
 
         this.unregister();
@@ -126,7 +127,7 @@ Exhibit.Coder = function(key, div, uiContext) {
      * @private
      */
     _setIdentifier = function() {
-        _id = Exhibit.jQuery(_div).attr("id");
+        _id = $(_div).attr("id");
         if (typeof _id === "undefined" || _id === null) {
             _id = _instanceKey
                 + "-"
@@ -166,7 +167,11 @@ Exhibit.Coder.registerComponent = function(evt, reg) {
     }
 };
 
-Exhibit.jQuery(document).one(
+$(document).one(
     "registerComponents.exhibit",
     Exhibit.Coder.registerComponent
 );
+
+    // end define
+    return Exhibit;
+});

@@ -4,11 +4,11 @@
  * @fileOverview A collection of date/time utility functions.
  */
 
+define(["exhibit"], function(Exhibit) {
 /**
  * @namespace A collection of date/time utility functions.
  */
 Exhibit.DateTime = {};
-
                                      /** @constant */
 Exhibit.DateTime.MILLISECOND    = 0; /** @constant */
 Exhibit.DateTime.SECOND         = 1; /** @constant */
@@ -22,21 +22,23 @@ Exhibit.DateTime.DECADE         = 8; /** @constant */
 Exhibit.DateTime.CENTURY        = 9; /** @constant */
 Exhibit.DateTime.MILLENNIUM     = 10; /** @constant */
 Exhibit.DateTime.QUARTER        = 11; /** @constant */
-
+    
 Exhibit.DateTime.EPOCH          = -1; /** @constant */
 Exhibit.DateTime.ERA            = -2;
-
+    
 /**
- * An array of unit lengths, expressed in milliseconds, of various lengths of
- * time.  The array indices are predefined and stored as properties of the
- * Exhibit.DateTime object, e.g. Exhibit.DateTime.YEAR.
+ * An array of unit lengths, expressed in milliseconds, of various
+ * lengths of time.  The array indices are predefined and stored as
+ * properties of the Exhibit.DateTime object, e.g. Exhibit.DateTime.YEAR.
  * @constant
  * @type {Array}
  */
 Exhibit.DateTime.gregorianUnitLengths = [];
 (function() {
-    var d = Exhibit.DateTime, a = d.gregorianUnitLengths;
-    
+    var d, a;
+    d = Exhibit.DateTime;
+    a = d.gregorianUnitLengths;
+        
     a[d.MILLISECOND] = 1;
     a[d.SECOND]      = 1000;
     a[d.MINUTE]      = a[d.SECOND] * 60;
@@ -63,25 +65,25 @@ Exhibit.DateTime._dateRegexp = new RegExp(
         "(-?W([0-9]{2})(-?([1-7]))?)"    // -Wweek-dayOfWeek
     ].join("|") + ")?$"
 );
-
+    
 /**
  * @private
  * @static
  * @constant
  */
 Exhibit.DateTime._timezoneRegexp = /Z|(([\-+])([0-9]{2})(:?([0-9]{2}))?)$/;
-
+    
 /**
  * @private
  * @static
  * @constant
  */
 Exhibit.DateTime._timeRegexp = /^([0-9]{2})(:?([0-9]{2})(:?([0-9]{2})(\.([0-9]+))?)?)?$/;
-
+    
 /**
- * Takes a date object and a string containing an ISO 8601 date and sets the
- * the date using information parsed from the string.  Note that this method
- * does not parse any time information.
+ * Takes a date object and a string containing an ISO 8601 date and sets
+ * the date using information parsed from the string.  Note that this
+ * method does not parse any time information.
  *
  * @static
  * @param {Date} dateObject The date object to modify.
@@ -98,7 +100,7 @@ Exhibit.DateTime.setIso8601Date = function(dateObject, string) {
     if (!d) {
         throw new Error(Exhibit._("%datetime.error.invalidDate", string));
     }
-    
+        
     sign = (d[1] === "-") ? -1 : 1; // BC or AD
     year = sign * d[2];
     month = d[5];
@@ -106,7 +108,7 @@ Exhibit.DateTime.setIso8601Date = function(dateObject, string) {
     dayofyear = d[9];
     week = d[11];
     dayofweek = (d[13]) ? d[13] : 1;
-
+    
     dateObject.setUTCFullYear(year);
     if (dayofyear) { 
         dateObject.setUTCMonth(0);
@@ -132,14 +134,14 @@ Exhibit.DateTime.setIso8601Date = function(dateObject, string) {
             dateObject.setUTCDate(date); 
         }
     }
-    
+        
     return dateObject;
 };
-
+    
 /**
- * Takes a date object and a string containing an ISO 8601 time and sets the
- * the time using information parsed from the string.  Note that this method
- * does not parse any date information.
+ * Takes a date object and a string containing an ISO 8601 time and sets
+ * the time using information parsed from the string.  Note that this
+ * method does not parse any date information.
  *
  * @param {Date} dateObject The date object to modify.
  * @param {String} string An ISO 8601 string to parse.
@@ -159,7 +161,7 @@ Exhibit.DateTime.setIso8601Time = function(dateObject, string) {
     mins = Number((d[3]) ? d[3] : 0);
     secs = (d[5]) ? d[5] : 0;
     ms = d[7] ? (Number("0." + d[7]) * 1000) : 0;
-
+    
     dateObject.setUTCHours(hours);
     dateObject.setUTCMinutes(mins);
     dateObject.setUTCSeconds(secs);
@@ -167,16 +169,16 @@ Exhibit.DateTime.setIso8601Time = function(dateObject, string) {
     
     return dateObject;
 };
-
+    
 /**
  * The timezone offset in minutes in the user's browser.
  * @type {Number}
  */
 Exhibit.DateTime.timezoneOffset = new Date().getTimezoneOffset();
-
+    
 /**
- * Takes a date object and a string containing an ISO 8601 date and time and 
- * sets the date object using information parsed from the string.
+ * Takes a date object and a string containing an ISO 8601 date and time 
+ * and sets the date object using information parsed from the string.
  *
  * @param {Date} dateObject The date object to modify.
  * @param {String} string An ISO 8601 string to parse.
@@ -193,9 +195,9 @@ Exhibit.DateTime.setIso8601 = function(dateObject, string) {
     
     Exhibit.DateTime.setIso8601Date(dateObject, comps[0]);
     if (comps.length === 2) { 
-        // first strip timezone info from the end
-        d = comps[1].match(Exhibit.DateTime._timezoneRegexp);
-        if (d) {
+       // first strip timezone info from the end
+       d = comps[1].match(Exhibit.DateTime._timezoneRegexp);
+       if (d) {
             if (d[0] === 'Z') {
                 offset = 0;
             } else {
@@ -204,7 +206,7 @@ Exhibit.DateTime.setIso8601 = function(dateObject, string) {
             }
             comps[1] = comps[1].substr(0, comps[1].length - d[0].length);
         }
-
+        
         Exhibit.DateTime.setIso8601Time(dateObject, comps[1]); 
     }
     if (typeof offset === "undefined" || offset === null) {
@@ -214,10 +216,11 @@ Exhibit.DateTime.setIso8601 = function(dateObject, string) {
     
     return dateObject;
 };
-
+    
 /**
- * Takes a string containing an ISO 8601 date and returns a newly instantiated
- * date object with the parsed date and time information from the string.
+ * Takes a string containing an ISO 8601 date and returns a newly
+ * instantiated date object with the parsed date and time information
+ * from the string.
  *
  * @param {String} string An ISO 8601 string to parse.
  * @returns {Date} A new date object created from the string.
@@ -229,7 +232,7 @@ Exhibit.DateTime.parseIso8601DateTime = function(string) {
         return null;
     }
 };
-
+    
 /**
  * Return a Date object's date part only as an ISO 8601 formatted string.
  *
@@ -243,21 +246,21 @@ Exhibit.DateTime.toISODateString = function(d) {
     } else {
         f = function(i) {
             return i < 10 ? '0' + i : i;
-        }
+        };
         s = d.getUTCFullYear() + "-"
             + f(d.getUTCMonth() + 1) + "-"
             + f(d.getUTCDate());
     }
     return s;
 };
-
+    
 /**
  * Takes a string containing a Gregorian date and time and returns a newly
- * instantiated date object with the parsed date and time information from the
- * string.  If the param is actually an instance of Date instead of a string, 
- * simply returns the given date instead.  Note the times are considered UTC
- * by default, so, e.g., setting a year only may result in a different value
- * if you subsequently use non-UTC getters.
+ * instantiated date object with the parsed date and time information from
+ * the string.  If the param is actually an instance of Date instead of a
+ * string, simply returns the given date instead.  Note the times are
+ * considered UTC by default, so, e.g., setting a year only may result in
+ * a different value if you subsequently use non-UTC getters.
  *
  * @param {Date|String} o An object, to either return or parse as a string.
  * @returns {Date} The date object.
@@ -269,8 +272,8 @@ Exhibit.DateTime.parseGregorianDateTime = function(o) {
     } else if (o instanceof Date) {
         return o;
     }
-    
-   s = o.toString();
+        
+    s = o.toString();
     if (s.length > 0 && s.length < 8) {
         space = s.indexOf(" ");
         if (space > 0) {
@@ -285,30 +288,31 @@ Exhibit.DateTime.parseGregorianDateTime = function(o) {
             
         d = new Date(0);
         d.setUTCFullYear(year);
-        
+            
         return d;
     }
-    
+        
     try {
         return new Date(Date.parse(s));
     } catch (e) {
         return null;
     }
 };
-
+    
 /**
- * Rounds date objects down to the nearest interval or multiple of an interval.
- * This method modifies the given date object, converting it to the given
- * timezone if specified.  NB, does not support Exhibit.DateTime.QUARTER.
+ * Rounds date objects down to the nearest interval or multiple of an
+ * interval.  This method modifies the given date object, converting it to
+ * the given timezone if specified.  NB, does not support
+ * Exhibit.DateTime.QUARTER.
  *
- * Rounding to the week is something of an odd concept, so the semantics are
- * described here.  Weeks are 1-index.  The first week of the year goes from
- * Jan 1 to the day before the first firstDayOfWeek, unless Jan 1 is the first
- * firstDayOfWeek.  There can be 54 weeks in a leap year, 53 in a non-leap
- * year.  Rounding is only done within a year; the farthest to round down is
- * the first week of the year.  The same day of week is retained unless it
- * comes before the first of the year, in which case the first of the year is
- * used.
+ * Rounding to the week is something of an odd concept, so the semantics
+ * are described here.  Weeks are 1-index.  The first week of the year
+ * goes from Jan 1 to the day before the first firstDayOfWeek, unless
+ * Jan 1 is the first firstDayOfWeek.  There can be 54 weeks in a leap
+ * year, 53 in a non-leap year.  Rounding is only done within a year; the
+ * farthest to round down is the first week of the year.  The same day of
+ * week is retained unless it comes before the first of the year, in which
+ * case the first of the year is used.
  * 
  * @param {Date} date The date object to round.
  * @param {Number} intervalUnit A constant, integer index specifying an 
@@ -338,7 +342,7 @@ Exhibit.DateTime.roundDownToInterval = function(date, intervalUnit, timeZone, mu
         break;
     case Exhibit.DateTime.SECOND:
         date2.setUTCMilliseconds(0);
-        
+            
         x = date2.getUTCSeconds();
         date2.setUTCSeconds(x - (x % multiple));
         break;
@@ -348,7 +352,7 @@ Exhibit.DateTime.roundDownToInterval = function(date, intervalUnit, timeZone, mu
         
         x = date2.getUTCMinutes();
         date2.setTime(date2.getTime() - 
-            (x % multiple) * Exhibit.DateTime.gregorianUnitLengths[Exhibit.DateTime.MINUTE]);
+                      (x % multiple) * Exhibit.DateTime.gregorianUnitLengths[Exhibit.DateTime.MINUTE]);
         break;
     case Exhibit.DateTime.HOUR:
         date2.setUTCMilliseconds(0);
@@ -360,7 +364,7 @@ Exhibit.DateTime.roundDownToInterval = function(date, intervalUnit, timeZone, mu
         break;
     case Exhibit.DateTime.DAY:
         clearInDay(date2);
-
+        
         x = date2.getUTCDate();
         date2.setUTCDate(x - (x % multiple));
         break;
@@ -403,25 +407,26 @@ Exhibit.DateTime.roundDownToInterval = function(date, intervalUnit, timeZone, mu
     
     date.setTime(date2.getTime() - timeShift);
 };
-
+    
 /**
- * Rounds date objects up to the nearest interval or multiple of an interval.
- * This method modifies the given date object, converting it to the given
- * timezone if specified.  NB, does not support Exhibit.DateTime.QUARTER.
+ * Rounds date objects up to the nearest interval or multiple of an
+ * interval.  This method modifies the given date object, converting it to
+ * the given timezone if specified.  NB, does not support
+ * Exhibit.DateTime.QUARTER.
  *
- * Unlike round down, round up for week and month may cross year boundaries.
- * The semantics here are also weird and probably should not be used for
- * anything other than multiples of one, but if you have October and want
- * to round up to the nearest fifteenth month, you will get April of the
- * next year.  Caveat emptor.
+ * Unlike round down, round up for week and month may cross year
+ * boundaries.  The semantics here are also weird and probably should not
+ * be used for anything other than multiples of one, but if you have
+ * October and want to round up to the nearest fifteenth month, you will
+ * get April of the next year.  Caveat emptor.
  * 
  * @param {Date} date The date object to round.
  * @param {Number} intervalUnit A constant, integer index specifying an 
  *   interval, e.g. Exhibit.DateTime.HOUR.
  * @param {Number} timeZone A timezone shift, given in hours.
  * @param {Number} multiple A multiple of the interval to round by.
- * @param {Number} firstDayOfWeek An integer specifying the first day of the
- *   week, 0 corresponds to Sunday, 1 to Monday, etc.
+ * @param {Number} firstDayOfWeek An integer specifying the first day of
+ *   the week, 0 corresponds to Sunday, 1 to Monday, etc.
  * @see Exhibit.DateTime.roundDownToInterval
  */
 Exhibit.DateTime.roundUpToInterval = function(date, intervalUnit, timeZone, multiple, firstDayOfWeek) {
@@ -441,11 +446,11 @@ Exhibit.DateTime.roundUpToInterval = function(date, intervalUnit, timeZone, mult
         }
         usedRoundDown = true;
     };
-
+    
     timeShift = timeZone * 
         Exhibit.DateTime.gregorianUnitLengths[Exhibit.DateTime.HOUR];
     date2 = new Date(date.getTime() + timeShift);
-
+    
     switch(intervalUnit) {
     case Exhibit.DateTime.MILLISECOND:
         useRoundDown();
@@ -495,12 +500,12 @@ Exhibit.DateTime.roundUpToInterval = function(date, intervalUnit, timeZone, mult
         date2.setUTCFullYear(Math.ceil(date2.getUTCFullYear() / 1000) * 1000);
         break;
     }
-
+    
     if (!usedRoundDown) {
         date.setTime(date2.getTime() - timeShift);
     }
 };
-
+    
 /**
  * Increments a date object by a specified interval, taking into
  * consideration the timezone.
@@ -515,9 +520,9 @@ Exhibit.DateTime.incrementByInterval = function(date, intervalUnit, timeZone) {
     var timeShift, date2;
     timeShift = timeZone * 
         Exhibit.DateTime.gregorianUnitLengths[Exhibit.DateTime.HOUR];
-        
+    
     date2 = new Date(date.getTime() + timeShift);
-
+    
     switch(intervalUnit) {
     case Exhibit.DateTime.MILLISECOND:
         date2.setTime(date2.getTime() + 1);
@@ -527,11 +532,11 @@ Exhibit.DateTime.incrementByInterval = function(date, intervalUnit, timeZone) {
         break;
     case Exhibit.DateTime.MINUTE:
         date2.setTime(date2.getTime() + 
-            Exhibit.DateTime.gregorianUnitLengths[Exhibit.DateTime.MINUTE]);
+                      Exhibit.DateTime.gregorianUnitLengths[Exhibit.DateTime.MINUTE]);
         break;
     case Exhibit.DateTime.HOUR:
         date2.setTime(date2.getTime() + 
-            Exhibit.DateTime.gregorianUnitLengths[Exhibit.DateTime.HOUR]);
+                      Exhibit.DateTime.gregorianUnitLengths[Exhibit.DateTime.HOUR]);
         break;
     case Exhibit.DateTime.DAY:
         date2.setUTCDate(date2.getUTCDate() + 1);
@@ -555,10 +560,10 @@ Exhibit.DateTime.incrementByInterval = function(date, intervalUnit, timeZone) {
         date2.setUTCFullYear(date2.getUTCFullYear() + 1000);
         break;
     }
-
+    
     date.setTime(date2.getTime() - timeShift);
 };
-
+    
 /**
  * Returns a new date object with the given time offset removed.
  *
@@ -568,9 +573,9 @@ Exhibit.DateTime.incrementByInterval = function(date, intervalUnit, timeZone) {
  */
 Exhibit.DateTime.removeTimeZoneOffset = function(date, timeZone) {
     return new Date(date.getTime() + 
-        timeZone * Exhibit.DateTime.gregorianUnitLengths[Exhibit.DateTime.HOUR]);
+                    timeZone * Exhibit.DateTime.gregorianUnitLengths[Exhibit.DateTime.HOUR]);
 };
-
+    
 /**
  * Returns the timezone of the user's browser.  This is expressed as the
  * number of hours one would have to add to the local time to equal GMT,
@@ -583,7 +588,7 @@ Exhibit.DateTime.getTimezone = function() {
     var d = new Date().getTimezoneOffset();
     return d / -60;
 };
-
+    
 /**
  * Zeroes (UTC) all time components of the provided date object.
  *
@@ -598,3 +603,7 @@ Exhibit.DateTime.zeroTimeUTC = function(date) {
     date.setUTCMilliseconds(0);
     return date;
 };
+
+    // end define
+    return Exhibit;
+});

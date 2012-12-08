@@ -8,6 +8,9 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(
+    ["lib/jquery", "exhibit", "lib/jquery.simile.dom"],
+    function($, Exhibit) {
 /**
  * @constructor
  * @class
@@ -52,7 +55,7 @@ Exhibit.LegendWidget.create = function(configuration, containerElmt, uiContext) 
  *
  */
 Exhibit.LegendWidget.prototype.dispose = function() {
-    Exhibit.jQuery(this._div).empty();
+    $(this._div).empty();
     
     this._div = null;
     this._uiContext = null;
@@ -62,7 +65,7 @@ Exhibit.LegendWidget.prototype.dispose = function() {
  *
  */
 Exhibit.LegendWidget.prototype._initializeUI = function() {
-    Exhibit.jQuery(this._div).attr("class", "exhibit-legendWidget");
+    $(this._div).attr("class", "exhibit-legendWidget");
     this.clear();
 };
 
@@ -70,7 +73,7 @@ Exhibit.LegendWidget.prototype._initializeUI = function() {
  *
  */
 Exhibit.LegendWidget.prototype.clear = function() {
-    Exhibit.jQuery(this._div).html('<div class="exhibit-color-legend"></div><div class="exhibit-size-legend"></div><div class="exhibit-icon-legend"></div>');
+    $(this._div).html('<div class="exhibit-color-legend"></div><div class="exhibit-size-legend"></div><div class="exhibit-icon-legend"></div>');
 };
 
 /**
@@ -79,7 +82,7 @@ Exhibit.LegendWidget.prototype.clear = function() {
  */
 Exhibit.LegendWidget.prototype.addLegendLabel = function(label, type) {
     var dom;
-	dom = Exhibit.jQuery.simileDOM("string",
+	dom = $.simileDOM("string",
 			"div",
 			'<div class="legend-label">' +
 				'<span class="label" class="exhibit-legendWidget-entry-title">' + 
@@ -88,8 +91,8 @@ Exhibit.LegendWidget.prototype.addLegendLabel = function(label, type) {
 			"&nbsp;&nbsp; </div>",
 			{ }
 		);
-	Exhibit.jQuery(dom.elmt).attr("class","exhibit-legendWidget-label");
-	Exhibit.jQuery('.exhibit-' + type + '-legend', this._div).append(dom.elmt);
+	$(dom.elmt).attr("class","exhibit-legendWidget-label");
+	$('.exhibit-' + type + '-legend', this._div).append(dom.elmt);
 };
 
 /**
@@ -102,10 +105,10 @@ Exhibit.LegendWidget.prototype.addEntry = function(value, label, type) {
 
 	type = type || "color";
     label = (typeof label !== "string") ? label.toString() : label;
-    legendDiv = Exhibit.jQuery('.exhibit-' + type + '-legend', this._div);
+    legendDiv = $('.exhibit-' + type + '-legend', this._div);
 
     if (type === "color") {
-		dom = Exhibit.jQuery.simileDOM("string",
+		dom = $.simileDOM("string",
 			"span",
 			'<span id="marker"></span>&nbsp;' +
 				'<span id="label" class="exhibit-legendWidget-entry-title">' + 
@@ -117,7 +120,7 @@ Exhibit.LegendWidget.prototype.addEntry = function(value, label, type) {
 	}
 
 	if (type === "size") {
-		dom = Exhibit.jQuery.simileDOM("string",
+		dom = $.simileDOM("string",
 			"span",
 			'<span id="marker"></span>&nbsp;' +
 				'<span id="label" class="exhibit-legendWidget-entry-title">' + 
@@ -129,7 +132,7 @@ Exhibit.LegendWidget.prototype.addEntry = function(value, label, type) {
 	}
 
 	if (type === "icon") {
-		dom = Exhibit.jQuery.simileDOM("string",
+		dom = $.simileDOM("string",
 			"span",
 			'<span id="marker"></span>&nbsp;' +
 				'<span id="label" class="exhibit-legendWidget-entry-title">' + 
@@ -139,9 +142,9 @@ Exhibit.LegendWidget.prototype.addEntry = function(value, label, type) {
 			{ marker: this._iconMarkerGenerator(value) }
 		);
 	}
-    Exhibit.jQuery(dom.elmt).attr("class", "exhibit-legendWidget-entry");
+    $(dom.elmt).attr("class", "exhibit-legendWidget-entry");
     this._labelStyler(dom.label, value);
-    Exhibit.jQuery(legendDiv).append(dom.elmt);
+    $(legendDiv).append(dom.elmt);
 };
 
 /**
@@ -163,7 +166,7 @@ Exhibit.LegendWidget._localeSort = function(a, b) {
  */
 Exhibit.LegendWidget._defaultColorMarkerGenerator = function(value) {
     var span;
-    span = Exhibit.jQuery("<span>")
+    span = $("<span>")
         .attr("class", "exhibit-legendWidget-entry-swatch")
         .css("background", value)
         .html("&nbsp;&nbsp;");
@@ -178,7 +181,7 @@ Exhibit.LegendWidget._defaultColorMarkerGenerator = function(value) {
  */
 Exhibit.LegendWidget._defaultSizeMarkerGenerator = function(value) {
     var span;
-    span = Exhibit.jQuery("<span>")
+    span = $("<span>")
         .attr("class", "exhibit-legendWidget-entry-swatch")
         .height(value)
         .width(value)
@@ -195,7 +198,7 @@ Exhibit.LegendWidget._defaultSizeMarkerGenerator = function(value) {
  */
 Exhibit.LegendWidget._defaultIconMarkerGenerator = function(value) {
     var span;
-    span = Exhibit.jQuery("<span>")
+    span = $("<span>")
         .append('<img src="'+value+'"/>');
     return span.get(0);
 }
@@ -207,5 +210,9 @@ Exhibit.LegendWidget._defaultIconMarkerGenerator = function(value) {
  * @param {String} value
  */
 Exhibit.LegendWidget._defaultColorLabelStyler = function(elmt, value) {
-    // Exhibit.jQuery(elmt).css("color", "#" + value);
+    // $(elmt).css("color", "#" + value);
 };
+
+    // end define
+    return Exhibit;
+});

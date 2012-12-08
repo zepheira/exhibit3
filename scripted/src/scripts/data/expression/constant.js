@@ -4,6 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["exhibit", "data/expression"], function(Exhibit) {
 /**
  * @class
  * @constructor
@@ -31,3 +32,7 @@ Exhibit.Expression._Constant.prototype.evaluate = function(
 ) {
     return new Exhibit.Expression._Collection([ this._value ], this._valueType);
 };
+
+    // end define
+    return Exhibit;
+});

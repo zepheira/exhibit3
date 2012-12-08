@@ -4,6 +4,9 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(
+    ["lib/jquery", "exhibit", "lib/jquery.simile.dom"],
+    function($, Exhibit) {
 /**
  * @constructor
  * @class
@@ -12,7 +15,7 @@
  */ 
 Exhibit.TileView = function(containerElmt, uiContext) {
     var view = this;
-    Exhibit.jQuery.extend(this, new Exhibit.View(
+    $.extend(this, new Exhibit.View(
         "tile",
         containerElmt,
         uiContext
@@ -27,7 +30,7 @@ Exhibit.TileView = function(containerElmt, uiContext) {
         view._orderedViewFrame._settings.page = 0;
         view._reconstruct();
     };
-    Exhibit.jQuery(uiContext.getCollection().getElement()).bind(
+    $(uiContext.getCollection().getElement()).bind(
         "onItemsChanged.exhibit",
         view._onItemsChanged
     );
@@ -107,7 +110,7 @@ Exhibit.TileView.createFromDOM = function(configElmt, containerElmt, uiContext) 
  */
 Exhibit.TileView.prototype.dispose = function() {
     var view = this;
-    Exhibit.jQuery(this.getUIContext().getCollection().getElement()).unbind(
+    $(this.getUIContext().getCollection().getElement()).unbind(
         "onItemsChanged.exhibit",
         view._onItemsChanged
     );
@@ -127,9 +130,9 @@ Exhibit.TileView.prototype._initializeUI = function() {
 
     self = this;
     
-    Exhibit.jQuery(this.getContainer()).empty();
+    $(this.getContainer()).empty();
     self._initializeViewUI(function() {
-        return Exhibit.jQuery(self._dom.bodyDiv).html();
+        return $(self._dom.bodyDiv).html();
     });
 
     template = {
@@ -147,7 +150,7 @@ Exhibit.TileView.prototype._initializeUI = function() {
             }
         ]
     };
-    this._dom = Exhibit.jQuery.simileDOM("template", template);
+    this._dom = $.simileDOM("template", template);
     this._orderedViewFrame._divHeader = this._dom.headerDiv;
     this._orderedViewFrame._divFooter = this._dom.footerDiv;
     this._orderedViewFrame.initializeUI();
@@ -175,7 +178,7 @@ Exhibit.TileView.prototype._reconstruct = function() {
 
     closeGroups = function(groupLevel) {
         for (i = groupLevel; i < state.groupDoms.length; i++) {
-            Exhibit.jQuery(state.groupDoms[i].countSpan).html(state.groupCounts[i]);
+            $(state.groupDoms[i].countSpan).html(state.groupCounts[i]);
         }
         state.groupDoms = state.groupDoms.slice(0, groupLevel);
         state.groupCounts = state.groupCounts.slice(0, groupLevel);
@@ -193,7 +196,7 @@ Exhibit.TileView.prototype._reconstruct = function() {
 
         var groupDom = Exhibit.TileView.constructGroup(groupLevel, groupSortKey);
 
-        Exhibit.jQuery(state.div).append(groupDom.elmt);
+        $(state.div).append(groupDom.elmt);
         state.div = groupDom.contentDiv;
 
         state.groupDoms.push(groupDom);
@@ -204,25 +207,25 @@ Exhibit.TileView.prototype._reconstruct = function() {
         var i, itemLensItem, itemLens;
         if (typeof state.contents === "undefined" || state.contents === null) {
             state.contents = Exhibit.TileView.constructList();
-            Exhibit.jQuery(state.div).append(state.contents);
+            $(state.div).append(state.contents);
         }
 
         for (i = 0; i < state.groupCounts.length; i++) {
             state.groupCounts[i]++;
         }
 
-        itemLensItem = Exhibit.jQuery("<li>");
+        itemLensItem = $("<li>");
         itemLens = view.getUIContext().getLensRegistry().createLens(itemID, itemLensItem, view.getUIContext());
         state.contents.append(itemLensItem);
     };
 
-    Exhibit.jQuery(this.getContainer()).hide();
+    $(this.getContainer()).hide();
 
-    Exhibit.jQuery(this._dom.bodyDiv).empty();
+    $(this._dom.bodyDiv).empty();
     this._orderedViewFrame.reconstruct();
     closeGroups(0);
 
-    Exhibit.jQuery(this.getContainer()).show();
+    $(this.getContainer()).show();
 };
 
 /**
@@ -313,12 +316,16 @@ Exhibit.TileView.constructGroup = function(groupLevel, label) {
             }
         ]
     };
-    return Exhibit.jQuery.simileDOM("template", template);
+    return $.simileDOM("template", template);
 };
 
 /**
  * @returns {jQuery}
  */
 Exhibit.TileView.constructList = function() {
-    return Exhibit.jQuery("<ol>").addClass("exhibit-tileView-body");
+    return $("<ol>").addClass("exhibit-tileView-body");
 };
+
+    // end define
+    return Exhibit;
+});

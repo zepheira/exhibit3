@@ -5,6 +5,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["exhibit"], function(Exhibit) {
 /**
  * @namespace
  */
@@ -33,7 +34,7 @@ Exhibit.Debug.log = function(msg) {
     Exhibit.Debug.log = f;
     f(msg);
 };
-
+    
 /**
  * @static
  * @pararm {String} msg
@@ -88,14 +89,14 @@ Exhibit.Debug.exception = function(e, msg) {
     Exhibit.Debug.exception = f;
     f(e, msg);
 };
-
+    
 /**
  * @static
  * @param {Object} o
  * @returns {String}
  */
 Exhibit.Debug.objectToString = function(o) {
-    return Exhibit.Debut._objectToString(o, "");
+    return Exhibit.Debug._objectToString(o, "");
 };
 
 /**
@@ -128,3 +129,7 @@ Exhibit.Debug._objectToString = function(o, indent) {
         return o;
     }
 };
+
+    // end define
+    return Exhibit;
+});

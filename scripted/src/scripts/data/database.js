@@ -5,6 +5,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["exhibit"], function(Exhibit) {
 /**
  * @namespace Database layer of Exhibit.
  */
@@ -179,3 +180,7 @@ Exhibit.Database._indexRemoveList = function(index, x, y) {
     
     return array;
 };
+
+    // end define
+    return Exhibit;
+});

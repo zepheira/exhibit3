@@ -4,6 +4,9 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(
+    ["lib/jquery", "exhibit", "lib/jquery.simile.bubble"],
+    function($, Exhibit) {
 /**
  * @constructor
  * @class
@@ -70,16 +73,20 @@ Exhibit.Logo.prototype._initializeUI = function() {
     var logoURL, img, id, a;
 
     logoURL = Exhibit.urlPrefix + "images/logos/exhibit-small-" + this._color + ".png";
-    img = Exhibit.jQuery.simileBubble("createTranslucentImage", logoURL);
+    img = $.simileBubble("createTranslucentImage", logoURL);
     id = "exhibit-logo-image";
-    if (Exhibit.jQuery('#' + id).length === 0) {
-        Exhibit.jQuery(img).attr("id", id);
+    if ($('#' + id).length === 0) {
+        $(img).attr("id", id);
     }
-    a = Exhibit.jQuery("<a>")
+    a = $("<a>")
         .attr("href", Exhibit.exhibitLink)
         .attr("title", Exhibit.exhibitLink)
         .attr("targe", "_blank")
         .append(img);
     
-    Exhibit.jQuery(this._elmt).append(a);
+    $(this._elmt).append(a);
 };
+
+    // end define
+    return Exhibit;
+});

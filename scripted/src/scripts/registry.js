@@ -3,6 +3,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["exhibit"], function(Exhibit) {
 /**
  * @namespace
  * @class
@@ -175,3 +176,7 @@ Exhibit.Registry.prototype.unregister = function(component, id) {
         }
     }
 };
+
+    // end define
+    return Exhibit;
+});

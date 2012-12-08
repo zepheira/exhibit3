@@ -3,6 +3,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["lib/jquery", "exhibit"], function($, Exhibit) {
 /**
  * @class
  * @constructor
@@ -31,7 +32,7 @@ Exhibit.Facet = function(key, div, uiContext) {
     /**
      * @private
      */
-    _div = Exhibit.jQuery(div);
+    _div = $(div);
 
     /**
      * @private
@@ -113,7 +114,7 @@ Exhibit.Facet = function(key, div, uiContext) {
      * @param {Object} specs
      */
     this.addSettingSpecs = function(specs) {
-        Exhibit.jQuery.extend(true, this._settingSpecs, specs);
+        $.extend(true, this._settingSpecs, specs);
     };
 
     /**
@@ -180,7 +181,7 @@ Exhibit.Facet = function(key, div, uiContext) {
      * Free up all references to objects, empty related elements, unregister.
      */
     this.dispose = function() {
-        Exhibit.jQuery(_div).empty();
+        $(_div).empty();
         this.getUIContext().getCollection().removeFacet(this);
         // if instance defines _dispose for localized material, call it
         if (typeof this._dispose !== "undefined") {
@@ -202,7 +203,7 @@ Exhibit.Facet = function(key, div, uiContext) {
      * @private
      */
     _setIdentifier = function() {
-        _id = Exhibit.jQuery(_div).attr("id");
+        _id = $(_div).attr("id");
         if (typeof _id === "undefined" || _id === null) {
             _id = Exhibit.Facet.getRegistryKey()
                 + "-"
@@ -247,11 +248,15 @@ Exhibit.Facet.getRegistryKey = function() {
 Exhibit.Facet.registerComponent = function(evt, reg) {
     if (!reg.hasRegistry(Exhibit.Facet.getRegistryKey())) {
         reg.createRegistry(Exhibit.Facet.getRegistryKey());
-        Exhibit.jQuery(document).trigger("registerFacets.exhibit");
+        $(document).trigger("registerFacets.exhibit");
     }
 };
 
-Exhibit.jQuery(document).one(
+$(document).one(
     "registerComponents.exhibit",
     Exhibit.Facet.registerComponent
 );
+
+    // end define
+    return Exhibit;
+});

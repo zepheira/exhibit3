@@ -4,6 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["exhibit"], function(Exhibit) {
 /**
  * @constructor
  * @class
@@ -161,3 +162,7 @@ Exhibit.LensRegistry.prototype.createNormalLens = function(itemID, div, uiContex
     opts.lensTemplate = this.getNormalLens(itemID, uiContext);
     return this.createLens(itemID, div, uiContext, opts);
 };
+
+    // end define
+    return Exhibit;
+});

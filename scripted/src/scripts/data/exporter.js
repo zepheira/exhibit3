@@ -3,6 +3,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["lib/jquery", "exhibit"], function($, Exhibit) {
 /**
  * @class
  * @constructor
@@ -47,7 +48,7 @@ Exhibit.Exporter._registerComponent = function(evt, reg) {
     Exhibit.Exporter._registry = reg;
     if (!reg.hasRegistry(Exhibit.Exporter._registryKey)) {
         reg.createRegistry(Exhibit.Exporter._registryKey);
-        Exhibit.jQuery(document).trigger("registerExporters.exhibit");
+        $(document).trigger("registerExporters.exhibit");
     }
 };
 
@@ -201,7 +202,11 @@ Exhibit.Exporter._getPropertiesWithValueTypes = function(database) {
     return map;
 };
 
-Exhibit.jQuery(document).one(
+$(document).one(
     "registerStaticComponents.exhibit",
     Exhibit.Exporter._registerComponent
 );
+
+    // end define
+    return Exhibit;
+});

@@ -4,6 +4,9 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(
+    ["lib/jquery", "exhibit", "lib/jquery.simile.dom"],
+    function($, Exhibit) {
 /**
  * @constructor
  * @class
@@ -63,9 +66,9 @@ Exhibit.Lens.prototype._constructDefaultUI = function(itemID, div, uiContext) {
             }
         ]
     };
-    dom = Exhibit.jQuery.simileDOM("template", template);
+    dom = $.simileDOM("template", template);
     
-    Exhibit.jQuery(div).attr(Exhibit.makeExhibitAttribute("itemID"), itemID);
+    $(div).attr(Exhibit.makeExhibitAttribute("itemID"), itemID);
     
     pairs = Exhibit.ViewPanel.getPropertyValuesPairs(
         itemID, properties, database);
@@ -73,33 +76,33 @@ Exhibit.Lens.prototype._constructDefaultUI = function(itemID, div, uiContext) {
     for (j = 0; j < pairs.length; j++) {
         pair = pairs[j];
 
-        tr = Exhibit.jQuery("<tr>")
+        tr = $("<tr>")
             .appendTo(dom.propertiesTable);
-        tr = Exhibit.jQuery(dom.propertiesTable.get(0).insertRow(j))
+        tr = $(dom.propertiesTable.get(0).insertRow(j))
             .attr("class", "exhibit-lens-property");
         
-        Exhibit.jQuery("<td>")
+        $("<td>")
             .appendTo(tr)
             .attr("class", "exhibit-lens-property-name")
             .html(pair.propertyLabel + ": ");
         
-        tdValues = Exhibit.jQuery("<td>");
+        tdValues = $("<td>");
         tr.append(tdValues);
-        Exhibit.jQuery(tdValues).attr("class", "exhibit-lens-property-values");
+        $(tdValues).attr("class", "exhibit-lens-property-values");
         
         if (pair.valueType === "item") {
             for (m = 0; m < pair.values.length; m++) {
                 if (m > 0) {
-                    Exhibit.jQuery(tdValues).append(document.createTextNode(", "));
+                    $(tdValues).append(document.createTextNode(", "));
                 }
-                Exhibit.jQuery(tdValues).append(Exhibit.UI.makeItemSpan(pair.values[m], null, uiContext));
+                $(tdValues).append(Exhibit.UI.makeItemSpan(pair.values[m], null, uiContext));
             }
         } else {
             for (m = 0; m < pair.values.length; m++) {
                 if (m > 0) {
-                    Exhibit.jQuery(tdValues).append(document.createTextNode(", "));
+                    $(tdValues).append(document.createTextNode(", "));
                 }
-                Exhibit.jQuery(tdValues).append(Exhibit.UI.makeValueSpan(pair.values[m], pair.valueType));
+                $(tdValues).append(Exhibit.UI.makeValueSpan(pair.values[m], pair.valueType));
             }
         }
     }
@@ -231,7 +234,7 @@ Exhibit.Lens._startCompilingTemplate = function(lensTemplateURL, job) {
         }
     };
     
-    Exhibit.jQuery.ajax({
+    $.ajax({
         "dataType": "xml",
         "url": lensTemplateURL,
         "error": fError,
@@ -546,9 +549,9 @@ Exhibit.Lens._performConstructFromLensTemplateJob = function(job) {
         job.opts
     );
 
-    node = Exhibit.jQuery(job.div).get(0).tagName.toLowerCase() === "table" ? Exhibit.jQuery(job.div).get(0).rows[Exhibit.jQuery(job.div).get(0).rows.length - 1] : Exhibit.jQuery(job.div).get(0).lastChild;
-    Exhibit.jQuery(document).trigger("onItemShow.exhibit", [job.itemID, node]);
-    Exhibit.jQuery(node).show();
+    node = $(job.div).get(0).tagName.toLowerCase() === "table" ? $(job.div).get(0).rows[$(job.div).get(0).rows.length - 1] : $(job.div).get(0).lastChild;
+    $(document).trigger("onItemShow.exhibit", [job.itemID, node]);
+    $(node).show();
     node.setAttribute(Exhibit.makeExhibitAttribute("itemID"), job.itemID);
     
     if (!Exhibit.params.safe) {
@@ -579,7 +582,7 @@ Exhibit.Lens._constructFromLensTemplateNode = function(
     var uiContext, database, children, i, values, lastChildTemplateNode, c, childTemplateNode, elmt, contentAttributes, attribute, value, subcontentAttributes, fragments, results, r, fragment, handlers, h, handler, itemID, a, rootValueTypes2, index, processOneValue, makeAppender;
 
     if (typeof templateNode === "string") {
-        Exhibit.jQuery(parentElmt).append(document.createTextNode(templateNode));
+        $(parentElmt).append(document.createTextNode(templateNode));
         return;
     }
     uiContext = templateNode.uiContext;
@@ -683,9 +686,9 @@ Exhibit.Lens._constructFromLensTemplateNode = function(
             
             value = values.join(";");
             if (attribute.isStyle) {
-                Exhibit.jQuery(elmt).css(attribute.name, value);
+                $(elmt).css(attribute.name, value);
             } else if (Exhibit.Lens._attributeValueIsSafe(attribute.name, value)) {
-                Exhibit.jQuery(elmt).attr(attribute.name, value);
+                $(elmt).attr(attribute.name, value);
             }
         }
     }
@@ -711,9 +714,9 @@ Exhibit.Lens._constructFromLensTemplateNode = function(
             }
             
             if (attribute.isStyle) {
-                Exhibit.jQuery(elmt).css(attribute.name, results);
+                $(elmt).css(attribute.name, results);
             } else if (Exhibit.Lens._attributeValueIsSafe(attribute.name, results)) {
-                Exhibit.jQuery(elmt).attr(attribute.name, results);
+                $(elmt).attr(attribute.name, results);
             }
         }
     }
@@ -731,37 +734,37 @@ Exhibit.Lens._constructFromLensTemplateNode = function(
         switch (templateNode.control) {
 
         case "item-link":
-            a = Exhibit.jQuery("<a>")
+            a = $("<a>")
                 .html(Exhibit._("%general.itemLinkLabel"))
                 .attr("href", Exhibit.Persistence.getItemLink(itemID))
                 .attr("target", "_blank");
-            Exhibit.jQuery(elmt).append(a);
+            $(elmt).append(a);
             break;
             
         case "remove-item":
             // only new items can be deleted from an exhibit
             if (!opts.disableEditWidgets && database.isNewItem(itemID)) {
                 if (templateNode.tag === 'a') {
-                    Exhibit.jQuery(elmt).attr("href", "#");
+                    $(elmt).attr("href", "#");
                 }
-                Exhibit.jQuery(elmt).bind("click", function(evt) {
+                $(elmt).bind("click", function(evt) {
                     database.removeItem(itemID);
                 });
                 processChildren();                
             } else {
-                Exhibit.jQuery(elmt).remove();
+                $(elmt).remove();
             }
             break;
             
         case "start-editing":
             if (templateNode.tag === 'a') {
-                Exhibit.jQuery(elmt).attr("href", '#');
+                $(elmt).attr("href", '#');
             }
             
             if (opts.disableEditWidgets) {
-                Exhibit.jQuery(elmt).remove();
+                $(elmt).remove();
             } else if (opts.inPopup) {
-                Exhibit.jQuery(elmt).bind("click", function(evt) {
+                $(elmt).bind("click", function(evt) {
                     Exhibit.UI.showItemInPopup(itemID, null, uiContext, {
                         lensType: 'edit',
                         coords: opts.coords
@@ -769,9 +772,9 @@ Exhibit.Lens._constructFromLensTemplateNode = function(
                 });
                 processChildren();
             } else {
-                Exhibit.jQuery(elmt).bind("click", function() {
+                $(elmt).bind("click", function() {
                     uiContext.setEditMode(itemID, true);
-                    Exhibit.jQuery(uiContext.getCollection().getElement()).trigger("onItemsChanged");
+                    $(uiContext.getCollection().getElement()).trigger("onItemsChanged");
                 });
                 processChildren();
             }
@@ -779,12 +782,12 @@ Exhibit.Lens._constructFromLensTemplateNode = function(
             
         case "stop-editing":
             if (templateNode.tag === 'a') {
-                Exhibit.jQuery(elmt).attr("href", '#');
+                $(elmt).attr("href", '#');
             }
             if (opts.disableEditWidgets) {
-                Exhibit.jQuery(elmt).remove();
+                $(elmt).remove();
             } else if (opts.inPopup) {
-                Exhibit.jQuery(elmt).bind("click", function() {
+                $(elmt).bind("click", function() {
                     Exhibit.UI.showItemInPopup(itemID, null, uiContext, {
                         lensType: 'normal',
                         coords: opts.coords
@@ -792,9 +795,9 @@ Exhibit.Lens._constructFromLensTemplateNode = function(
                 });
                 processChildren();
             } else {
-                Exhibit.jQuery(elmt).bind("click", function() { 
+                $(elmt).bind("click", function() { 
                     uiContext.setEditMode(itemID, false);
-                    Exhibit.jQuery(uiContext.getCollection().getElement()).trigger("onItemsChanged", []);
+                    $(uiContext.getCollection().getElement()).trigger("onItemsChanged", []);
                 });
                 processChildren();
             }
@@ -803,15 +806,15 @@ Exhibit.Lens._constructFromLensTemplateNode = function(
         case "accept-changes":
             if (database.isSubmission(itemID)) {
                 if (templateNode.tag === 'a') {
-                    Exhibit.jQuery(elmt).attr("href", '#');
+                    $(elmt).attr("href", '#');
                 }
-                Exhibit.jQuery(elmt).bind("click", function() {
+                $(elmt).bind("click", function() {
                     database.mergeSubmissionIntoItem(itemID);
                 });
                 processChildren();
             } else {
                 Exhibit.Debug.warn(Exhibit._("%lens.error.misplacedAcceptChanges"));
-                Exhibit.jQuery(elmt).remove();
+                $(elmt).remove();
             }
             break;
         }
@@ -881,11 +884,11 @@ Exhibit.Lens._constructElmtWithAttributes = function(templateNode, parentElmt, d
         }
         a.push("></input>");
         
-        elmt = Exhibit.jQuery(a.join(" "));
-        Exhibit.jQuery(parentElmt).append(elmt);
+        elmt = $(a.join(" "));
+        $(parentElmt).append(elmt);
     } else {
-        elmt = Exhibit.jQuery("<" + templateNode.tag + ">");
-        Exhibit.jQuery(parentElmt).append(elmt);
+        elmt = $("<" + templateNode.tag + ">");
+        $(parentElmt).append(elmt);
         
         attributes = templateNode.attributes;
         for (i = 0; i < attributes.length; i++) {
@@ -928,10 +931,10 @@ Exhibit.Lens._constructEditableContent = function(templateNode, elmt, itemID, ui
     
     if (templateNode.tag === 'select') {
         Exhibit.Lens._constructEditableSelect(templateNode, elmt, itemID, uiContext, itemValue);
-        Exhibit.jQuery(elmt).bind("blur", changeHandler);
+        $(elmt).bind("blur", changeHandler);
     } else {
-        Exhibit.jQuery(elmt).attr("value", itemValue);
-        Exhibit.jQuery(elmt).bind("change", changeHandler);
+        $(elmt).attr("value", itemValue);
+        $(elmt).bind("change", changeHandler);
     }
 };
 
@@ -1005,7 +1008,7 @@ Exhibit.Lens._constructEditableSelect = function(templateNode, elmt, itemID, uiC
  */
 Exhibit.Lens._constructDefaultValueList = function(values, valueType, parentElmt, uiContext) {
     uiContext.formatList(values, values.size(), valueType, function(elmt) {
-        Exhibit.jQuery(parentElmt).append(Exhibit.jQuery(elmt));
+        $(parentElmt).append($(elmt));
     });
 };
 
@@ -1023,3 +1026,7 @@ Exhibit.Lens._attributeValueIsSafe = function(name, value) {
     }
     return true;
 };
+
+    // end define
+    return Exhibit;
+});

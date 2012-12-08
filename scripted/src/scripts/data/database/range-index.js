@@ -4,6 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["exhibit", "data/database"], function(Exhibit) {
 /**
  * Builds a Exhibit.Database.RangeIndex object.
  *
@@ -177,3 +178,7 @@ Exhibit.Database.RangeIndex.prototype._indexOf = function(v) {
 
     return to;
 };
+
+    // end define
+    return Exhibit;
+});

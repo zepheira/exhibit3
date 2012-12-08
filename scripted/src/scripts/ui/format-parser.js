@@ -4,6 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["exhibit"], function(Exhibit) {
 /**
  * @namespace
  */
@@ -567,3 +568,7 @@ Exhibit.FormatScanner.prototype._isDigit = function(c) {
 Exhibit.FormatScanner.prototype._isHexDigit = function(c) {
     return "0123456789abcdefABCDEF".indexOf(c) >= 0;
 };
+
+    // end define
+    return Exhibit;
+});

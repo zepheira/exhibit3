@@ -4,6 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["lib/jquery", "exhibit"], function($, Exhibit) {
 /**
  * @class
  * @constructor
@@ -12,7 +13,7 @@
  */
 Exhibit.NumericRangeFacet = function(containerElmt, uiContext) {
     var self = this;
-    Exhibit.jQuery.extend(
+    $.extend(
         this,
         new Exhibit.Facet("numericrange", containerElmt, uiContext)
     );
@@ -26,7 +27,7 @@ Exhibit.NumericRangeFacet = function(containerElmt, uiContext) {
             delete self._rangeIndex;
         }
     };
-    Exhibit.jQuery(uiContext.getCollection().getElement()).bind(
+    $(uiContext.getCollection().getElement()).bind(
         "onRootItemsChanged.exhibit",
         this._onRootItemsChanged
     );
@@ -138,7 +139,7 @@ Exhibit.NumericRangeFacet._configure = function(facet, configuration) {
  *
  */
 Exhibit.NumericRangeFacet.prototype._dispose = function() {
-    Exhibit.jQuery(this.getUIContext().getCollection().getElement()).unbind(
+    $(this.getUIContext().getCollection().getElement()).unbind(
         "onRootItemsChanged.exhibit",
         this._onRootItemsChanged
     );
@@ -158,7 +159,7 @@ Exhibit.NumericRangeFacet.prototype.hasRestrictions = function() {
  *
  */
 Exhibit.NumericRangeFacet.prototype.clearAllRestrictions = function() {
-    Exhibit.jQuery(this.getContainer()).trigger("onBeforeFacetReset.exhibit");
+    $(this.getContainer()).trigger("onBeforeFacetReset.exhibit");
     if (this._ranges.length > 0) {
         this._ranges = [];
         this._notifyCollection();
@@ -236,10 +237,10 @@ Exhibit.NumericRangeFacet.prototype.restrict = function(items) {
  * @param {Exhibit.Set} items
  */
 Exhibit.NumericRangeFacet.prototype.update = function(items) {
-    Exhibit.jQuery(this._dom.valuesContainer).hide().empty();
+    $(this._dom.valuesContainer).hide().empty();
     
     this._reconstruct(items);
-    Exhibit.jQuery(this._dom.valuesContainer).show();
+    $(this._dom.valuesContainer).show();
 };
 
 /**
@@ -302,7 +303,7 @@ Exhibit.NumericRangeFacet.prototype._reconstruct = function(items) {
     
     facetHasSelection = this._ranges.length > 0;
     containerDiv = this._dom.valuesContainer;
-    Exhibit.jQuery(containerDiv).hide();
+    $(containerDiv).hide();
     constructFacetItemFunction = Exhibit.FacetUtilities[this._settings.scroll ? "constructFacetItem" : "constructFlowingFacetItem"];
     makeFacetValue = function(from, to, count, selected) {
         var onSelect, onSelectOnly, elmt;
@@ -326,7 +327,7 @@ Exhibit.NumericRangeFacet.prototype._reconstruct = function(items) {
             onSelectOnly,
             self.getUIContext()
         );
-        Exhibit.jQuery(containerDiv).append(elmt);
+        $(containerDiv).append(elmt);
     };
         
     for (i = 0; i < ranges.length; i++) {
@@ -336,7 +337,7 @@ Exhibit.NumericRangeFacet.prototype._reconstruct = function(items) {
         }
     }
     
-    Exhibit.jQuery(containerDiv).show();
+    $(containerDiv).show();
     
     this._dom.setSelectionCount(this._ranges.length);
 };
@@ -364,7 +365,7 @@ Exhibit.NumericRangeFacet.prototype._initializeUI = function() {
     );
     
     if (typeof this._settings.height !== "undefined" && this._settings.height !== null) {
-        Exhibit.jQuery(this._dom.valuesContainer).css("height", this._settings.height);
+        $(this._dom.valuesContainer).css("height", this._settings.height);
     }
 };
 
@@ -507,3 +508,7 @@ Exhibit.NumericRangeFacet.prototype.stateDiffers = function(state) {
 
     return false;
 };
+
+    // end define
+    return Exhibit;
+});

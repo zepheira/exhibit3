@@ -4,6 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["lib/jquery", "exhibit"], function($, Exhibit) {
 /**
  * @namespace
  */
@@ -45,10 +46,10 @@ Exhibit.Formatter.createListDelimiter = function(parentElmt, count, uiContext) {
     f = function() {
         if (f.index > 0 && f.index < count) {
             if (count > 2) {
-                Exhibit.jQuery(parentElmt).append(document.createTextNode(
+                $(parentElmt).append(document.createTextNode(
                 (f.index === count - 1) ? lastSeparator : separator));
             } else {
-                Exhibit.jQuery(parentElmt).append(document.createTextNode(pairSeparator));
+                $(parentElmt).append(document.createTextNode(pairSeparator));
             }
         }
         f.index++;
@@ -155,7 +156,7 @@ Exhibit.Formatter._TextFormatter = function(uiContext) {
  * @param {Function} appender
  */
 Exhibit.Formatter._TextFormatter.prototype.format = function(value, appender) {
-    var span = Exhibit.jQuery("<span>").html(this.formatText(value));
+    var span = $("<span>").html(this.formatText(value));
     appender(span);
 };
 
@@ -189,7 +190,7 @@ Exhibit.Formatter._BooleanFormatter = function(uiContext) {
  * @param {Function} appender
  */
 Exhibit.Formatter._BooleanFormatter.prototype.format = function(value, appender) {
-    var span = Exhibit.jQuery("<span>").html(this.formatText(value));
+    var span = $("<span>").html(this.formatText(value));
     appender(span);
 };
 
@@ -273,7 +274,7 @@ Exhibit.Formatter._ImageFormatter.prototype.format = function(value, appender) {
         value = value.trim().startsWith("javascript:") ? "" : value;
     }
     
-    var img = Exhibit.jQuery("<img>").attr("src", value);
+    var img = $("<img>").attr("src", value);
     
     if (this._tooltip !== null) {
         if (typeof this._tooltip === "string") {
@@ -313,7 +314,7 @@ Exhibit.Formatter._URLFormatter = function(uiContext) {
  * @param {Function} appender
  */
 Exhibit.Formatter._URLFormatter.prototype.format = function(value, appender) {
-    var a = Exhibit.jQuery("a").attr("href", value).html(value);
+    var a = $("a").attr("href", value).html(value);
     
     if (this._target !== null) {
         a.attr("target", this._target);
@@ -375,7 +376,7 @@ Exhibit.Formatter._CurrencyFormatter.prototype.format = function(value, appender
     var text, span;
     text = this.formatText(value);
     if (value < 0 && this._negativeFormat.red) {
-        span = Exhibit.jQuery("<span>").html(text).css("color", "red");
+        span = $("<span>").html(text).css("color", "red");
         appender(span);
     } else {
         appender(document.createTextNode(text));
@@ -428,7 +429,7 @@ Exhibit.Formatter._ItemFormatter.prototype.format = function(value, appender) {
     self = this;
     title = this.formatText(value);
     
-    a = Exhibit.jQuery("<a href=\"" + Exhibit.Persistence.getItemLink(value) + "\" class=\"exhibit-item\">" + title + "</a>");
+    a = $("<a href=\"" + Exhibit.Persistence.getItemLink(value) + "\" class=\"exhibit-item\">" + title + "</a>");
 
     handler = function(evt) {
         Exhibit.UI.showItemInPopup(value, a.get(0), self._uiContext);
@@ -759,3 +760,7 @@ Exhibit.Formatter._constructors = {
     "item" : Exhibit.Formatter._ItemFormatter,
     "currency" : Exhibit.Formatter._CurrencyFormatter
 };
+
+    // end define
+    return Exhibit;
+});

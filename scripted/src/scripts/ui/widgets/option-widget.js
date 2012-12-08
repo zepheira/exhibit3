@@ -4,6 +4,12 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(
+    ["lib/jquery",
+     "exhibit",
+     "lib/jquery.simile.dom",
+     "lib/jquery.simile.bubble"],
+    function($, Exhibit) {
 /**
  * @constructor
  * @class
@@ -37,7 +43,7 @@ Exhibit.OptionWidget.create = function(configuration, containerElmt, uiContext) 
  *
  */
 Exhibit.OptionWidget.prototype.dispose = function() {
-    Exhibit.jQuery(this._containerElmt).empty();
+    $(this._containerElmt).empty();
     
     this._dom = null;
     this._containerElmt = null;
@@ -71,25 +77,25 @@ Exhibit.OptionWidget.checkedTemplate =
  */
 Exhibit.OptionWidget.prototype._initializeUI = function() {
     this._containerElmt.className = "exhibit-optionWidget";
-    this._dom = Exhibit.jQuery.simileDOM(
+    this._dom = $.simileDOM(
         "string",
         this._containerElmt,
         sprintf(
             Exhibit.OptionWidget.uncheckedTemplate + Exhibit.OptionWidget.checkedTemplate,
             this._label
         ),
-        {   uncheckedImage: Exhibit.jQuery.simileBubble("createTranslucentImage", Exhibit.OptionWidget.uncheckedImageURL),
-            checkedImage:   Exhibit.jQuery.simileBubble("createTranslucentImage", Exhibit.OptionWidget.checkedImageURL)
+        {   uncheckedImage: $.simileBubble("createTranslucentImage", Exhibit.OptionWidget.uncheckedImageURL),
+            checkedImage:   $.simileBubble("createTranslucentImage", Exhibit.OptionWidget.checkedImageURL)
         }
     );
     
     if (this._checked) {
-        Exhibit.jQuery(this._dom.checkedSpan).show();
+        $(this._dom.checkedSpan).show();
     } else {
-        Exhibit.jQuery(this._dom.uncheckedSpan).show();
+        $(this._dom.uncheckedSpan).show();
     }
 
-    Exhibit.jQuery(this._containerElmt).bind("click", this._onToggle);
+    $(this._containerElmt).bind("click", this._onToggle);
 };
 
 /**
@@ -106,11 +112,11 @@ Exhibit.OptionWidget.prototype.setChecked = function(checked) {
     if (checked !== this._checked) {
         this._checked = checked;
         if (checked) {
-            Exhibit.jQuery(this._dom.checkedSpan).show();
-            Exhibit.jQuery(this._dom.uncheckedSpan).hide();
+            $(this._dom.checkedSpan).show();
+            $(this._dom.uncheckedSpan).hide();
         } else {
-            Exhibit.jQuery(this._dom.checkedSpan).hide();
-            Exhibit.jQuery(this._dom.uncheckedSpan).show();
+            $(this._dom.checkedSpan).hide();
+            $(this._dom.uncheckedSpan).show();
         }
     }
 };
@@ -121,3 +127,7 @@ Exhibit.OptionWidget.prototype.setChecked = function(checked) {
 Exhibit.OptionWidget.prototype.toggle = function() {
     this.setChecked(!this._checked);
 };
+
+    // end define
+    return Exhibit;
+});

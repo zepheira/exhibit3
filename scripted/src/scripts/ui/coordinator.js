@@ -4,6 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["exhibit"], function(Exhibit) {
 /**
  * @constructor
  * @class
@@ -103,3 +104,7 @@ Exhibit.Coordinator._Listener.prototype.dispose = function() {
 Exhibit.Coordinator._Listener.prototype.fire = function(o) {
     this._coordinator._fire(this, o);
 };
+
+    // end define
+    return Exhibit;
+});

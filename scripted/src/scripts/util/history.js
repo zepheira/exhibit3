@@ -3,6 +3,9 @@
  * generating registered state changes.
  */
 
+define(
+    ["lib/jquery", "exhibit", "lib/jquery.history", "lib/jquery.history.shim"],
+    function($, Exhibit) {
 /**
  * @fileOverview Local interface to a history manager.
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
@@ -59,7 +62,7 @@ Exhibit.History.init = function(ex, persist) {
         Exhibit.History._originalLocation = Exhibit.Persistence.getURLWithoutQueryAndHash();
         Exhibit.History._registry = ex.getRegistry();
 
-        Exhibit.jQuery(window).bind("statechange", Exhibit.History.stateListener);
+        $(window).bind("statechange", Exhibit.History.stateListener);
         if (Exhibit.Bookmark.runBookmark()) {
             Exhibit.Bookmark.implementBookmark(Exhibit.Bookmark.state);
         } else {
@@ -285,7 +288,11 @@ Exhibit.History.eraseState = function() {
     Exhibit.History.pushState({});
 };
 
-Exhibit.jQuery(document).bind(
+$(document).bind(
     "importReady.exhibit",
     Exhibit.History.componentStateListener
 );
+
+    // end define
+    return Exhibit;
+});

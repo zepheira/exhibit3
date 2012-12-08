@@ -1,4 +1,11 @@
 /**
+ * @fileOverview Local in-memory implementation of database interface.
+ * @author David Huynh
+ * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
+ */
+
+define(["lib/jquery", "exhibit", "data/database"], function($, Exhibit) {
+/**
  * Local in-memory implementation of the Exhibit Database.  Other
  * implementations should fully implement the interface described by
  * this class.
@@ -76,7 +83,7 @@ Exhibit.Database._LocalImpl.prototype.createDatabase = function() {
  * Load an array of data links using registered importers into the database.
  */
 Exhibit.Database._LocalImpl.prototype.loadLinks = function() {
-    var links = Exhibit.jQuery("head > link[rel='exhibit-data']")
+    var links = $("head > link[rel='exhibit-data']")
         .add("head > link[rel='exhibit/data']");
     this._loadLinks(links.toArray(), this);
 };
@@ -112,7 +119,7 @@ Exhibit.Database._LocalImpl.prototype.loadData = function(o, baseURI) {
  * @param {String} baseURI The base URI for normalizing URIs in the object.
  */
 Exhibit.Database._LocalImpl.prototype.loadTypes = function(typeEntries, baseURI) {
-    Exhibit.jQuery(document).trigger('onBeforeLoadingTypes.exhibit');
+    $(document).trigger('onBeforeLoadingTypes.exhibit');
     var lastChar, typeID, typeEntry, type, p;
     try {
         lastChar = baseURI.substr(baseURI.length - 1);
@@ -152,7 +159,7 @@ Exhibit.Database._LocalImpl.prototype.loadTypes = function(typeEntries, baseURI)
             }
         }
         
-        Exhibit.jQuery(document).trigger('onAfterLoadingTypes.exhibit');
+        $(document).trigger('onAfterLoadingTypes.exhibit');
     } catch(e) {
         Exhibit.Debug.exception(e, Exhibit._("%database.error.loadTypesFailure"));
     }
@@ -166,7 +173,7 @@ Exhibit.Database._LocalImpl.prototype.loadTypes = function(typeEntries, baseURI)
  * @param {String} baseURI The base URI for normalizing URIs in the object.
  */
 Exhibit.Database._LocalImpl.prototype.loadProperties = function(propertyEntries, baseURI) {
-    Exhibit.jQuery(document).trigger("onBeforeLoadingProperties.exhibit");
+    $(document).trigger("onBeforeLoadingProperties.exhibit");
     var lastChar, propertyID, propertyEntry, property;
     try {
         lastChar = baseURI.substr(baseURI.length - 1);
@@ -230,7 +237,7 @@ Exhibit.Database._LocalImpl.prototype.loadProperties = function(propertyEntries,
 
         this._propertyArray = null;
         
-        Exhibit.jQuery(document).trigger("onAfterLoadingProperties.exhibit");
+        $(document).trigger("onAfterLoadingProperties.exhibit");
     } catch(e) {
         Exhibit.Debug.exception(e, Exhibit._("%database.error.loadPropertiesFailure"));
     }
@@ -274,7 +281,7 @@ Exhibit.Database._LocalImpl._loadChunked = function(worker, data, size, timeout,
  * @param {String} baseURI The base URI for normalizing URIs in the object.
  */
 Exhibit.Database._LocalImpl.prototype.loadItems = function(itemEntries, baseURI) {
-    Exhibit.jQuery(document).trigger("onBeforeLoadingItems.exhibit");
+    $(document).trigger("onBeforeLoadingItems.exhibit");
     var self, lastChar, spo, ops, indexPut, indexTriple, finish, loader;
     self = this;
     try {
@@ -295,7 +302,7 @@ Exhibit.Database._LocalImpl.prototype.loadItems = function(itemEntries, baseURI)
 
         finish = function() {
             self._propertyArray = null;
-            Exhibit.jQuery(document).trigger("onAfterLoadingItems.exhibit");
+            $(document).trigger("onAfterLoadingItems.exhibit");
         };
 
         loader = function(item) {
@@ -734,7 +741,7 @@ Exhibit.Database._LocalImpl.prototype.removeSubjects = function(o, p) {
  * Reset the entire database to its empty state.
  */
 Exhibit.Database._LocalImpl.prototype.removeAllStatements = function() {
-    Exhibit.jQuery(document).trigger("onBeforeRemovingAllStatements.exhibit");
+    $(document).trigger("onBeforeRemovingAllStatements.exhibit");
     var propertyID;
     try {
         this._spo = {};
@@ -748,7 +755,7 @@ Exhibit.Database._LocalImpl.prototype.removeAllStatements = function() {
         }
         this._propertyArray = null;
         
-        Exhibit.jQuery(document).trigger("onAfterRemovingAllStatements.exhibit");
+        $(document).trigger("onAfterRemovingAllStatements.exhibit");
     } catch(e) {
         Exhibit.Debug.exception(e, Exhibit._("%database.error.removeAllStatementsFailure"));
     }
@@ -766,7 +773,7 @@ Exhibit.Database._LocalImpl.prototype._loadLinks = function(links, database) {
     fNext = function() {
         while (links.length > 0) {
             link = links.shift();
-            type = Exhibit.jQuery(link).attr("type");
+            type = $(link).attr("type");
             if (typeof type === "undefined" || type === null || type.length === 0) {
                 type = "application/json";
             }
@@ -780,7 +787,7 @@ Exhibit.Database._LocalImpl.prototype._loadLinks = function(links, database) {
             }
         }
 
-        Exhibit.jQuery(document.body).trigger("dataload.exhibit");
+        $(document.body).trigger("dataload.exhibit");
     };
     fNext();
 };
@@ -1110,8 +1117,8 @@ Exhibit.Database._LocalImpl.prototype.labelItemsOfType = function(count, typeID,
         }
     }
 
-    span = Exhibit.jQuery("<span>").append(
-        Exhibit.jQuery("<span>")
+    span = $("<span>").append(
+        $("<span>")
             .attr("class", countStyleClass)
             .html(count)
     ).append(" " + label);
@@ -1156,3 +1163,7 @@ Exhibit.Database._LocalImpl.prototype.editItem = function(id, prop, value) {
  */
 Exhibit.Database._LocalImpl.prototype.removeItem = function(id) {
 };
+
+    // end define
+    return Exhibit;
+});

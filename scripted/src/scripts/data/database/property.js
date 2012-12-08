@@ -4,6 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["exhibit", "data/database"], function(Exhibit) {
 /**
  * Represents a property within a database.
  *
@@ -180,3 +181,7 @@ Exhibit.Database.Property.prototype._buildRangeIndex = function() {
         getter
     );
 };
+
+    // end define
+    return Exhibit;
+});

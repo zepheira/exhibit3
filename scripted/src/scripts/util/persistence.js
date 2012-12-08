@@ -5,6 +5,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["exhibit"], function(Exhibit) {
 /**
  * @namespace Contains support methods for generating persistent URLs for
  *            items in an Exhibit database.
@@ -140,3 +141,7 @@ Exhibit.Persistence.getURLWithoutQuery = function() {
 Exhibit.Persistence.getItemLink = function(itemID) {
     return Exhibit.Persistence.getURLWithoutQueryAndHash() + "#" + encodeURIComponent(itemID);
 };
+
+    // end define
+    return Exhibit;
+});

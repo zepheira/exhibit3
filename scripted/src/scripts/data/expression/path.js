@@ -4,6 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["exhibit", "data/expression"], function(Exhibit) {
 /**
  * @class
  * @constructor
@@ -318,3 +319,7 @@ Exhibit.Expression.Path.prototype.testExists = function(
 ) {
     return this.evaluate(roots, rootValueTypes, defaultRootName, database).size > 0;
 };
+
+    // end define
+    return Exhibit;
+});

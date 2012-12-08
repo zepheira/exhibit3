@@ -4,6 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["lib/jquery", "exhibit"], function($, Exhibit) {
 /**
  * @constructor
  * @class
@@ -11,7 +12,7 @@
  * @param {Exhibit.UIContext} uiContext
  */
 Exhibit.ColorGradientCoder = function(containerElmt, uiContext) {
-    Exhibit.jQuery.extend(this, new Exhibit.Coder(
+    $.extend(this, new Exhibit.Coder(
         "colorgradient",
         containerElmt,
         uiContext
@@ -48,7 +49,7 @@ Exhibit.ColorGradientCoder._settingSpecs = {
  */
 Exhibit.ColorGradientCoder.create = function(configuration, uiContext) {
     var div, coder;
-    div = Exhibit.jQuery("<div>")
+    div = $("<div>")
         .hide()
         .appendTo("body");
     coder = new Exhibit.ColorGradientCoder(
@@ -68,7 +69,7 @@ Exhibit.ColorGradientCoder.create = function(configuration, uiContext) {
 Exhibit.ColorGradientCoder.createFromDOM = function(configElmt, uiContext) {
     var configuration, coder, gradientPoints, i, point, value, colorIndex, red, green, blue;
 
-    Exhibit.jQuery(configElmt).hide();
+    $(configElmt).hide();
     
     configuration = Exhibit.getConfigurationFromDOM(configElmt);
     coder = new Exhibit.ColorGradientCoder(
@@ -94,10 +95,10 @@ Exhibit.ColorGradientCoder.createFromDOM = function(configElmt, uiContext) {
 			coder._gradientPoints.push({ value: value, red: red, green: green, blue: blue });
 		}
 		
-        Exhibit.jQuery(configElmt).children().each(function(index, elmt) {
+        $(configElmt).children().each(function(index, elmt) {
             coder._addEntry(
                 Exhibit.getAttribute(this,  "case"),
-                Exhibit.jQuery(this).text().trim(),
+                $(this).text().trim(),
                 Exhibit.getAttribute(this, "color")
             );
         });
@@ -288,3 +289,7 @@ Exhibit.ColorGradientCoder.prototype.getMixedLabel = function() {
 Exhibit.ColorGradientCoder.prototype.getMixedColor = function() {
     return this._mixedCase.color;
 };
+
+    // end define
+    return Exhibit;
+});

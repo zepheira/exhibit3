@@ -5,6 +5,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["exhibit"], function(Exhibit) {
 /**
  * @namespace
  */
@@ -531,3 +532,7 @@ Exhibit.SettingsUtilities._evaluateBindings = function(value, database, visitor,
     };
     f({}, 0);
 };
+
+    // end define
+    return Exhibit;
+});

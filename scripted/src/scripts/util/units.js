@@ -4,6 +4,7 @@
  * @fileOverview
  */
 
+define(["exhibit"], function(Exhibit) {
 /**
  * @namespace Utility functions for working with built-in Date objects.
  */
@@ -152,3 +153,7 @@ Exhibit.NativeDateUnit.later = function(v1, v2) {
 Exhibit.NativeDateUnit.change = function(v, n) {
     return new Date(v.getTime() + n);
 };
+
+    // end define
+    return Exhibit;
+});

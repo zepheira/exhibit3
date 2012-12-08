@@ -4,6 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["exhibit", "data/expression"], function(Exhibit) {
 /**
  * @class
  * @constructor
@@ -31,3 +32,7 @@ Exhibit.Expression._ControlCall.prototype.evaluate = function(
 ) {
     return Exhibit.Controls[this._name].f(this._args, roots, rootValueTypes, defaultRootName, database);
 };
+
+    // end define
+    return Exhibit;
+});

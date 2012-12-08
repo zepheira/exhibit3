@@ -4,6 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["lib/jquery", "exhibit"], function($, Exhibit) {
 /**
  * @namespace
  */
@@ -17,8 +18,8 @@ Exhibit.ViewUtilities = {};
  */
 Exhibit.ViewUtilities.openBubbleForItems = function(anchorElmt, arrayOfItemIDs, uiContext) {
     var coords, bubble;
-    coords = Exhibit.jQuery(anchorElmt).offset();
-    bubble = Exhibit.jQuery.simileBubble("createBubbleForPoint",
+    coords = $(anchorElmt).offset();
+    bubble = $.simileBubble("createBubbleForPoint",
         coords.left + Math.round(anchorElmt.offsetWidth / 2), 
         coords.top + Math.round(anchorElmt.offsetHeight / 2), 
         uiContext.getSetting("bubbleWidth"), // px
@@ -39,15 +40,15 @@ Exhibit.ViewUtilities.openBubbleForItems = function(anchorElmt, arrayOfItemIDs, 
 Exhibit.ViewUtilities.fillBubbleWithItems = function(bubbleElmt, arrayOfItemIDs, labelExpression, uiContext) {
     var ul, i, makeItem, itemLensDiv, itemLens;
     if (typeof bubbleElmt === "undefined" || bubbleElmt === null) {
-        bubbleElmt = Exhibit.jQuery("<div>");
+        bubbleElmt = $("<div>");
     }
     
     if (arrayOfItemIDs.length > 1) {
-        Exhibit.jQuery(bubbleElmt).addClass("exhibit-views-bubbleWithItems");
+        $(bubbleElmt).addClass("exhibit-views-bubbleWithItems");
         
-        ul = Exhibit.jQuery("<ul>");
+        ul = $("<ul>");
         makeItem = function(elmt) {
-            Exhibit.jQuery("<li>")
+            $("<li>")
                 .append(elmt)
                 .appendTo(ul);
         };
@@ -57,14 +58,14 @@ Exhibit.ViewUtilities.fillBubbleWithItems = function(bubbleElmt, arrayOfItemIDs,
         for (i = 0; i < arrayOfItemIDs.length; i++) {
             uiContext.format(arrayOfItemIDs[i], "item", makeItem);
         }
-        Exhibit.jQuery(bubbleElmt).append(ul);
+        $(bubbleElmt).append(ul);
     } else {
-        itemLensDiv = Exhibit.jQuery("<div>").get(0);
+        itemLensDiv = $("<div>").get(0);
         itemLens = uiContext.getLensRegistry().createLens(arrayOfItemIDs[0], itemLensDiv, uiContext);
-        Exhibit.jQuery(bubbleElmt).append(itemLensDiv);
+        $(bubbleElmt).append(itemLensDiv);
     }
     
-    return Exhibit.jQuery(bubbleElmt).get(0);
+    return $(bubbleElmt).get(0);
 };
 
 /**
@@ -83,7 +84,7 @@ Exhibit.ViewUtilities.constructPlottingViewDom = function(
     resizableDivWidgetSettings, 
     legendWidgetSettings
 ) { 
-    var dom = Exhibit.jQuery.simileDOM("string",
+    var dom = $.simileDOM("string",
         div,
         '<div class="exhibit-views-header">' +
             (showSummary ? '<div id="collectionSummaryDiv"></div>' : "") +
@@ -147,19 +148,19 @@ Exhibit.ViewUtilities._setUnplottableMessage = function(dom, totalCount, unplott
     var div;
     div = dom.unplottableMessageDiv;
     if (unplottableItems.length === 0) {
-        Exhibit.jQuery(div).hide();
+        $(div).hide();
     } else {
-        Exhibit.jQuery(div).empty();
+        $(div).empty();
     
-        dom = Exhibit.jQuery.simileDOM("string",
+        dom = $.simileDOM("string",
             div,
             Exhibit.ViewUtilities.unplottableMessageFormatter(totalCount, unplottableItems),
             {}
         );
-        Exhibit.jQuery(dom.unplottableCountLink).bind("click", function(evt) {
+        $(dom.unplottableCountLink).bind("click", function(evt) {
             Exhibit.ViewUtilities.openBubbleForItems(evt.target, unplottableItems, uiContext);
         });
-        Exhibit.jQuery(div).show();
+        $(div).show();
     }
 };
 
@@ -211,3 +212,7 @@ Exhibit.ViewUtilities.makePagingActionTitle = function(index) {
 Exhibit.ViewUtilities.makePagingLinkTooltip = function(index) {
     return Exhibit._("%orderedViewFrame.pagingLinkTooltip", index + 1);
 };
+
+    // end define
+    return Exhibit;
+});

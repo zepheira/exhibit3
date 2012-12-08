@@ -3,6 +3,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["lib/jquery", "exhibit"], function($, Exhibit) {
 /**
  * @class
  * @constructor
@@ -31,7 +32,7 @@ Exhibit.View = function(key, div, uiContext) {
     /**
      * @private
      */
-    _div = Exhibit.jQuery(div);
+    _div = $(div);
 
     /**
      * @private
@@ -105,7 +106,7 @@ Exhibit.View = function(key, div, uiContext) {
      * @param {Object} specs
      */
     this.addSettingSpecs = function(specs) {
-        Exhibit.jQuery.extend(true, this._settingSpecs, specs);
+        $.extend(true, this._settingSpecs, specs);
     };
     
     /**
@@ -201,7 +202,7 @@ Exhibit.View = function(key, div, uiContext) {
         _toolbox = null;
         this._settings = null;
 
-        Exhibit.jQuery(_div).empty();
+        $(_div).empty();
         _div = null;
 
         this.unregister();
@@ -212,7 +213,7 @@ Exhibit.View = function(key, div, uiContext) {
      * @private
      */
     _setIdentifier = function() {
-        _id = Exhibit.jQuery(_div).attr("id");
+        _id = $(_div).attr("id");
         if (typeof _id === "undefined" || _id === null) {
             _id = _instanceKey
                 + "-"
@@ -302,7 +303,7 @@ Exhibit.View.addViewState = function(id, state) {
             };
             Exhibit.History.replaceState(fullState.data);
         } else {
-            Exhibit.jQuery(document).trigger(
+            $(document).trigger(
                 "importReady.exhibit",
                 [Exhibit.View.getRegistryKey(), id]
             );
@@ -310,7 +311,11 @@ Exhibit.View.addViewState = function(id, state) {
     }
 };
 
-Exhibit.jQuery(document).one(
+$(document).one(
     "registerComponents.exhibit",
     Exhibit.View.registerComponent
 );
+
+    // end define
+    return Exhibit;
+});

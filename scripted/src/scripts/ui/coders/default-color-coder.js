@@ -7,6 +7,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["exhibit"], function(Exhibit) {
 /**
  * @class
  * @constructor
@@ -142,3 +143,7 @@ Exhibit.DefaultColorCoder.prototype.getMixedLabel = function() {
 Exhibit.DefaultColorCoder.prototype.getMixedColor = function() {
     return Exhibit.Coders.mixedCaseColor;
 };
+
+    // end define
+    return Exhibit;
+});

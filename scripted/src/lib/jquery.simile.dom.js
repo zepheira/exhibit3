@@ -4,7 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-(function($){
+define(["lib/jquery"], function($) {
     var methods = {
         /**
          * Locate and return the deepest element at the coordinates provided,
@@ -259,4 +259,6 @@
             $.error("Method " + method + " does not exist on jQuery.simileDOM");
         }
     };
-}(jQuery));
+
+    return $;
+});

@@ -4,6 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["lib/jquery", "exhibit"], function(Exhibit) {
 /**
  * @class
  * @constructor
@@ -11,7 +12,7 @@
  * @param {Exhibit.UIContext} uiContext
  */
 Exhibit.SizeGradientCoder = function(containerElmt, uiContext) {
-    Exhibit.jQuery.extend(this, new Exhibit.Coder(
+    $.extend(this, new Exhibit.Coder(
         "sizegradient",
         containerElmt,
         uiContext
@@ -66,7 +67,7 @@ Exhibit.SizeGradientCoder._settingSpecs = {
  */
 Exhibit.SizeGradientCoder.create = function(configuration, uiContext) {
     var coder, div;
-    div = Exhibit.jQuery("<div>")
+    div = $("<div>")
         .hide()
         .appendTo("body");
     coder = new Exhibit.SizeGradientCoder(
@@ -86,7 +87,7 @@ Exhibit.SizeGradientCoder.create = function(configuration, uiContext) {
 Exhibit.SizeGradientCoder.createFromDOM = function(configElmt, uiContext) {
     var configuration, coder, markerScale, gradientPoints, i, point, value, size;
 
-    Exhibit.jQuery(configElmt).hide();
+    $(configElmt).hide();
     
     configuration = Exhibit.getConfigurationFromDOM(configElmt);
     coder = new Exhibit.SizeGradientCoder(configElmt, Exhibit.UIContext.create(configuration, uiContext));
@@ -110,10 +111,10 @@ Exhibit.SizeGradientCoder.createFromDOM = function(configElmt, uiContext) {
 			coder._gradientPoints.push({ value: value, size: size});
 		}
 		
-        Exhibit.jQuery(configElmt).children().each(function(index, elmt) {
+        $(configElmt).children().each(function(index, elmt) {
             coder._addEntry(
                 Exhibit.getAttribute(this,  "case"),
-                Exhibit.jQuery(this).text().trim(),
+                $(this).text().trim(),
                 Exhibit.getAttribute(this, "size")
             );
         });
@@ -290,3 +291,7 @@ Exhibit.SizeGradientCoder.prototype.getMixedLabel = function() {
 Exhibit.SizeGradientCoder.prototype.getMixedSize = function() {
     return this._mixedCase.size;
 };
+
+    // end define
+    return Exhibit;
+});

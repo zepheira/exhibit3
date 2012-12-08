@@ -4,6 +4,8 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["lib/jquery", "exhibit", "data/importer", "data/importers/jsonp"],
+       function($, Exhibit) {
 /**
  * @namespace
  */
@@ -166,7 +168,11 @@ Exhibit.Importer.JSONP.GoogleSpreadsheet.preprocessURL = function(url) {
     return url.replace(/\/list\//g, "/cells/");
 };
 
-Exhibit.jQuery(document).one(
+$(document).one(
     "registerJSONPImporters.exhibit",
     Exhibit.Importer.JSONP.GoogleSpreadsheet._register
 );
+
+    // end define
+    return Exhibit;
+});

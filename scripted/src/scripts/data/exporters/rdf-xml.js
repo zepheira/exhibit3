@@ -4,6 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["lib/jquery", "exhibit", "data/exporter"], function($, Exhibit) {
 /**
  * @namespace
  */
@@ -127,5 +128,11 @@ Exhibit.Exporter.RDFXML._register = function() {
     );
 };
 
-Exhibit.jQuery(document).one("registerExporters.exhibit",
-                Exhibit.Exporter.RDFXML._register);
+$(document).one(
+    "registerExporters.exhibit",
+    Exhibit.Exporter.RDFXML._register
+);
+
+    // end define
+    return Exhibit;
+});

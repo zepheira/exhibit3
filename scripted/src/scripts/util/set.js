@@ -4,6 +4,7 @@
  * @fileOverview Pertaining to the Exhibit.Set datatype.
  */
 
+define(["exhibit"], function(Exhibit) {
 /**
  * A basic set (in the mathematical sense) data structure.  Only numerical
  * or string values can be used.  Any other data type would be considered
@@ -187,3 +188,7 @@ Exhibit.Set.createIntersection = function(set1, set2, result) {
     });
     return set;
 };
+
+    // end define
+    return Exhibit;
+});

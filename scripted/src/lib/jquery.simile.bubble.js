@@ -4,7 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-(function($) {
+define(["lib/jquery"], function($) {
     var pngFail, defaultBubbleConfig, methods, _init;
 
     pngFail = $.browser.msie && Number($.browser.version[0]).valueOf() <= 6;
@@ -385,4 +385,6 @@
             $.error("Method " + method + " does not exist on jQuery.simileBubble");
         }
     };
-}(jQuery));
+
+    return $;
+});

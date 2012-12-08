@@ -4,6 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["exhibit", "data/database"], function(Exhibit) {
 /**
  * Represents an item type.
  *
@@ -62,3 +63,7 @@ Exhibit.Database.Type.prototype.getOrigin = function() {
 Exhibit.Database.Type.prototype.getProperty = function(p) {
     return this._custom[p];
 };
+
+    // end define
+    return Exhibit;
+});

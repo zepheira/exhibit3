@@ -4,6 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["lib/jquery", "exhibit"], function($, Exhibit) {
 /**
  * @constructor
  * @class
@@ -11,7 +12,7 @@
  * @param {Exhibit.UIContext} uiContext
  */
 Exhibit.IconCoder = function(containerElmt, uiContext) {
-    Exhibit.jQuery.extend(this, new Exhibit.Coder(
+    $.extend(this, new Exhibit.Coder(
         "icon",
         containerElmt,
         uiContext
@@ -55,7 +56,7 @@ Exhibit.IconCoder._iconTable = {
  */
 Exhibit.IconCoder.create = function(configuration, uiContext) {
     var coder, div;
-    div = Exhibit.jQuery("<div>")
+    div = $("<div>")
         .hide()
         .appendTo("body");
     coder = new Exhibit.IconCoder(
@@ -75,7 +76,7 @@ Exhibit.IconCoder.create = function(configuration, uiContext) {
 Exhibit.IconCoder.createFromDOM = function(configElmt, uiContext) {
     var configuration, coder;
 
-    Exhibit.jQuery(configElmt).hide();
+    $(configElmt).hide();
     
     configuration = Exhibit.getConfigurationFromDOM(configElmt);
     coder = new Exhibit.IconCoder(
@@ -90,10 +91,10 @@ Exhibit.IconCoder.createFromDOM = function(configElmt, uiContext) {
     );
     
     try {
-        Exhibit.jQuery(configElmt).children().each(function(index, elmt) {
+        $(configElmt).children().each(function(index, elmt) {
             coder._addEntry(
                 Exhibit.getAttribute(this,  "case"),
-                Exhibit.jQuery(this).text().trim(),
+                $(this).text().trim(),
                 Exhibit.getAttribute(this, "icon")
             );
         });
@@ -259,3 +260,7 @@ Exhibit.IconCoder.prototype.getMixedLabel = function() {
 Exhibit.IconCoder.prototype.getMixedIcon = function() {
     return this._mixedCase.icon;
 };
+
+    // end define
+    return Exhibit;
+});

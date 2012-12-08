@@ -4,6 +4,9 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(
+    ["lib/jquery", "exhibit", "lib/jquery.simile.dom"],
+    function($, Exhibit) {
 /**
  * @constructor
  * @class
@@ -12,13 +15,13 @@
  */
 Exhibit.TabularView = function(containerElmt, uiContext) {
     var view = this;
-    Exhibit.jQuery.extend(this, new Exhibit.View(
+    $.extend(this, new Exhibit.View(
         "tabular",
         containerElmt,
         uiContext
     ));
     this.addSettingSpecs(Exhibit.TabularView._settingSpecs);
-    Exhibit.jQuery.extend(this._settings, { rowStyler: null, tableStyler: null, indexMap: {} });
+    $.extend(this._settings, { rowStyler: null, tableStyler: null, indexMap: {} });
 
     this._columns = [];
     this._rowTemplate = null;
@@ -29,7 +32,7 @@ Exhibit.TabularView = function(containerElmt, uiContext) {
         view._reconstruct();
     };
 
-    Exhibit.jQuery(uiContext.getCollection().getElement()).bind(
+    $(uiContext.getCollection().getElement()).bind(
         "onItemsChanged.exhibit",
         view._onItemsChanged
     );
@@ -136,9 +139,9 @@ Exhibit.TabularView.createFromDOM = function(configElmt, containerElmt, uiContex
             }
         }
         
-        tables = Exhibit.jQuery("table", configElmt);
-        if (tables.length > 0 && Exhibit.jQuery("table:eq(0) tr", configElmt).length > 0) {
-            view._rowTemplate = Exhibit.Lens.compileTemplate(Exhibit.jQuery("table:eq(0) tr:eq(0)", configElmt).get(0), false, uiContext);
+        tables = $("table", configElmt);
+        if (tables.length > 0 && $("table:eq(0) tr", configElmt).length > 0) {
+            view._rowTemplate = Exhibit.Lens.compileTemplate($("table:eq(0) tr:eq(0)", configElmt).get(0), false, uiContext);
         }
     } catch (e) {
         Exhibit.Debug.exception(e, Exhibit._("%TabularView.error.configuration"));
@@ -249,7 +252,7 @@ Exhibit.TabularView.prototype._internalValidate = function() {
  *
  */
 Exhibit.TabularView.prototype.dispose = function() {
-    Exhibit.jQuery(this.getUIContext().getCollection().getElement()).unbind(
+    $(this.getUIContext().getCollection().getElement()).unbind(
         "onItemsChanged.exhibit",
         this._onItemsChanged
     );
@@ -267,9 +270,9 @@ Exhibit.TabularView.prototype.dispose = function() {
 Exhibit.TabularView.prototype._initializeUI = function() {
     var self = this;
     
-    Exhibit.jQuery(this.getContainer()).empty();
+    $(this.getContainer()).empty();
     self._initializeViewUI(function() {
-        return Exhibit.jQuery(self._dom.bodyDiv).html();
+        return $(self._dom.bodyDiv).html();
     });
 
     this._dom = Exhibit.TabularView.createDom(this.getContainer());
@@ -280,7 +283,7 @@ Exhibit.TabularView.prototype._initializeUI = function() {
     );
     
     if (!this._settings.showSummary) {
-        Exhibit.jQuery(this._dom.collectionSummaryDiv).hide();
+        $(this._dom.collectionSummaryDiv).hide();
     }
     
     Exhibit.View.addViewState(
@@ -301,7 +304,7 @@ Exhibit.TabularView.prototype._reconstruct = function() {
     database = this.getUIContext().getDatabase();
     
     bodyDiv = this._dom.bodyDiv;
-    Exhibit.jQuery(bodyDiv).empty();
+    $(bodyDiv).empty();
 
     /*
      *  Get the current collection and check if it's empty
@@ -339,7 +342,7 @@ Exhibit.TabularView.prototype._reconstruct = function() {
         /*
          *  Style the table
          */
-        table = Exhibit.jQuery("<table>");
+        table = $("<table>");
         table.attr("class", "exhibit-tabularView-body");
         if (this._settings.tableStyler !== null) {
             this._settings.tableStyler(table.get(0), database);
@@ -352,7 +355,7 @@ Exhibit.TabularView.prototype._reconstruct = function() {
         /*
          *  Create the column headers
          */
-        tr = Exhibit.jQuery("<tr>");
+        tr = $("<tr>");
         table.prepend(tr);
         createColumnHeader = function(i) {
             var column, td;
@@ -361,7 +364,7 @@ Exhibit.TabularView.prototype._reconstruct = function() {
                 column.label = self._getColumnLabel(column.expression);
             }
 
-            td = Exhibit.jQuery("<th>");
+            td = $("<th>");
             Exhibit.TabularView.createColumnHeader(
                 exhibit, td.get(0), column.label, i === self._settings.sortColumn, self._settings.sortAscending,
                 function(evt) {
@@ -393,16 +396,16 @@ Exhibit.TabularView.prototype._reconstruct = function() {
             renderItem = function(i) {
                 var item, tr, makeAppender, c, column, td, results, valueType;
                 item = items[i];
-                tr = Exhibit.jQuery("<tr>");
+                tr = $("<tr>");
                 table.append(tr);
                 makeAppender = function(el) {
                     return function(elmt) {
-                        Exhibit.jQuery(el).append(elmt);
+                        $(el).append(elmt);
                     };
                 };
                 for (c = 0; c < self._columns.length; c++) {
                     column = self._columns[c];
-                    td = Exhibit.jQuery("<td>");
+                    td = $("<td>");
                     tr.append(td);
                     
                     results = column.expression.evaluate(
@@ -444,21 +447,21 @@ Exhibit.TabularView.prototype._reconstruct = function() {
             renderItem(i);
         }
 
-        Exhibit.jQuery(bodyDiv).append(table);
+        $(bodyDiv).append(table);
 
         if (generatePagingControls) {
             if (this._settings.pagingControlLocations === "top" || this._settings.pagingControlLocations === "topbottom") {
                 this._renderPagingDiv(this._dom.topPagingDiv, items.length, this._settings.page);
-                Exhibit.jQuery(this._dom.topPagingDiv).show();
+                $(this._dom.topPagingDiv).show();
             }
             
             if (this._settings.pagingControlLocations === "bottom" || this._settings.pagingControlLocations === "topbottom") {
                 this._renderPagingDiv(this._dom.bottomPagingDiv, items.length, this._settings.page);
-                Exhibit.jQuery(this._dom.bottomPagingDiv).show();
+                $(this._dom.bottomPagingDiv).show();
             }
         } else {
-            Exhibit.jQuery(this._dom.topPagingDiv).hide();
-            Exhibit.jQuery(this._dom.bottomPagingDiv).hide();
+            $(this._dom.topPagingDiv).hide();
+            $(this._dom.bottomPagingDiv).hide();
         }
     }
 };
@@ -753,7 +756,7 @@ Exhibit.TabularView.createDom = function(div) {
             }
         ]
     };
-    return Exhibit.jQuery.simileDOM("template", headerTemplate);
+    return $.simileDOM("template", headerTemplate);
 };
 
 /**
@@ -788,8 +791,12 @@ Exhibit.TabularView.createColumnHeader = function(
                 sortAscending ? "images/up-arrow.png" : "images/down-arrow.png")
         });
     }
-    Exhibit.jQuery(th).bind("click", sortFunction);
+    $(th).bind("click", sortFunction);
     
-    dom = Exhibit.jQuery.simileDOM("template", template);
+    dom = $.simileDOM("template", template);
     return dom;
 };
+
+    // end define
+    return Exhibit;
+});

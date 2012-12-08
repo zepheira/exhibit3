@@ -4,6 +4,7 @@
  * @fileOverview HTML utility functions
  */
 
+define(["exhibit", "./util"], function(Exhibit) {
 /**
  * @namespace For utilities related to HTML entities.
  */
@@ -292,3 +293,7 @@ Exhibit.Util.HTML.deEntify = function(s) {
     }
     return s;
 };
+
+    // end define
+    return Exhibit;
+});

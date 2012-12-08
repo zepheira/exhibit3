@@ -4,6 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["exhibit", "lib/base64"], function(Exhibit, Base64) {
 /**
  * @namespace Bookmarking the current state of a browsing session.
  */
@@ -135,3 +136,7 @@ Exhibit.Bookmark.init = function() {
         }
     }
 };
+
+    // end define
+    return Exhibit;
+});

@@ -4,6 +4,7 @@
  * @fileOverview Base for Exhibit utilities and native datatype modifications.
  */
 
+define(["exhibit"], function(Exhibit) {
 /**
  * @namespace For Exhibit utility classes and methods.
  */
@@ -33,6 +34,10 @@ Exhibit.Util.round = function(n, precision) {
     lg = -lg;
     return parseFloat(n).toFixed(lg);
 };
+
+    // end define
+    return Exhibit;
+});
 
 /**
  * Modify the native String type.

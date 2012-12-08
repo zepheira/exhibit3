@@ -10,6 +10,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["lib/jquery", "exhibit"], function($, Exhibit) {
 /**
  * @constructor
  * @class
@@ -17,7 +18,7 @@
  * @param {Exhibit.UIContext} uiContext
  */
 Exhibit.OrderedColorCoder = function(containerElmt, uiContext) {
-    Exhibit.jQuery.extend(this, new Exhibit.Coder(
+    $.extend(this, new Exhibit.Coder(
         "orderedcolor",
         containerElmt,
         uiContext
@@ -91,7 +92,7 @@ Exhibit.OrderedColorCoder._settingSpecs = {
  */
 Exhibit.OrderedColorCoder.create = function(configuration, uiContext) {
     var coder, div;
-    div = Exhibit.jQuery("<div>")
+    div = $("<div>")
         .hide()
         .appendTo("body");
     coder = new Exhibit.OrderedColorCoder(
@@ -111,7 +112,7 @@ Exhibit.OrderedColorCoder.create = function(configuration, uiContext) {
 Exhibit.OrderedColorCoder.createFromDOM = function(configElmt, uiContext) {
     var configuration, coder;
 
-    Exhibit.jQuery(configElmt).hide();
+    $(configElmt).hide();
     
     configuration = Exhibit.getConfigurationFromDOM(configElmt);
     coder = new Exhibit.OrderedColorCoder(
@@ -127,10 +128,10 @@ Exhibit.OrderedColorCoder.createFromDOM = function(configElmt, uiContext) {
     
     try {
 	    this._usePriority = coder._settings.usePriority;
-        Exhibit.jQuery(configElmt).children().each(function(index, element) {
+        $(configElmt).children().each(function(index, element) {
             coder._addEntry(
                 Exhibit.getAttribute(this, "case"), 
-                Exhibit.jQuery(this).text().trim(), 
+                $(this).text().trim(), 
                 Exhibit.getAttribute(this, "color")
             );
         });
@@ -379,3 +380,7 @@ Exhibit.OrderedColorCoder.prototype.getMixedColor = function() {
 Exhibit.OrderedColorCoder.prototype.getMixedIsDefault = function() {
     return this._mixedCase.isDefault;
 };
+
+    // end define
+    return Exhibit;
+});

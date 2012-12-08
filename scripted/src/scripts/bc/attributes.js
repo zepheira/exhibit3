@@ -5,6 +5,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["lib/jquery", "exhibit", "bc/bc"], function($, Exhibit) {
 /**
  * @namespace
  */
@@ -38,9 +39,9 @@ Exhibit.Backwards.Attributes.getAttribute = function(elmt, name, splitOn) {
     var value, i, values;
 
     try {
-        value = Exhibit.jQuery(elmt).attr(name);
+        value = $(elmt).attr(name);
         if (typeof value === "undefined" || value === null || value.length === 0) {
-            value = Exhibit.jQuery(elmt).attr(Exhibit.Backwards.Attributes.prefix+name);
+            value = $(elmt).attr(Exhibit.Backwards.Attributes.prefix+name);
             if (typeof value === "undefined" || value === null || value.length === 0) {
                 return null;
             }
@@ -109,3 +110,7 @@ Exhibit.Backwards.Attributes.extractAttributeName = function(name) {
 Exhibit.Backwards.Attributes.makeExhibitAttribute = function(name) {
     return Exhibit.Backwards.Attributes.prefix + name;
 };
+    
+    // end define
+    return Exhibit;
+});

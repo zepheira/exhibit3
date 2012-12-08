@@ -4,6 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["exhibit"], function(Exhibit) {
 /**
  * @namespace
  */
@@ -393,3 +394,7 @@ Exhibit.ExpressionScanner.prototype.next = function() {
 Exhibit.ExpressionScanner.prototype._isDigit = function(c) {
     return "0123456789".indexOf(c) >= 0;
 };
+
+    // end define
+    return Exhibit;
+});

@@ -5,6 +5,7 @@
  * @author <a href="mailto:axel@pike.org">Axel Hecht</a>
  */
 
+define(["lib/jquery", "exhibit"], function($, Exhibit) {
 /**
  * @constructor
  * @class
@@ -12,7 +13,7 @@
  * @param {Exhibit.UIContext} uiContext
  */
 Exhibit.CloudFacet = function(containerElmt, uiContext) {
-    Exhibit.jQuery.extend(this, new Exhibit.Facet("cloud", containerElmt, uiContext));
+    $.extend(this, new Exhibit.Facet("cloud", containerElmt, uiContext));
     this.addSettingSpecs(Exhibit.CloudFacet._settingSpecs);
     this._colorCoder = null;
     this._valueSet = new Exhibit.Set();
@@ -150,7 +151,7 @@ Exhibit.CloudFacet.prototype.hasRestrictions = function() {
  *
  */
 Exhibit.CloudFacet.prototype.clearAllRestrictions = function() {
-    Exhibit.jQuery(this.getContainer()).trigger("onBeforeFacetReset.exhibit");
+    $(this.getContainer()).trigger("onBeforeFacetReset.exhibit");
     this._valueSet = new Exhibit.Set();
     this._selectMissing = false;
     this._notifyCollection();
@@ -362,17 +363,17 @@ Exhibit.CloudFacet.prototype._computeFacet = function(items) {
         }
         
         if (count > 0 || this._selectMissing) {
-            span = Exhibit.jQuery("<span>");
-            Exhibit.jQuery(span).html((typeof this._settings.missingLabel !== "undefined") ? 
+            span = $("<span>");
+            $(span).html((typeof this._settings.missingLabel !== "undefined") ? 
                          this._settings.missingLabel :
                          Exhibit._("%facets..missingThisField"));
-            Exhibit.jQuery(span).attr("class", "exhibit-facet-value-missingThisField");
+            $(span).attr("class", "exhibit-facet-value-missingThisField");
             
             entries.unshift({
                 value:          null, 
                 count:          count,
                 selected:       this._selectMissing,
-                selectionLabel: Exhibit.jQuery(span).get(0),
+                selectionLabel: $(span).get(0),
                 actionLabel:    Exhibit._("%facets.missingThisField")
             });
         }
@@ -392,10 +393,10 @@ Exhibit.CloudFacet.prototype._notifyCollection = function() {
  *
  */
 Exhibit.CloudFacet.prototype._initializeUI = function() {
-    Exhibit.jQuery(this.getContainer()).empty();
-    Exhibit.jQuery(this.getContainer()).attr("class", "exhibit-cloudFacet");
+    $(this.getContainer()).empty();
+    $(this.getContainer()).attr("class", "exhibit-cloudFacet");
 
-    var dom = Exhibit.jQuery.simileDOM(
+    var dom = $.simileDOM(
         "string",
         this.getContainer(),
         ((typeof this._settings.facetLabel !== "undefined") ?
@@ -419,8 +420,8 @@ Exhibit.CloudFacet.prototype._constructBody = function(entries) {
     self = this;
     containerDiv = this._dom.valuesContainer;
     
-    Exhibit.jQuery(containerDiv).hide();
-    Exhibit.jQuery(containerDiv).empty();
+    $(containerDiv).hide();
+    $(containerDiv).empty();
     
     if (entries.length > 0) {
         min = Number.POSITIVE_INFINITY;
@@ -440,35 +441,35 @@ Exhibit.CloudFacet.prototype._constructBody = function(entries) {
                 evt.stopPropagation();
             };
             
-            elmt = Exhibit.jQuery("<span>");
+            elmt = $("<span>");
             
-            Exhibit.jQuery(elmt).append(document.createTextNode("\u00A0"));
+            $(elmt).append(document.createTextNode("\u00A0"));
             if (typeof entry.selectionLabel === "string") {
-                Exhibit.jQuery(elmt).append(document.createTextNode(entry.selectionLabel));
+                $(elmt).append(document.createTextNode(entry.selectionLabel));
             } else {
-                Exhibit.jQuery(elmt).append(entry.selectionLabel);
+                $(elmt).append(entry.selectionLabel);
             }
-            Exhibit.jQuery(elmt).append(document.createTextNode("\u00A0"));
+            $(elmt).append(document.createTextNode("\u00A0"));
             
-            Exhibit.jQuery(elmt).attr("class", entry.selected ? 
+            $(elmt).attr("class", entry.selected ? 
                          "exhibit-cloudFacet-value exhibit-cloudFacet-value-selected" :
                          "exhibit-cloudFacet-value");
                 
             if (entry.count > min) {
-                Exhibit.jQuery(elmt).css("fontSize", Math.ceil(100 + 100 * Math.log(1 + 1.5 * (entry.count - min) / range)) + "%");
+                $(elmt).css("fontSize", Math.ceil(100 + 100 * Math.log(1 + 1.5 * (entry.count - min) / range)) + "%");
             }
             
-            Exhibit.jQuery(elmt).bind("click", onSelect);
+            $(elmt).bind("click", onSelect);
         
-            Exhibit.jQuery(containerDiv).append(elmt);
-            Exhibit.jQuery(containerDiv).append(document.createTextNode(" "));
+            $(containerDiv).append(elmt);
+            $(containerDiv).append(document.createTextNode(" "));
         };
     
         for (j = 0; j < entries.length; j++) {
             constructValue(entries[j]);
         }
     
-        Exhibit.jQuery(containerDiv).show();
+        $(containerDiv).show();
     }
 };
 
@@ -666,3 +667,7 @@ Exhibit.CloudFacet.prototype.stateDiffers = function(state) {
 
     return false;
 };
+
+    // end define
+    return Exhibit;
+});

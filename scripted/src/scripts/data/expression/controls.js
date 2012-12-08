@@ -4,6 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["exhibit"], function(Exhibit) {
 /**
  * @namespace
  */
@@ -121,3 +122,7 @@ Exhibit.Controls["filter"] = {
         return new Exhibit.Expression._Collection(results, collection.valueType);
     }
 };
+
+    // end define
+    return Exhibit;
+});

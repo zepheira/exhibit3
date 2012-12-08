@@ -4,6 +4,9 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(
+    ["lib/jquery", "exhibit", "lib/jquery.simile.dom"],
+    function($, Exhibit) {
 /**
  * @constructor
  * @class
@@ -20,7 +23,7 @@ Exhibit.CollectionSummaryWidget = function(containerElmt, uiContext) {
     this._onItemsChanged = function() {
         widget._reconstruct();
     };
-    Exhibit.jQuery(this._collection.getElement()).bind(
+    $(this._collection.getElement()).bind(
         "onItemsChanged.exhibit",
         this._onItemsChanged
     );
@@ -61,11 +64,11 @@ Exhibit.CollectionSummaryWidget.createFromDOM = function(configElmt, containerEl
  *
  */
 Exhibit.CollectionSummaryWidget.prototype.dispose = function() {
-    Exhibit.jQuery(this._uiContext.getCollection().getElement()).unbind(
+    $(this._uiContext.getCollection().getElement()).unbind(
         "onItemsChanged.exhibit",
         this._onItemsChanged
     );
-    Exhibit.jQuery(this._div).empty();
+    $(this._div).empty();
     
     this._noResultsDom = null;
     this._allResultsDom = null;
@@ -88,29 +91,29 @@ Exhibit.CollectionSummaryWidget.prototype._initializeUI = function() {
         self._resetCollection();
     };
 
-    Exhibit.jQuery(this._div).hide();
-    this._allResultsDom = Exhibit.jQuery.simileDOM(
+    $(this._div).hide();
+    this._allResultsDom = $.simileDOM(
         "string",
         "span",
         Exhibit._("%widget.collectionSummary.allResultsTemplate", "exhibit-collectionSummaryWidget-results")
     );
-    this._filteredResultsDom = Exhibit.jQuery.simileDOM(
+    this._filteredResultsDom = $.simileDOM(
         "string", 
         "span",
         Exhibit._("%widget.collectionSummary.filteredResultsTemplate", "exhibit-collectionSummaryWidget-results"),
         {   resetActionLink: Exhibit.UI.makeActionLink(Exhibit._("%widget.collectionSummary.resetFiltersLabel"), onClearFilters)
         }
     );
-    this._noResultsDom = Exhibit.jQuery.simileDOM(
+    this._noResultsDom = $.simileDOM(
         "string",
         "span",
         Exhibit._("%widget.collectionSummary.noResultsTemplate", "exhibit-collectionSummaryWidget-results", "exhibit-collectionSummaryWidget-count"),
         {   resetActionLink: Exhibit.UI.makeActionLink(Exhibit._("%widget.collectionSummary.resetFiltersLabel"), onClearFilters)
         }
     );
-    Exhibit.jQuery(this._div).append(this._allResultsDom.elmt);
-    Exhibit.jQuery(this._div).append(this._filteredResultsDom.elmt);
-    Exhibit.jQuery(this._div).append(this._noResultsDom.elmt);
+    $(this._div).append(this._allResultsDom.elmt);
+    $(this._div).append(this._filteredResultsDom.elmt);
+    $(this._div).append(this._noResultsDom.elmt);
     this._reconstruct();
 };
 
@@ -124,14 +127,14 @@ Exhibit.CollectionSummaryWidget.prototype._reconstruct = function() {
     database = this._uiContext.getDatabase();
     dom = this._dom;
 
-    Exhibit.jQuery(this._div).hide();
-    Exhibit.jQuery(this._allResultsDom.elmt).hide();
-    Exhibit.jQuery(this._filteredResultsDom.elmt).hide();
-    Exhibit.jQuery(this._noResultsDom.elmt).hide();
+    $(this._div).hide();
+    $(this._allResultsDom.elmt).hide();
+    $(this._filteredResultsDom.elmt).hide();
+    $(this._noResultsDom.elmt).hide();
     
     if (originalSize > 0) {
         if (currentSize === 0) {
-            Exhibit.jQuery(this._noResultsDom.elmt).show();
+            $(this._noResultsDom.elmt).show();
         } else {
             typeIDs = database.getTypeIDs(this._collection.getRestrictedItems()).toArray();
             typeID = typeIDs.length === 1 ? typeIDs[0] : "Item";
@@ -140,19 +143,19 @@ Exhibit.CollectionSummaryWidget.prototype._reconstruct = function() {
                 database.labelItemsOfType(currentSize, typeID, "exhibit-collectionSummaryWidget-count");
             
             if (currentSize === originalSize) {
-                Exhibit.jQuery(this._allResultsDom.elmt).show();
-                Exhibit.jQuery(this._allResultsDom.resultDescription).empty();
-                Exhibit.jQuery(this._allResultsDom.resultDescription).append(description);
+                $(this._allResultsDom.elmt).show();
+                $(this._allResultsDom.resultDescription).empty();
+                $(this._allResultsDom.resultDescription).append(description);
             } else {
-                Exhibit.jQuery(this._filteredResultsDom.elmt).show();
-                Exhibit.jQuery(this._filteredResultsDom.resultDescription).empty();
-                Exhibit.jQuery(this._filteredResultsDom.resultDescription).append(description);
-                Exhibit.jQuery(this._filteredResultsDom.originalCountSpan).html(originalSize);
+                $(this._filteredResultsDom.elmt).show();
+                $(this._filteredResultsDom.resultDescription).empty();
+                $(this._filteredResultsDom.resultDescription).append(description);
+                $(this._filteredResultsDom.originalCountSpan).html(originalSize);
             }
         }
     }
 
-    Exhibit.jQuery(this._div).show();
+    $(this._div).show();
 };
 
 /**
@@ -162,7 +165,7 @@ Exhibit.CollectionSummaryWidget.prototype._resetCollection = function() {
     var state, collection;
     collection = this._collection;
 
-    Exhibit.jQuery(this._collection.getElement()).trigger("onResetAllFilters.exhibit");
+    $(this._collection.getElement()).trigger("onResetAllFilters.exhibit");
     state = this._collection.clearAllRestrictions();
 
     Exhibit.History.pushState(
@@ -170,3 +173,7 @@ Exhibit.CollectionSummaryWidget.prototype._resetCollection = function() {
         Exhibit._("%widget.collectionSummary.resetActionTitle")
     );
 };
+
+    // end define
+    return Exhibit;
+});
