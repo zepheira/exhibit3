@@ -60,17 +60,17 @@ YUI Compressor Ant Task
 Software Libraries
 ==================
 
-LAB.js
-------
- * http://getify.github.com/LABjs/
- * 2.0.3
- * MIT
- * scripted/src/lib/LAB.min.js
+RequireJS
+---------
+ * http://requirejs.org/
+ * 2.1.2
+ * dual Modified BSD or MIT License
+ * scripted/src/lib/require.js
 
 jQuery
 ------
  * http://jquery.com/
- * 1.7.1
+ * 1.8.2
  * dual GPLv2/MIT
  * scripted/src/lib/jquery.min.js
 
@@ -98,3 +98,10 @@ sprintf.js
  * http://www.diveintojavascript.com/projects/javascript-sprintf
  * Modified BSD
  * scripted/src/lib/sprintf.js
+
+async RequireJS plugin
+----------------------
+ * https://github.com/millermedeiros/requirejs-plugins
+ * 0.1.1
+ * MIT License
+ * scripted/src/lib/async.js
