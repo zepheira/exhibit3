@@ -131,7 +131,7 @@ Exhibit.Importer.JSONP.GoogleSpreadsheet.transformJSON = function(json, url, lin
                 if (typeof fieldName === "string") {
                     // ensure round-trip iso8601 date strings through google docs
                     if (Exhibit.Importer.JSONP.GoogleSpreadsheet._dateRegex.exec(cell.val)) {
-                        cell.val = Exhibit.DataTime.toISODateString(new Date(cell.val));
+                        cell.val = Exhibit.DateTime.toISODateString(new Date(cell.val));
                     }
 
                     item[fieldName] = cell.val;
