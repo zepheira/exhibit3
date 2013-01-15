@@ -99,6 +99,13 @@ sprintf.js
  * Modified BSD
  * scripted/src/lib/sprintf.js
 
+i18n RequireJS plugin
+----------------------
+ * https://github.com/requirejs/i18n/
+ * 2.0.1
+ * Dual MIT/Modified BSD License
+ * scripted/src/lib/i18n.js
+
 async RequireJS plugin
 ----------------------
  * https://github.com/millermedeiros/requirejs-plugins
