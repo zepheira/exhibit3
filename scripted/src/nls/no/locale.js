@@ -1,4 +1,4 @@
-Exhibit.Localization.importLocale("no", {
+define({
     "%general.missingLabel": "mangler",
     "%general.missingSortKey": "(mangler)",
     "%general.notApplicableSortKey": "(n/a)",

@@ -1,4 +1,4 @@
-Exhibit.Localization.importLocale("sv", {
+define({
     "%general.missingLabel": "saknas",
     "%general.missingSortKey": "(saknas)",
     "%general.notApplicableSortKey": "(n/a)",

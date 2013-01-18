@@ -1,4 +1,4 @@
-Exhibit.Localization.importExtensionLocale("fr", {
+define({
     "%MapView.label": "Carte",
     "%MapView.tooltip": "Voir les items sur une carte"
 });
