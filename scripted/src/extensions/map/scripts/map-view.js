@@ -6,22 +6,38 @@
  * @example
  */
 
+define([
+    "lib/jquery",
+    "exhibit",
+    "gmaps",
+    "map/base",
+    "map/marker",
+    "util/debug",
+    "util/set",
+    "util/accessors",
+    "util/settings",
+    "util/views",
+    "data/expression-parser",
+    "ui/ui-context",
+    "ui/views/view",
+    "ui/coders/default-color-coder"
+], function($, Exhibit, google, MapExtension, Marker, Debug, Set, AccessorsUtilities, SettingsUtilities, ViewUtilities, ExpressionParser, UIContext, View, DefaultColorCoder) {
 /**
  * @class
  * @constructor
  * @param {Element} containerElmt
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.MapView = function(containerElmt, uiContext) {
-    Exhibit.MapView._initialize();
+MapView = function(containerElmt, uiContext) {
+    MapView._initialize();
 
     var view = this;
-    Exhibit.jQuery.extend(this, new Exhibit.View(
+    $.extend(this, new View(
         "map",
         containerElmt,
         uiContext
     ));
-    this.addSettingSpecs(Exhibit.MapView._settingSpecs);
+    this.addSettingSpecs(MapView._settingSpecs);
 
     this._overlays = [];
     this._accessors = {
@@ -47,7 +63,7 @@ Exhibit.MapView = function(containerElmt, uiContext) {
     this._onItemsChanged = function() {
         view._reconstruct(); 
     };
-    Exhibit.jQuery(uiContext.getCollection().getElement()).bind(
+    $(uiContext.getCollection().getElement()).bind(
         "onItemsChanged.exhibit",
         view._onItemsChanged
     );
@@ -58,7 +74,7 @@ Exhibit.MapView = function(containerElmt, uiContext) {
 /**
  * @constant
  */
-Exhibit.MapView._settingSpecs = {
+MapView._settingSpecs = {
     "latlngOrder":      { "type": "enum",     "defaultValue": "latlng", "choices": [ "latlng", "lnglat" ] },
     "latlngPairSeparator": { "type": "text",  "defaultValue": ";"   },
     "center":           { "type": "float",    "defaultValue": [20,0],   "dimensions": 2 },
@@ -109,7 +125,7 @@ Exhibit.MapView._settingSpecs = {
 /**
  * @constant
  */
-Exhibit.MapView._accessorSpecs = [
+MapView._accessorSpecs = [
     {   "accessorName":   "getProxy",
         "attributeName":  "proxy"
     },
@@ -179,18 +195,18 @@ Exhibit.MapView._accessorSpecs = [
  * @private
  * @static
  */
-Exhibit.MapView._initialize = function() {
-    if (!Exhibit.MapExtension.initialized) {
+MapView._initialize = function() {
+    if (!MapExtension.initialized) {
         var rel, canvas;
-        Exhibit.jQuery('head link').each(function(i, el) {
-            rel = Exhibit.jQuery(el).attr("rel");
+        $('head link').each(function(i, el) {
+            rel = $(el).attr("rel");
             if (rel.match(/\b(exhibit-map-painter|exhibit\/map-painter)\b/)) {
-                Exhibit.MapExtension.markerUrlPrefix = Exhibit.jQuery(el).attr("href") + "?";
+                MapExtension.markerUrlPrefix = $(el).attr("href") + "?";
             }
         });
 
-        Exhibit.MapExtension.Marker.detectCanvas();
-        Exhibit.MapExtension.initialized = true;
+        Marker.detectCanvas();
+        MapExtension.initialized = true;
     }
 };
 
@@ -200,12 +216,12 @@ Exhibit.MapView._initialize = function() {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.MapView}
  */
-Exhibit.MapView.create = function(configuration, containerElmt, uiContext) {
-    var view = new Exhibit.MapView(
+MapView.create = function(configuration, containerElmt, uiContext) {
+    var view = new MapView(
         containerElmt,
-        Exhibit.UIContext.create(configuration, uiContext)
+        UIContext.create(configuration, uiContext)
     );
-    Exhibit.MapView._configure(view, configuration);
+    MapView._configure(view, configuration);
     
     view._internalValidate();
     view._initializeUI();
@@ -218,17 +234,17 @@ Exhibit.MapView.create = function(configuration, containerElmt, uiContext) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.MapView}
  */
-Exhibit.MapView.createFromDOM = function(configElmt, containerElmt, uiContext) {
+MapView.createFromDOM = function(configElmt, containerElmt, uiContext) {
     var configuration, view;
     configuration = Exhibit.getConfigurationFromDOM(configElmt);
-    view = new Exhibit.MapView(
+    view = new MapView(
         containerElmt !== null ? containerElmt : configElmt, 
-        Exhibit.UIContext.createFromDOM(configElmt, uiContext)
+        UIContext.createFromDOM(configElmt, uiContext)
     );
     
-    Exhibit.SettingsUtilities.createAccessorsFromDOM(configElmt, Exhibit.MapView._accessorSpecs, view._accessors);
-    Exhibit.SettingsUtilities.collectSettingsFromDOM(configElmt, view.getSettingSpecs(), view._settings);
-    Exhibit.MapView._configure(view, configuration);
+    AccessorsUtilities.createAccessorsFromDOM(configElmt, MapView._accessorSpecs, view._accessors);
+    SettingsUtilities.collectSettingsFromDOM(configElmt, view.getSettingSpecs(), view._settings);
+    MapView._configure(view, configuration);
     
     view._internalValidate();
     view._initializeUI();
@@ -240,10 +256,10 @@ Exhibit.MapView.createFromDOM = function(configElmt, containerElmt, uiContext) {
  * @param {Exhibit.MapView} view
  * @param {Object} configuration
  */
-Exhibit.MapView._configure = function(view, configuration) {
+MapView._configure = function(view, configuration) {
     var accessors;
-    Exhibit.SettingsUtilities.createAccessors(configuration, Exhibit.MapView._accessorSpecs, view._accessors);
-    Exhibit.SettingsUtilities.collectSettings(configuration, view.getSettingSpecs(), view._settings);
+    AccessorsUtilities.createAccessors(configuration, MapView._accessorSpecs, view._accessors);
+    SettingsUtilities.collectSettings(configuration, view.getSettingSpecs(), view._settings);
     
     accessors = view._accessors;
     view._getLatlng = accessors.getLatlng !== null ?
@@ -254,7 +270,7 @@ Exhibit.MapView._configure = function(view, configuration) {
         } : 
         null;
 
-    view._markerLabelExpression = Exhibit.ExpressionParser.parse(view._settings.markerLabel);
+    view._markerLabelExpression = ExpressionParser.parse(view._settings.markerLabel);
 };
 
 /**
@@ -266,14 +282,14 @@ Exhibit.MapView._configure = function(view, configuration) {
  * @param {Exhibit.Database} database
  * @param {Numeric} accuracy
  */
-Exhibit.MapView.lookupLatLng = function(set, addressExpressionString, outputProperty, outputTextArea, database, accuracy) {
+MapView.lookupLatLng = function(set, addressExpressionString, outputProperty, outputTextArea, database, accuracy) {
     var expression, jobs, results, geocoder, cont;
 
     if (typeof accuracy === "undefined" || accuracy === null) {
         accuracy = 4;
     }
     
-    expression = Exhibit.ExpressionParser.parse(addressExpressionString);
+    expression = ExpressionParser.parse(addressExpressionString);
     jobs = [];
     set.visit(function(item) {
         var address = expression.evaluateSingle(
@@ -332,9 +348,9 @@ Exhibit.MapView.lookupLatLng = function(set, addressExpressionString, outputProp
 /**
  *
  */
-Exhibit.MapView.prototype.dispose = function() {
+MapView.prototype.dispose = function() {
     var view = this;
-    Exhibit.jQuery(this.getUIContext().getCollection().getElement()).unbind(
+    $(this.getUIContext().getCollection().getElement()).unbind(
         "onItemsChanged.exhibit",
         view._onItemsChanged
     );
@@ -359,7 +375,7 @@ Exhibit.MapView.prototype.dispose = function() {
 /**
  * @private
  */
-Exhibit.MapView.prototype._internalValidate = function() {
+MapView.prototype._internalValidate = function() {
     var exhibit, selectCoordinator, self;
     exhibit = this.getUIContext().getMain();
     if (typeof this._accessors.getColorKey !== "undefined" && this._accessors.getColorKey !== null) {
@@ -367,7 +383,7 @@ Exhibit.MapView.prototype._internalValidate = function() {
             this._colorCoder = exhibit.getComponent(this._settings.colorCoder);
         }
         if (typeof this._colorCoder === "undefined" || this._colorCoder === null) {
-            this._colorCoder = new Exhibit.DefaultColorCoder(this.getUIContext());
+            this._colorCoder = new DefaultColorCoder(this.getUIContext());
         }
     }
     if (typeof this._accessors.getSizeKey !== "undefined" && this._accessors.getSizeKey !== null) {  
@@ -397,7 +413,7 @@ Exhibit.MapView.prototype._internalValidate = function() {
 /**
  * @private
  */
-Exhibit.MapView.prototype._initializeUI = function() {
+MapView.prototype._initializeUI = function() {
     var self, legendWidgetSettings, mapDiv;
 
     self = this;
@@ -408,8 +424,8 @@ Exhibit.MapView.prototype._initializeUI = function() {
     legendWidgetSettings.sizeMarkerGenerator = this._createSizeMarkerGenerator();
     legendWidgetSettings.iconMarkerGenerator = this._createIconMarkerGenerator();
     
-    Exhibit.jQuery(this.getContainer()).empty();
-    this._dom = Exhibit.ViewUtilities.constructPlottingViewDom(
+    $(this.getContainer()).empty();
+    this._dom = ViewUtilities.constructPlottingViewDom(
         this.getContainer(), 
         this.getUIContext(),
         this._settings.showSummary && this._settings.showHeader,
@@ -422,7 +438,7 @@ Exhibit.MapView.prototype._initializeUI = function() {
     );
     
     mapDiv = this._dom.plotContainer;
-    Exhibit.jQuery(mapDiv)
+    $(mapDiv)
         .attr("class", "exhibit-mapView-map")
         .css("height", this._settings.mapHeight);
     
@@ -435,7 +451,7 @@ Exhibit.MapView.prototype._initializeUI = function() {
  * @param {Element} mapDiv
  * @returns {google.maps.Map}
  */
-Exhibit.MapView.prototype._constructGMap = function(mapDiv) {
+MapView.prototype._constructGMap = function(mapDiv) {
     var settings, mapOptions, map;
     settings = this._settings;
     if (typeof settings.mapConstructor !== "undefined" &&
@@ -502,13 +518,13 @@ Exhibit.MapView.prototype._constructGMap = function(mapDiv) {
  * @private
  * @returns {Function}
  */
-Exhibit.MapView.prototype._createColorMarkerGenerator = function() {
+MapView.prototype._createColorMarkerGenerator = function() {
     var settings = this._settings;
 
     return function(color) {
-        return Exhibit.jQuery.simileBubble(
+        return $.simileBubble(
             "createTranslucentImage",
-            Exhibit.MapExtension.Marker.makeIcon(settings.shapeWidth, settings.shapeHeight, color, null, null, settings.iconSize, settings).iconURL,
+            Marker.makeIcon(settings.shapeWidth, settings.shapeHeight, color, null, null, settings.iconSize, settings).iconURL,
             "middle"
         );
     };
@@ -517,13 +533,13 @@ Exhibit.MapView.prototype._createColorMarkerGenerator = function() {
 /**
  * @returns {Function}
  */
-Exhibit.MapView.prototype._createSizeMarkerGenerator = function() {
-    var settings = Exhibit.jQuery.extend({}, this._settings);
+MapView.prototype._createSizeMarkerGenerator = function() {
+    var settings = $.extend({}, this._settings);
     settings.pinHeight = 0;
     return function(iconSize) {
-        return Exhibit.jQuery.simileBubble(
+        return $.simileBubble(
             "createTranslucentImage",
-            Exhibit.MapExtension.Marker.makeIcon(settings.shapeWidth, settings.shapeHeight, settings.color, null, null, iconSize, settings).iconURL,
+            Marker.makeIcon(settings.shapeWidth, settings.shapeHeight, settings.color, null, null, iconSize, settings).iconURL,
             "middle"
         );
     };
@@ -533,20 +549,20 @@ Exhibit.MapView.prototype._createSizeMarkerGenerator = function() {
  * @private
  * @returns {Function}
  */
-Exhibit.MapView.prototype._createIconMarkerGenerator = function() {
+MapView.prototype._createIconMarkerGenerator = function() {
     return function(iconURL) {
-        var elmt = Exhibit.jQuery("img")
+        var elmt = $("img")
             .attr("src", iconURL)
             .css("vertical-align", "middle")
             .css("height", 40);
-        return Exhibit.jQuery(elmt).get(0);
+        return $(elmt).get(0);
     };
 };
 
 /**
  * @private
  */
-Exhibit.MapView.prototype._clearOverlays = function() {
+MapView.prototype._clearOverlays = function() {
     var i;
     if (typeof this._infoWindow !== "undefined" && this._infoWindow !== null) {
 	    this._infoWindow.setMap(null);
@@ -562,7 +578,7 @@ Exhibit.MapView.prototype._clearOverlays = function() {
 /**
  * @private
  */
-Exhibit.MapView.prototype._reconstruct = function() {
+MapView.prototype._reconstruct = function() {
     var currentSize, unplottableItems;
 
     this._clearOverlays();
@@ -591,7 +607,7 @@ Exhibit.MapView.prototype._reconstruct = function() {
  * @private
  * @param {Array} unplottableItems
  */
-Exhibit.MapView.prototype._rePlotItems = function(unplottableItems) {
+MapView.prototype._rePlotItems = function(unplottableItems) {
     var self, collection, database, settings, accessors, currentSet, locationToData, hasColorKey, hasSizeKey, hasIconKey, hasIcon, hasPoints, hasPolygons, hasPolylines, makeLatLng, bounds, maxAutoZoom, colorCodingFlags, sizeCodingFlags, iconCodingFlags, addMarkerAtLocation, latlngKey, legendWidget, colorCoder, keys, legendGradientWidget, k, key, color, sizeCoder, points, space, i, size, iconCoder, icon;
 
     self = this;
@@ -622,21 +638,21 @@ Exhibit.MapView.prototype._rePlotItems = function(unplottableItems) {
         "mixed": false,
         "missing": false,
         "others": false,
-        "keys": new Exhibit.Set()
+        "keys": new Set()
     };
 
      sizeCodingFlags = {
         "mixed": false,
         "missing": false,
         "others": false,
-        "keys": new Exhibit.Set()
+        "keys": new Set()
     };
 
     iconCodingFlags = {
         "mixed": false,
         "missing": false,
         "others": false,
-        "keys": new Exhibit.Set()
+        "keys": new Set()
     };
 
     bounds = Infinity;
@@ -675,7 +691,7 @@ Exhibit.MapView.prototype._rePlotItems = function(unplottableItems) {
             color = self._settings.color;
             colorKeys = null;
             if (hasColorKey) {
-                colorKeys = new Exhibit.Set();
+                colorKeys = new Set();
                 accessors.getColorKey(itemID, database, function(v) {
                     colorKeys.add(v);
                 });
@@ -686,7 +702,7 @@ Exhibit.MapView.prototype._rePlotItems = function(unplottableItems) {
             if (latlngs.length > 0) {
                 sizeKeys = null;
                 if (hasSizeKey) {
-                    sizeKeys = new Exhibit.Set();
+                    sizeKeys = new Set();
                     accessors.getSizeKey(itemID, database, function(v) {
                         sizeKeys.add(v);
                     });
@@ -694,7 +710,7 @@ Exhibit.MapView.prototype._rePlotItems = function(unplottableItems) {
 
                 iconKeys = null;
                 if (hasIconKey) {
-                    iconKeys = new Exhibit.Set();
+                    iconKeys = new Set();
                     accessors.getIconKey(itemID, database, function(v) {
                         iconKeys.add(v);
                     });
@@ -814,7 +830,7 @@ Exhibit.MapView.prototype._rePlotItems = function(unplottableItems) {
             }
 	    }
     } catch (e) {
-        Exhibit.Debug.exception(e);
+        Debug.exception(e);
     }
 
     // create all legends for the map, one each for icons, colors, and sizes
@@ -932,7 +948,7 @@ Exhibit.MapView.prototype._rePlotItems = function(unplottableItems) {
  * @param {Function} makeLatLng
  * @returns {google.maps.Polygon}
  */
-Exhibit.MapView.prototype._plotPolygon = function(itemID, polygonString, color, makeLatLng) {
+MapView.prototype._plotPolygon = function(itemID, polygonString, color, makeLatLng) {
     var coords, settings, borderColor, polygon;
 
     coords = this._parsePolygonOrPolyline(polygonString, makeLatLng);
@@ -963,7 +979,7 @@ Exhibit.MapView.prototype._plotPolygon = function(itemID, polygonString, color, 
  * @param {Function} makeLatLng
  * @returns {google.maps.Polyline}
  */
-Exhibit.MapView.prototype._plotPolyline = function(itemID, polylineString, color, makeLatLng) {
+MapView.prototype._plotPolyline = function(itemID, polylineString, color, makeLatLng) {
     var coords, settings, borderColor, polyline;
     coords = this._parsePolygonOrPolyline(polylineString, makeLatLng);
     if (coords.length > 1) {
@@ -986,7 +1002,7 @@ Exhibit.MapView.prototype._plotPolyline = function(itemID, polylineString, color
  * @param {google.maps.Polygon|google.maps.Polyline} poly
  * @returns {google.maps.Polygon|google.maps.Polyline}
  */
-Exhibit.MapView.prototype._addPolygonOrPolyline = function(itemID, poly) {
+MapView.prototype._addPolygonOrPolyline = function(itemID, poly) {
     var self, onclick;
 
     poly.setMap(this._map);
@@ -1013,7 +1029,7 @@ Exhibit.MapView.prototype._addPolygonOrPolyline = function(itemID, poly) {
  * @param {Function} makeLatLng
  * @returns {Array}
  */
-Exhibit.MapView.prototype._parsePolygonOrPolyline = function(s, makeLatLng) {
+MapView.prototype._parsePolygonOrPolyline = function(s, makeLatLng) {
     var coords, a, i, pair;
     coords = [];
     
@@ -1029,7 +1045,7 @@ Exhibit.MapView.prototype._parsePolygonOrPolyline = function(s, makeLatLng) {
 /**
  * @param {Object} selection
  */
-Exhibit.MapView.prototype._select = function(selection) {
+MapView.prototype._select = function(selection) {
     var itemID, marker;
     itemID = selection.itemIDs[0];
     marker = this._itemIDToMarker[itemID];
@@ -1043,7 +1059,7 @@ Exhibit.MapView.prototype._select = function(selection) {
  * @param {google.maps.Point} pos
  * @param {google.maps.Marker} marker
  */
-Exhibit.MapView.prototype._showInfoWindow = function(items, pos, marker) {
+MapView.prototype._showInfoWindow = function(items, pos, marker) {
     var content, win, markerSize, winAnchor;
 
     if (typeof this._infoWindow !== "undefined" && this._infoWindow !== null) {
@@ -1076,8 +1092,8 @@ Exhibit.MapView.prototype._showInfoWindow = function(items, pos, marker) {
  * @param {Array} items
  * @returns {Element}
  */
-Exhibit.MapView.prototype._createInfoWindow = function(items) {
-    return Exhibit.ViewUtilities.fillBubbleWithItems(
+MapView.prototype._createInfoWindow = function(items) {
+    return ViewUtilities.fillBubbleWithItems(
         null,
         items,
         this._markerLabelExpression,
@@ -1093,7 +1109,7 @@ Exhibit.MapView.prototype._createInfoWindow = function(items) {
  * @param {Numeric} position.lng
  * @returns {google.maps.Marker}
  */
-Exhibit.MapView.markerToMap = function(marker, position) {
+MapView.markerToMap = function(marker, position) {
     var icon, shadow;
     icon = marker.getIcon();
     shadow = marker.getShadow();
@@ -1122,7 +1138,7 @@ Exhibit.MapView.markerToMap = function(marker, position) {
  * @param {String} key
  * @param {String} iconURL
  */
-Exhibit.MapView.prototype.updateMarkerIcon = function(key, iconURL) {
+MapView.prototype.updateMarkerIcon = function(key, iconURL) {
     var cached;
     cached = this._markerCache[key];
     if (typeof cached !== "undefined" && cached !== null) {
@@ -1141,10 +1157,10 @@ Exhibit.MapView.prototype.updateMarkerIcon = function(key, iconURL) {
  * @param {Object} settings
  * @returns {google.maps.Marker}
  */
-Exhibit.MapView.prototype._makeMarker = function(position, shape, color, iconSize, iconURL, label, settings) {
+MapView.prototype._makeMarker = function(position, shape, color, iconSize, iconURL, label, settings) {
     var key, cached, marker, gmarker;
 
-    key = Exhibit.MapExtension.Marker._makeMarkerKey(shape, color, iconSize, iconURL, label);
+    key = Marker._makeMarkerKey(shape, color, iconSize, iconURL, label);
 
     cached = this._markerCache[key];
 
@@ -1153,11 +1169,15 @@ Exhibit.MapView.prototype._makeMarker = function(position, shape, color, iconSiz
     // settings refer to the same location in memory.  Also, it's a bit unclear
     // under what circumstances it would ever be different.
     if (typeof cached !== "undefined" && (cached.settings === settings)) {
-	    gmarker = Exhibit.MapView.markerToMap(cached, position);
+	    gmarker = MapView.markerToMap(cached, position);
     } else {
-        marker = Exhibit.MapExtension.Marker.makeMarker(shape, color, iconSize, iconURL, label, settings, this);
-        gmarker = Exhibit.MapView.markerToMap(marker, position);
+        marker = Marker.makeMarker(shape, color, iconSize, iconURL, label, settings, this);
+        gmarker = MapView.markerToMap(marker, position);
 	    this._markerCache[key] = gmarker;
     }
     return gmarker;
 };
+
+    // end define
+    return MapView;
+});

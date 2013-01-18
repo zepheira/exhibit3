@@ -4,7 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["exhibit", "data/database"], function(Exhibit) {
+define(function() {
 /**
  * Represents an item type.
  *
@@ -13,7 +13,7 @@ define(["exhibit", "data/database"], function(Exhibit) {
  * @class
  * @param {String} id Item type identifier.
  */
-Exhibit.Database.Type = function(id) {
+var Type = function(id) {
     this._id = id;
     this._custom = {};
 };
@@ -23,7 +23,7 @@ Exhibit.Database.Type = function(id) {
  *
  * @returns {String} The item type identifier.
  */
-Exhibit.Database.Type.prototype.getID = function() {
+Type.prototype.getID = function() {
     return this._id;
 };
 
@@ -32,7 +32,7 @@ Exhibit.Database.Type.prototype.getID = function() {
  *
  * @returns {String} The item type URI.
  */
-Exhibit.Database.Type.prototype.getURI = function() {
+Type.prototype.getURI = function() {
     return this._custom["uri"];
 };
 
@@ -41,7 +41,7 @@ Exhibit.Database.Type.prototype.getURI = function() {
  *
  * @returns {String} The item type label.
  */
-Exhibit.Database.Type.prototype.getLabel = function() {
+Type.prototype.getLabel = function() {
     return this._custom["label"];
 };
 
@@ -50,7 +50,7 @@ Exhibit.Database.Type.prototype.getLabel = function() {
  *
  * @returns {String} The item type origin.
  */
-Exhibit.Database.Type.prototype.getOrigin = function() {
+Type.prototype.getOrigin = function() {
     return this._custom["origin"];
 };
 
@@ -60,10 +60,10 @@ Exhibit.Database.Type.prototype.getOrigin = function() {
  * @param {String} p The property name.
  * @returns {String} The item type attribute's value.
  */
-Exhibit.Database.Type.prototype.getProperty = function(p) {
+Type.prototype.getProperty = function(p) {
     return this._custom[p];
 };
 
     // end define
-    return Exhibit;
+    return Type;
 });

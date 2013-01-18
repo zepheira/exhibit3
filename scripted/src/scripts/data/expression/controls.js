@@ -4,13 +4,16 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["exhibit"], function(Exhibit) {
+define([
+    "util/set",
+    "data/expression/collection"
+], function(Set, ExpressionCollection) {
 /**
  * @namespace
  */
-Exhibit.Controls = {};
+var Controls = {};
 
-Exhibit.Controls["if"] = {
+Controls["if"] = {
     f: function(
         args,
         roots, 
@@ -35,7 +38,7 @@ Exhibit.Controls["if"] = {
     }
 };
 
-Exhibit.Controls["foreach"] = {
+Controls["foreach"] = {
     f: function(
         args,
         roots, 
@@ -67,11 +70,11 @@ Exhibit.Controls["foreach"] = {
         roots["value"] = oldValue;
         rootValueTypes["value"] = oldValueType;
         
-        return new Exhibit.Expression._Collection(results, valueType);
+        return new ExpressionCollection(results, valueType);
     }
 };
 
-Exhibit.Controls["default"] = {
+Controls["default"] = {
     f: function(
         args,
         roots, 
@@ -86,11 +89,11 @@ Exhibit.Controls["default"] = {
                 return collection;
             }
         }
-        return new Exhibit.Expression._Collection([], "text");
+        return new ExpressionCollection([], "text");
     }
 };
 
-Exhibit.Controls["filter"] = {
+Controls["filter"] = {
     f: function(
         args,
         roots,
@@ -104,7 +107,7 @@ Exhibit.Controls["filter"] = {
         oldValue = roots["value"];
         oldValueType = rootValueTypes["value"];
        
-        results = new Exhibit.Set();
+        results = new Set();
         rootValueTypes["value"] = collection.valueType;
        
         collection.forEachValue(function(element) {
@@ -119,10 +122,10 @@ Exhibit.Controls["filter"] = {
         roots["value"] = oldValue;
         rootValueTypes["value"] = oldValueType;
        
-        return new Exhibit.Expression._Collection(results, collection.valueType);
+        return new ExpressionCollection(results, collection.valueType);
     }
 };
 
     // end define
-    return Exhibit;
+    return Controls;
 });

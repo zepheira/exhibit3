@@ -4,6 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define(["lib/jquery", "exhibit", "gmaps2", "map/base", "map/marker"], function($, GMap2, Exhibit, MapExtension, Marker) {
 /**
  * @class
  * @constructor
@@ -14,7 +15,7 @@ Exhibit.GoogleMaps2View = function(containerElmt, uiContext) {
     Exhibit.GoogleMaps2View._initialize();
 
     var view = this;
-    Exhibit.jQuery.extend(this, new Exhibit.View(
+    $.extend(this, new Exhibit.View(
         "map-gmv2",
         containerElmt,
         uiContext
@@ -43,7 +44,7 @@ Exhibit.GoogleMaps2View = function(containerElmt, uiContext) {
         view._reconstruct(); 
     };
 
-    Exhibit.jQuery(uiContext.getCollection().getElement()).bind(
+    $(uiContext.getCollection().getElement()).bind(
         "onItemsChanged.exhibit",
         view._onItemsChanged
     );
@@ -167,16 +168,16 @@ Exhibit.GoogleMaps2View._accessorSpecs = [
  */
 Exhibit.GoogleMaps2View._initialize = function() {
     var links = [], rel, canvas;
-    if (!Exhibit.MapExtension.initialized) {
-        Exhibit.jQuery('head link').each(function(i, el) {
-            rel = Exhibit.jQuery(el).attr("rel");
+    if (!MapExtension.initialized) {
+        $('head link').each(function(i, el) {
+            rel = $(el).attr("rel");
             if (rel.match(/\b(exhibit-map-painter|exhibit\/map-painter)\b/)) {
-                Exhibit.MapExtension.markerUrlPrefix = Exhibit.jQuery(el).attr("href") + "?";
+                MapExtension.markerUrlPrefix = $(el).attr("href") + "?";
             }
         });
 
-        Exhibit.MapExtension.Marker.detectCanvas();
-        Exhibit.MapExtension.initialized = true;
+        Marker.detectCanvas();
+        MapExtension.initialized = true;
     }
 };
 
@@ -212,7 +213,7 @@ Exhibit.GoogleMaps2View.createFromDOM = function(configElmt, containerElmt, uiCo
         Exhibit.UIContext.createFromDOM(configElmt, uiContext)
     );
     
-    Exhibit.SettingsUtilities.createAccessorsFromDOM(configElmt, Exhibit.GoogleMaps2View._accessorSpecs, view._accessors);
+    Exhibit.AccessorsUtilities.createAccessorsFromDOM(configElmt, Exhibit.GoogleMaps2View._accessorSpecs, view._accessors);
     Exhibit.SettingsUtilities.collectSettingsFromDOM(configElmt, view.getSettingSpecs(), view._settings);
     Exhibit.GoogleMaps2View._configure(view, configuration);
     
@@ -228,7 +229,7 @@ Exhibit.GoogleMaps2View.createFromDOM = function(configElmt, containerElmt, uiCo
  */
 Exhibit.GoogleMaps2View._configure = function(view, configuration) {
     var accessors;
-    Exhibit.SettingsUtilities.createAccessors(configuration, Exhibit.GoogleMaps2View._accessorSpecs, view._accessors);
+    Exhibit.AccessorsUtilities.createAccessors(configuration, Exhibit.GoogleMaps2View._accessorSpecs, view._accessors);
     Exhibit.SettingsUtilities.collectSettings(configuration, view.getSettingSpecs(), view._settings);
     
     accessors = view._accessors;
@@ -320,7 +321,7 @@ Exhibit.GoogleMaps2View.lookupLatLng = function(set, addressExpressionString, ou
  */
 Exhibit.GoogleMaps2View.prototype.dispose = function() {
     var view = this;
-    Exhibit.jQuery(this.getUIContext().getCollection().getElement()).unbind(
+    $(this.getUIContext().getCollection().getElement()).unbind(
         "onItemsChanged.exhibit",
         view._onItemsChanged
     );
@@ -394,7 +395,7 @@ Exhibit.GoogleMaps2View.prototype._initializeUI = function() {
     legendWidgetSettings.sizeMarkerGenerator = this._createSizeMarkerGenerator();
     legendWidgetSettings.iconMarkerGenerator = this._createIconMarkerGenerator();
     
-    Exhibit.jQuery(this.getContainer()).empty();
+    $(this.getContainer()).empty();
     this._dom = Exhibit.ViewUtilities.constructPlottingViewDom(
         this.getContainer(), 
         this.getUIContext(),
@@ -408,7 +409,7 @@ Exhibit.GoogleMaps2View.prototype._initializeUI = function() {
     );    
     
     mapDiv = this._dom.plotContainer;
-    Exhibit.jQuery(mapDiv)
+    $(mapDiv)
         .attr("class", "exhibit-mapView-map")
         .css("height", this._settings.mapHeight);
     
@@ -467,9 +468,9 @@ Exhibit.GoogleMaps2View.prototype._createColorMarkerGenerator = function() {
     var settings = this._settings;
 
     return function(color) {
-        return Exhibit.jQuery.simileBubble(
+        return $.simileBubble(
             "createTranslucentImage",
-            Exhibit.MapExtension.Marker.makeIcon(settings.shapeWidth, settings.shapeHeight, color, null, null, settings.iconSize, settings).iconURL,
+            Marker.makeIcon(settings.shapeWidth, settings.shapeHeight, color, null, null, settings.iconSize, settings).iconURL,
             "middle"
         );
     };
@@ -480,12 +481,12 @@ Exhibit.GoogleMaps2View.prototype._createColorMarkerGenerator = function() {
  * @returns {Function}
  */
 Exhibit.GoogleMaps2View.prototype._createSizeMarkerGenerator = function() {
-    var settings = Exhibit.jQuery.extend({}, this._settings);
+    var settings = $.extend({}, this._settings);
     settings.pinHeight = 0;
     return function(iconSize) {
-        return Exhibit.jQuery.simileBubble(
+        return $.simileBubble(
             "createTranslucentImage",
-            Exhibit.MapExtension.Marker.makeIcon(settings.shapeWidth, settings.shapeHeight, settings.color, null, null, iconSize, settings).iconURL,
+            Marker.makeIcon(settings.shapeWidth, settings.shapeHeight, settings.color, null, null, iconSize, settings).iconURL,
             "middle"
         );
     };
@@ -497,11 +498,11 @@ Exhibit.GoogleMaps2View.prototype._createSizeMarkerGenerator = function() {
  */
 Exhibit.GoogleMaps2View.prototype._createIconMarkerGenerator = function() {
     return function(iconURL) {
-        var elmt = Exhibit.jQuery("img")
+        var elmt = $("img")
             .attr("src", iconURL)
             .css("vertical-align", "middle")
             .css("height", 40);
-        return Exhibit.jQuery(elmt).get(0);
+        return $(elmt).get(0);
     };
 };
 
@@ -1037,7 +1038,7 @@ Exhibit.GoogleMaps2View.prototype.updateMarkerIcon = function(key, iconURL) {
 Exhibit.GoogleMaps2View.prototype._makeMarker = function(position, shape, color, iconSize, iconURL, label, settings) {
     var key, cached, marker, gmarker;
 
-    key = Exhibit.MapExtension.Marker._makeMarkerKey(shape, color, iconSize, iconURL, label);
+    key = Marker._makeMarkerKey(shape, color, iconSize, iconURL, label);
 
     cached = this._markerCache[key];
 
@@ -1048,9 +1049,13 @@ Exhibit.GoogleMaps2View.prototype._makeMarker = function(position, shape, color,
     if (typeof cached !== "undefined" && (cached.settings === settings)) {
 	    gmarker = Exhibit.GoogleMaps2View.markerToMap(cached, position);
     } else {
-        marker = Exhibit.MapExtension.Marker.makeMarker(shape, color, iconSize, iconURL, label, settings, this);
+        marker = Marker.makeMarker(shape, color, iconSize, iconURL, label, settings, this);
         gmarker = Exhibit.GoogleMaps2View.markerToMap(marker, position);
 	    this._markerCache[key] = gmarker;
     }
     return gmarker;
 };
+
+    // end define
+    return Exhibit;
+});

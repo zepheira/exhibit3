@@ -8,9 +8,10 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(
-    ["lib/jquery", "exhibit", "lib/jquery.simile.dom"],
-    function($, Exhibit) {
+define([
+    "lib/jquery",
+    "lib/jquery.simile.dom"
+], function($) {
 /**
  * @constructor
  * @class
@@ -18,24 +19,24 @@ define(
  * @param {Element} containerElmt
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.LegendWidget = function(configuration, containerElmt, uiContext) {
+var LegendWidget = function(configuration, containerElmt, uiContext) {
     this._configuration = configuration;
     this._div = containerElmt;
     this._uiContext = uiContext;
     
     this._colorMarkerGenerator = typeof configuration.colorMarkerGenerator !== "undefined" ?
         configuration.colorMarkerGenerator :
-        Exhibit.LegendWidget._defaultColorMarkerGenerator;	 
+        LegendWidget._defaultColorMarkerGenerator;	 
 	this._sizeMarkerGenerator = typeof configuration.sizeMarkerGenerator !== "undefined" ?
 		configuration.sizeMarkerGenerator :
-		Exhibit.LegendWidget._defaultSizeMarkerGenerator;
+		LegendWidget._defaultSizeMarkerGenerator;
 	this._iconMarkerGenerator = typeof configuration.iconMarkerGenerator !== "undefined" ?
 		configuration.iconMarkerGenerator :
-		Exhibit.LegendWidget._defaultIconMarkerGenerator;
+		LegendWidget._defaultIconMarkerGenerator;
 
     this._labelStyler = typeof configuration.labelStyler !== "undefined" ?
         configuration.labelStyler :
-        Exhibit.LegendWidget._defaultColorLabelStyler;
+        LegendWidget._defaultColorLabelStyler;
     
     this._initializeUI();
 };
@@ -47,14 +48,14 @@ Exhibit.LegendWidget = function(configuration, containerElmt, uiContext) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.LegendWidget}
  */
-Exhibit.LegendWidget.create = function(configuration, containerElmt, uiContext) {
-    return new Exhibit.LegendWidget(configuration, containerElmt, uiContext);
+LegendWidget.create = function(configuration, containerElmt, uiContext) {
+    return new LegendWidget(configuration, containerElmt, uiContext);
 };
 
 /**
  *
  */
-Exhibit.LegendWidget.prototype.dispose = function() {
+LegendWidget.prototype.dispose = function() {
     $(this._div).empty();
     
     this._div = null;
@@ -64,7 +65,7 @@ Exhibit.LegendWidget.prototype.dispose = function() {
 /**
  *
  */
-Exhibit.LegendWidget.prototype._initializeUI = function() {
+LegendWidget.prototype._initializeUI = function() {
     $(this._div).attr("class", "exhibit-legendWidget");
     this.clear();
 };
@@ -72,7 +73,7 @@ Exhibit.LegendWidget.prototype._initializeUI = function() {
 /**
  *
  */
-Exhibit.LegendWidget.prototype.clear = function() {
+LegendWidget.prototype.clear = function() {
     $(this._div).html('<div class="exhibit-color-legend"></div><div class="exhibit-size-legend"></div><div class="exhibit-icon-legend"></div>');
 };
 
@@ -80,7 +81,7 @@ Exhibit.LegendWidget.prototype.clear = function() {
  * @param {String} label
  * @param {String} type
  */
-Exhibit.LegendWidget.prototype.addLegendLabel = function(label, type) {
+LegendWidget.prototype.addLegendLabel = function(label, type) {
     var dom;
 	dom = $.simileDOM("string",
 			"div",
@@ -100,7 +101,7 @@ Exhibit.LegendWidget.prototype.addLegendLabel = function(label, type) {
  * @param {String} label
  * @param {String} type
  */
-Exhibit.LegendWidget.prototype.addEntry = function(value, label, type) {
+LegendWidget.prototype.addEntry = function(value, label, type) {
     var dom, legendDiv;
 
 	type = type || "color";
@@ -154,7 +155,7 @@ Exhibit.LegendWidget.prototype.addEntry = function(value, label, type) {
  * @param {} b
  * @returns {Number}
  */
-Exhibit.LegendWidget._localeSort = function(a, b) {
+LegendWidget._localeSort = function(a, b) {
     return a.localeCompare(b);
 }
 
@@ -164,7 +165,7 @@ Exhibit.LegendWidget._localeSort = function(a, b) {
  * @param {String} value
  * @returns {Element}
  */
-Exhibit.LegendWidget._defaultColorMarkerGenerator = function(value) {
+LegendWidget._defaultColorMarkerGenerator = function(value) {
     var span;
     span = $("<span>")
         .attr("class", "exhibit-legendWidget-entry-swatch")
@@ -179,7 +180,7 @@ Exhibit.LegendWidget._defaultColorMarkerGenerator = function(value) {
  * @param {Number} value
  * @returns {Element}
  */
-Exhibit.LegendWidget._defaultSizeMarkerGenerator = function(value) {
+LegendWidget._defaultSizeMarkerGenerator = function(value) {
     var span;
     span = $("<span>")
         .attr("class", "exhibit-legendWidget-entry-swatch")
@@ -196,7 +197,7 @@ Exhibit.LegendWidget._defaultSizeMarkerGenerator = function(value) {
  * @param {String} value
  * @returns {Element}
  */
-Exhibit.LegendWidget._defaultIconMarkerGenerator = function(value) {
+LegendWidget._defaultIconMarkerGenerator = function(value) {
     var span;
     span = $("<span>")
         .append('<img src="'+value+'"/>');
@@ -209,10 +210,10 @@ Exhibit.LegendWidget._defaultIconMarkerGenerator = function(value) {
  * @param {Element} elmt
  * @param {String} value
  */
-Exhibit.LegendWidget._defaultColorLabelStyler = function(elmt, value) {
+LegendWidget._defaultColorLabelStyler = function(elmt, value) {
     // $(elmt).css("color", "#" + value);
 };
 
     // end define
-    return Exhibit;
+    return LegendWidget;
 });

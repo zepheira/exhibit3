@@ -4,20 +4,33 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "exhibit"], function($, Exhibit) {
+define([
+    "lib/jquery",
+    "exhibit",
+    "util/localizer",
+    "util/debug",
+    "util/set",
+    "util/settings",
+    "util/facets",
+    "util/history",
+    "data/database/range-index",
+    "data/expression-parser",
+    "ui/ui-context",
+    "ui/facets/facet"
+], function($, Exhibit, _, Debug, Set, SettingsUtilities, FacetUtilities, EHistory, RangeIndex, ExpressionParser, UIContext, Facet) {
 /**
  * @class
  * @constructor
  * @param {Element} containerElmt
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.NumericRangeFacet = function(containerElmt, uiContext) {
+var NumericRangeFacet = function(containerElmt, uiContext) {
     var self = this;
     $.extend(
         this,
-        new Exhibit.Facet("numericrange", containerElmt, uiContext)
+        new Facet("numericrange", containerElmt, uiContext)
     );
-    this.addSettingSpecs(Exhibit.NumericRangeFacet._settingSpecs);
+    this.addSettingSpecs(NumericRangeFacet._settingSpecs);
 
     this._dom = null;
     this._ranges = [];
@@ -37,7 +50,7 @@ Exhibit.NumericRangeFacet = function(containerElmt, uiContext) {
  * @private
  * @constant
  */
-Exhibit.NumericRangeFacet._settingSpecs = {
+NumericRangeFacet._settingSpecs = {
     "scroll":           { "type": "boolean", "defaultValue": true },
     "height":           { "type": "text" },
     "interval":         { "type": "float", "defaultValue": 10 },
@@ -52,15 +65,15 @@ Exhibit.NumericRangeFacet._settingSpecs = {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.NumericRangeFacet}
  */
-Exhibit.NumericRangeFacet.create = function(configuration, containerElmt, uiContext) {
+NumericRangeFacet.create = function(configuration, containerElmt, uiContext) {
     var uiContext, facet;
-    uiContext = Exhibit.UIContext.create(configuration, uiContext);
-    facet = new Exhibit.NumericRangeFacet(
+    uiContext = UIContext.create(configuration, uiContext);
+    facet = new NumericRangeFacet(
         containerElmt,
         uiContext
     );
     
-    Exhibit.NumericRangeFacet._configure(facet, configuration);
+    NumericRangeFacet._configure(facet, configuration);
     
     facet._initializeUI();
     uiContext.getCollection().addFacet(facet);
@@ -76,27 +89,27 @@ Exhibit.NumericRangeFacet.create = function(configuration, containerElmt, uiCont
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.NumericRangeFacet}
  */
-Exhibit.NumericRangeFacet.createFromDOM = function(configElmt, containerElmt, uiContext) {
+NumericRangeFacet.createFromDOM = function(configElmt, containerElmt, uiContext) {
     var configuration, uiContext, facet, expressionString;
     configuration = Exhibit.getConfigurationFromDOM(configElmt);
-    uiContext = Exhibit.UIContext.createFromDOM(configElmt, uiContext);
-    facet = new Exhibit.NumericRangeFacet(
+    uiContext = UIContext.createFromDOM(configElmt, uiContext);
+    facet = new NumericRangeFacet(
         (typeof containerElmt !== "undefined" && containerElmt !== null) ? containerElmt : configElmt, 
         uiContext
     );
     
-    Exhibit.SettingsUtilities.collectSettingsFromDOM(configElmt, facet.getSettingSpecs(), facet._settings);
+    SettingsUtilities.collectSettingsFromDOM(configElmt, facet.getSettingSpecs(), facet._settings);
     
     try {
         expressionString = Exhibit.getAttribute(configElmt, "expression");
         if (expressionString !== null && expressionString.length > 0) {
             facet.setExpressionString(expressionString);
-            facet.setExpression(Exhibit.ExpressionParser.parse(expressionString));
+            facet.setExpression(ExpressionParser.parse(expressionString));
         }
     } catch (e) {
-        Exhibit.Debug.exception(e, Exhibit._("%facets.error.configuration", "NumericRangeFacet"));
+        Debug.exception(e, _("%facets.error.configuration", "NumericRangeFacet"));
     }
-    Exhibit.NumericRangeFacet._configure(facet, configuration);
+    NumericRangeFacet._configure(facet, configuration);
     
     facet._initializeUI();
     uiContext.getCollection().addFacet(facet);
@@ -111,12 +124,12 @@ Exhibit.NumericRangeFacet.createFromDOM = function(configElmt, containerElmt, ui
  * @param {Exhibit.NumericRangeFacet} facet
  * @param {Object} configuration
  */
-Exhibit.NumericRangeFacet._configure = function(facet, configuration) {
+NumericRangeFacet._configure = function(facet, configuration) {
     var segment, property;
-    Exhibit.SettingsUtilities.collectSettings(configuration, facet.getSettingSpecs(), facet._settings);
+    SettingsUtilities.collectSettings(configuration, facet.getSettingSpecs(), facet._settings);
     
     if (typeof configuration.expression !== "undefined") {
-        facet.setExpression(Exhibit.ExpressionParser.parse(configuration.expression));
+        facet.setExpression(ExpressionParser.parse(configuration.expression));
         facet.setExpressionString(configuration.expression);
     }
     
@@ -138,7 +151,7 @@ Exhibit.NumericRangeFacet._configure = function(facet, configuration) {
 /**
  *
  */
-Exhibit.NumericRangeFacet.prototype._dispose = function() {
+NumericRangeFacet.prototype._dispose = function() {
     $(this.getUIContext().getCollection().getElement()).unbind(
         "onRootItemsChanged.exhibit",
         this._onRootItemsChanged
@@ -151,14 +164,14 @@ Exhibit.NumericRangeFacet.prototype._dispose = function() {
 /**
  * @returns {Boolean}
  */
-Exhibit.NumericRangeFacet.prototype.hasRestrictions = function() {
+NumericRangeFacet.prototype.hasRestrictions = function() {
     return this._ranges.length > 0;
 };
 
 /**
  *
  */
-Exhibit.NumericRangeFacet.prototype.clearAllRestrictions = function() {
+NumericRangeFacet.prototype.clearAllRestrictions = function() {
     $(this.getContainer()).trigger("onBeforeFacetReset.exhibit");
     if (this._ranges.length > 0) {
         this._ranges = [];
@@ -169,7 +182,7 @@ Exhibit.NumericRangeFacet.prototype.clearAllRestrictions = function() {
 /**
  * @param {Array} restrictions
  */
-Exhibit.NumericRangeFacet.prototype.applyRestrictions = function(restrictions) {
+NumericRangeFacet.prototype.applyRestrictions = function(restrictions) {
     this._ranges = restrictions;
     this._notifyCollection();
 };
@@ -181,7 +194,7 @@ Exhibit.NumericRangeFacet.prototype.applyRestrictions = function(restrictions) {
  * @param {Array} ranges
  * @returns {Array}
  */
-Exhibit.NumericRangeFacet.prototype.setRange = function(from, to, selected, ranges) {
+NumericRangeFacet.prototype.setRange = function(from, to, selected, ranges) {
     var i, range;
     if (selected) {
         for (i = 0; i < ranges.length; i++) {
@@ -207,7 +220,7 @@ Exhibit.NumericRangeFacet.prototype.setRange = function(from, to, selected, rang
  * @param {Exhibit.Set} items
  * @returns {Exhibit.Set}
  */
-Exhibit.NumericRangeFacet.prototype.restrict = function(items) {
+NumericRangeFacet.prototype.restrict = function(items) {
     var path, database, set, i, range;
     if (this._ranges.length === 0) {
         return items;
@@ -215,7 +228,7 @@ Exhibit.NumericRangeFacet.prototype.restrict = function(items) {
         path = this.getExpression().getPath();
         database = this.getUIContext().getDatabase();
         
-        set = new Exhibit.Set();
+        set = new Set();
         for (i = 0; i < this._ranges.length; i++) {
             range = this._ranges[i];
             set.addSet(path.rangeBackward(range.from, range.to, false, items, database).values);
@@ -224,7 +237,7 @@ Exhibit.NumericRangeFacet.prototype.restrict = function(items) {
     } else {
         this._buildRangeIndex();
         
-        set = new Exhibit.Set();
+        set = new Set();
         for (i = 0; i < this._ranges.length; i++) {
             range = this._ranges[i];
             this._rangeIndex.getSubjectsInRange(range.from, range.to, false, set, items);
@@ -236,7 +249,7 @@ Exhibit.NumericRangeFacet.prototype.restrict = function(items) {
 /**
  * @param {Exhibit.Set} items
  */
-Exhibit.NumericRangeFacet.prototype.update = function(items) {
+NumericRangeFacet.prototype.update = function(items) {
     $(this._dom.valuesContainer).hide().empty();
     
     this._reconstruct(items);
@@ -248,7 +261,7 @@ Exhibit.NumericRangeFacet.prototype.update = function(items) {
  * @param {Exhibit.Set} items
  * @returns {Array}
  */
-Exhibit.NumericRangeFacet.prototype._reconstruct = function(items) {
+NumericRangeFacet.prototype._reconstruct = function(items) {
     var self, ranges, rangeIndex, computeItems, database, path, propertyId, property, min, max, x, range, i, range2, facetHasSelection, containerDiv, constructFacetItemFunction, makeFacetValue;
     self = this;
     ranges = [];
@@ -304,7 +317,7 @@ Exhibit.NumericRangeFacet.prototype._reconstruct = function(items) {
     facetHasSelection = this._ranges.length > 0;
     containerDiv = this._dom.valuesContainer;
     $(containerDiv).hide();
-    constructFacetItemFunction = Exhibit.FacetUtilities[this._settings.scroll ? "constructFacetItem" : "constructFlowingFacetItem"];
+    constructFacetItemFunction = FacetUtilities[this._settings.scroll ? "constructFacetItem" : "constructFlowingFacetItem"];
     makeFacetValue = function(from, to, count, selected) {
         var onSelect, onSelectOnly, elmt;
         onSelect = function(evt) {
@@ -318,7 +331,7 @@ Exhibit.NumericRangeFacet.prototype._reconstruct = function(items) {
             evt.stopPropagation();
         };
         elmt = constructFacetItemFunction(
-            Exhibit._("%facets.numeric.rangeShort", from, to), 
+            _("%facets.numeric.rangeShort", from, to), 
             count, 
             null,
             selected, 
@@ -345,16 +358,16 @@ Exhibit.NumericRangeFacet.prototype._reconstruct = function(items) {
 /**
  * @private
  */
-Exhibit.NumericRangeFacet.prototype._notifyCollection = function() {
+NumericRangeFacet.prototype._notifyCollection = function() {
     this.getUIContext().getCollection().onFacetUpdated(this);
 };
 
 /**
  * @private
  */
-Exhibit.NumericRangeFacet.prototype._initializeUI = function() {
+NumericRangeFacet.prototype._initializeUI = function() {
     var self = this;
-    this._dom = Exhibit.FacetUtilities[this._settings.scroll ? "constructFacetFrame" : "constructFlowingFacetFrame"](
+    this._dom = FacetUtilities[this._settings.scroll ? "constructFacetFrame" : "constructFlowingFacetFrame"](
 		this,
         this.getContainer(),
         this.getLabel(),
@@ -376,28 +389,28 @@ Exhibit.NumericRangeFacet.prototype._initializeUI = function() {
  * @param {Boolean} wasSelected
  * @param {Boolean} singleSelection
  */
-Exhibit.NumericRangeFacet.prototype._toggleRange = function(from, to, wasSelected, singleSelection) {
+NumericRangeFacet.prototype._toggleRange = function(from, to, wasSelected, singleSelection) {
     var self, label, wasOnlyThingSelected, newRestrictions, oldRestrictions;
     self = this;
-    label = Exhibit._("%facets.numeric.rangeWords", from, to);
+    label = _("%facets.numeric.rangeWords", from, to);
     wasOnlyThingSelected = (this._ranges.length === 1 && wasSelected);
     if (singleSelection && !wasOnlyThingSelected) {
         newRestrictions = { "ranges": [ { from: from, to: to } ] };
-        Exhibit.History.pushComponentState(
+        EHistory.pushComponentState(
             this,
-            Exhibit.Facet.getRegistryKey(),
+            Facet.getRegistryKey(),
             newRestrictions,
-            Exhibit._("%facets.facetSelectOnlyActionTitle", label, this.getLabel()),
+            _("%facets.facetSelectOnlyActionTitle", label, this.getLabel()),
             true
         );
     } else {
         oldRestrictions = [].concat(this._ranges);
         newRestrictions = { "ranges": self.setRange(from, to, !wasSelected, oldRestrictions) };
-        Exhibit.History.pushComponentState(
+        EHistory.pushComponentState(
             this,
-            Exhibit.Facet.getRegistryKey(),
+            Facet.getRegistryKey(),
             newRestrictions,
-            Exhibit._(wasSelected ? "%facets.facetUnselectActionTitle" : "%facets.facetSelectActionTitle", label, this.getLabel()),
+            _(wasSelected ? "%facets.facetUnselectActionTitle" : "%facets.facetSelectActionTitle", label, this.getLabel()),
             true
         );
     }
@@ -406,12 +419,12 @@ Exhibit.NumericRangeFacet.prototype._toggleRange = function(from, to, wasSelecte
 /**
  * @private
  */
-Exhibit.NumericRangeFacet.prototype._clearSelections = function() {
-    Exhibit.History.pushComponentState(
+NumericRangeFacet.prototype._clearSelections = function() {
+    History.pushComponentState(
         this,
-        Exhibit.Facet.getRegistryKey(),
+        Facet.getRegistryKey(),
         this.exportEmptyState(),
-        Exhibit._("%facets.facetClearSelectionsActionTitle", this.getLabel()),
+        _("%facets.facetClearSelectionsActionTitle", this.getLabel()),
         true
     );
 };
@@ -419,7 +432,7 @@ Exhibit.NumericRangeFacet.prototype._clearSelections = function() {
 /**
  * @private
  */
-Exhibit.NumericRangeFacet.prototype._buildRangeIndex = function() {
+NumericRangeFacet.prototype._buildRangeIndex = function() {
     var expression, database, getter;
     if (typeof this._rangeIndex !== "undefined") {
         expression = this.getExpression();
@@ -435,7 +448,7 @@ Exhibit.NumericRangeFacet.prototype._buildRangeIndex = function() {
             });
         };
     
-        this._rangeIndex = new Exhibit.Database._RangeIndex(
+        this._rangeIndex = new RangeIndex(
             this.getUIContext().getCollection().getAllItems(),
             getter
         );    
@@ -445,14 +458,14 @@ Exhibit.NumericRangeFacet.prototype._buildRangeIndex = function() {
 /**
  *
  */
-Exhibit.NumericRangeFacet.prototype.exportEmptyState = function() {
+NumericRangeFacet.prototype.exportEmptyState = function() {
     return this._exportState(true);
 };
 
 /**
  *
  */
-Exhibit.NumericRangeFacet.prototype.exportState = function() {
+NumericRangeFacet.prototype.exportState = function() {
     return this._exportState(false);
 };
 
@@ -460,7 +473,7 @@ Exhibit.NumericRangeFacet.prototype.exportState = function() {
  * @param {Boolean} empty
  * @returns {Object}
  */
-Exhibit.NumericRangeFacet.prototype._exportState = function(empty) {
+NumericRangeFacet.prototype._exportState = function(empty) {
     var r = [];
 
     if (!empty) {
@@ -476,7 +489,7 @@ Exhibit.NumericRangeFacet.prototype._exportState = function(empty) {
  * @param {Object} state
  * @param {Array} state.ranges
  */
-Exhibit.NumericRangeFacet.prototype.importState = function(state) {
+NumericRangeFacet.prototype.importState = function(state) {
     if (this.stateDiffers(state)) {
         if (state.ranges.length === 0) {
             this.clearAllRestrictions();
@@ -490,7 +503,7 @@ Exhibit.NumericRangeFacet.prototype.importState = function(state) {
  * @param {Object} state
  * @param {Array} state.ranges
  */
-Exhibit.NumericRangeFacet.prototype.stateDiffers = function(state) {
+NumericRangeFacet.prototype.stateDiffers = function(state) {
     var rangeStartCount, stateStartCount, stateSet;
 
     stateStartCount = state.ranges.length;
@@ -499,7 +512,7 @@ Exhibit.NumericRangeFacet.prototype.stateDiffers = function(state) {
     if (stateStartCount !== rangeStartCount) {
         return true;
     } else {
-        stateSet = new Exhibit.Set(state.ranges);
+        stateSet = new Set(state.ranges);
         stateSet.addSet(this._ranges);
         if (stateSet.size() !== stateStartCount) {
             return true;
@@ -510,5 +523,5 @@ Exhibit.NumericRangeFacet.prototype.stateDiffers = function(state) {
 };
 
     // end define
-    return Exhibit;
+    return NumericRangeFacet;
 });

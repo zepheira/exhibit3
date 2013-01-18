@@ -4,7 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["exhibit", "data/expression"], function(Exhibit) {
+define(["data/expression/collection"], function(ExpressionCollection) {
 /**
  * @class
  * @constructor
@@ -12,7 +12,7 @@ define(["exhibit", "data/expression"], function(Exhibit) {
  * @param {String|Number} value
  * @param {String} valueType
  */
-Exhibit.Expression._Constant = function(value, valueType) {
+var Constant = function(value, valueType) {
     this._value = value;
     this._valueType = valueType;
 };
@@ -24,15 +24,15 @@ Exhibit.Expression._Constant = function(value, valueType) {
  * @param {Exhibit.Database} database
  * @returns {Exhibit.Expression._Collection}
  */
-Exhibit.Expression._Constant.prototype.evaluate = function(
+Constant.prototype.evaluate = function(
     roots, 
     rootValueTypes, 
     defaultRootName, 
     database
 ) {
-    return new Exhibit.Expression._Collection([ this._value ], this._valueType);
+    return new ExpressionCollection([ this._value ], this._valueType);
 };
 
     // end define
-    return Exhibit;
+    return Constant;
 });

@@ -4,7 +4,18 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "exhibit", "data/database"], function($, Exhibit) {
+define([
+    "lib/jquery",
+    "base",
+    "util/localizer",
+    "util/set",
+    "util/debug",
+    "util/importers",
+    "data/database",
+    "data/database/type",
+    "data/database/property",
+    "data/importer"
+], function($, Exhibit, _, Set, Debug, ImporterUtilities,Database, Type, Property, Importer) {
 /**
  * Local in-memory implementation of the Exhibit Database.  Other
  * implementations should fully implement the interface described by
@@ -14,75 +25,66 @@ define(["lib/jquery", "exhibit", "data/database"], function($, Exhibit) {
  * @constructor
  * @class
  */
-Exhibit.Database._LocalImpl = function() {
+var LocalImpl = function() {
     this._types = {};
     this._properties = {};
     this._propertyArray = {};
     
     this._spo = {};
     this._ops = {};
-    this._items = new Exhibit.Set();
+    this._items = new Set();
     
     /*
      *  Predefined types and properties
      */
     var itemType, labelProperty, typeProperty, uriProperty;
      
-    itemType = new Exhibit.Database.Type("Item");
+    itemType = new Type("Item");
     itemType._custom = {
-        "label":       Exhibit._("%database.itemType.label"),
-        "pluralLabel": Exhibit._("%database.itemType.pluralLabel"),
+        "label":       _("%database.itemType.label"),
+        "pluralLabel": _("%database.itemType.pluralLabel"),
         "uri":         Exhibit.namespace + "Item"
     };
     this._types.Item = itemType;
 
-    labelProperty = new Exhibit.Database.Property("label", this);
+    labelProperty = new Property("label", this);
     labelProperty._uri = "http://www.w3.org/2000/01/rdf-schema#label";
     labelProperty._valueType            = "text";
-    labelProperty._label                = Exhibit._("%database.labelProperty.label");
-    labelProperty._pluralLabel          = Exhibit._("%database.labelProperty.pluralLabel");
-    labelProperty._reverseLabel         = Exhibit._("%database.labelProperty.reverseLabel");
-    labelProperty._reversePluralLabel   = Exhibit._("%database.labelProperty.reversePluralLabel");
-    labelProperty._groupingLabel        = Exhibit._("%database.labelProperty.groupingLabel");
-    labelProperty._reverseGroupingLabel = Exhibit._("%database.labelProperty.reverseGroupingLabel");
+    labelProperty._label                = _("%database.labelProperty.label");
+    labelProperty._pluralLabel          = _("%database.labelProperty.pluralLabel");
+    labelProperty._reverseLabel         = _("%database.labelProperty.reverseLabel");
+    labelProperty._reversePluralLabel   = _("%database.labelProperty.reversePluralLabel");
+    labelProperty._groupingLabel        = _("%database.labelProperty.groupingLabel");
+    labelProperty._reverseGroupingLabel = _("%database.labelProperty.reverseGroupingLabel");
     this._properties.label              = labelProperty;
     
-    typeProperty = new Exhibit.Database.Property("type", this);
+    typeProperty = new Property("type", this);
     typeProperty._uri = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
     typeProperty._valueType             = "text";
-    typeProperty._label                 = Exhibit._("%database.typeProperty.label");
-    typeProperty._pluralLabel           = Exhibit._("%database.typeProperty.pluralLabel");
-    typeProperty._reverseLabel          = Exhibit._("%database.typeProperty.reverseLabel");
-    typeProperty._reversePluralLabel    = Exhibit._("%database.typeProperty.reversePluralLabel");
-    typeProperty._groupingLabel         = Exhibit._("%database.typeProperty.groupingLabel");
-    typeProperty._reverseGroupingLabel  = Exhibit._("%database.typeProperty.reverseGroupingLabel");
+    typeProperty._label                 = _("%database.typeProperty.label");
+    typeProperty._pluralLabel           = _("%database.typeProperty.pluralLabel");
+    typeProperty._reverseLabel          = _("%database.typeProperty.reverseLabel");
+    typeProperty._reversePluralLabel    = _("%database.typeProperty.reversePluralLabel");
+    typeProperty._groupingLabel         = _("%database.typeProperty.groupingLabel");
+    typeProperty._reverseGroupingLabel  = _("%database.typeProperty.reverseGroupingLabel");
     this._properties.type               = typeProperty;
     
-    uriProperty = new Exhibit.Database.Property("uri", this);
+    uriProperty = new Property("uri", this);
     uriProperty._uri = "http://simile.mit.edu/2006/11/exhibit#uri";
     uriProperty._valueType              = "url";
-    uriProperty._label                  = Exhibit._("%database.uriProperty.label");
-    uriProperty._pluralLabel            = Exhibit._("%database.uriProperty.pluralLabel");
-    uriProperty._reverseLabel           = Exhibit._("%database.uriProperty.reverseLabel");
-    uriProperty._reversePluralLabel     = Exhibit._("%database.uriProperty.reversePluralLabel");
-    uriProperty._groupingLabel          = Exhibit._("%database.uriProperty.groupingLabel");
-    uriProperty._reverseGroupingLabel   = Exhibit._("%database.uriProperty.reverseGroupingLabel");
+    uriProperty._label                  = _("%database.uriProperty.label");
+    uriProperty._pluralLabel            = _("%database.uriProperty.pluralLabel");
+    uriProperty._reverseLabel           = _("%database.uriProperty.reverseLabel");
+    uriProperty._reversePluralLabel     = _("%database.uriProperty.reversePluralLabel");
+    uriProperty._groupingLabel          = _("%database.uriProperty.groupingLabel");
+    uriProperty._reverseGroupingLabel   = _("%database.uriProperty.reverseGroupingLabel");
     this._properties.uri                = uriProperty;
-};
-
-/**
- * Creates a new database.
- *
- * @returns {Exhibit.Database} The new database.
- */
-Exhibit.Database._LocalImpl.prototype.createDatabase = function() {
-    return Exhibit.Database.create();
 };
 
 /**
  * Load an array of data links using registered importers into the database.
  */
-Exhibit.Database._LocalImpl.prototype.loadLinks = function() {
+LocalImpl.prototype.loadLinks = function() {
     var links = $("head > link[rel='exhibit-data']")
         .add("head > link[rel='exhibit/data']");
     this._loadLinks(links.toArray(), this);
@@ -94,9 +96,9 @@ Exhibit.Database._LocalImpl.prototype.loadLinks = function() {
  * @param {Object} o An object that reflects the Exhibit JSON form.
  * @param {String} baseURI The base URI for normalizing URIs in the object.
  */
-Exhibit.Database._LocalImpl.prototype.loadData = function(o, baseURI) {
+LocalImpl.prototype.loadData = function(o, baseURI) {
     if (typeof o === "undefined" || o === null) {
-        throw Error(Exhibit._("%database.error.unloadable"));
+        throw Error(_("%database.error.unloadable"));
     }
     if (typeof baseURI === "undefined") {
         baseURI = location.href;
@@ -118,7 +120,7 @@ Exhibit.Database._LocalImpl.prototype.loadData = function(o, baseURI) {
  * @param {Object} typeEntries The "types" subsection of Exhibit JSON.
  * @param {String} baseURI The base URI for normalizing URIs in the object.
  */
-Exhibit.Database._LocalImpl.prototype.loadTypes = function(typeEntries, baseURI) {
+LocalImpl.prototype.loadTypes = function(typeEntries, baseURI) {
     $(document).trigger('onBeforeLoadingTypes.exhibit');
     var lastChar, typeID, typeEntry, type, p;
     try {
@@ -137,7 +139,7 @@ Exhibit.Database._LocalImpl.prototype.loadTypes = function(typeEntries, baseURI)
                         if (typeof this._types[typeID] !== "undefined") {
                             type = this._types[typeID];
                         } else {
-                            type = new Exhibit.Database.Type(typeID);
+                            type = new Type(typeID);
                             this._types[typeID] = type;
                         }
             
@@ -161,7 +163,7 @@ Exhibit.Database._LocalImpl.prototype.loadTypes = function(typeEntries, baseURI)
         
         $(document).trigger('onAfterLoadingTypes.exhibit');
     } catch(e) {
-        Exhibit.Debug.exception(e, Exhibit._("%database.error.loadTypesFailure"));
+        Debug.exception(e, _("%database.error.loadTypesFailure"));
     }
 };
 
@@ -172,7 +174,7 @@ Exhibit.Database._LocalImpl.prototype.loadTypes = function(typeEntries, baseURI)
  * @param {Object} propertyEntries The "properties" subsection of Exhibit JSON.
  * @param {String} baseURI The base URI for normalizing URIs in the object.
  */
-Exhibit.Database._LocalImpl.prototype.loadProperties = function(propertyEntries, baseURI) {
+LocalImpl.prototype.loadProperties = function(propertyEntries, baseURI) {
     $(document).trigger("onBeforeLoadingProperties.exhibit");
     var lastChar, propertyID, propertyEntry, property;
     try {
@@ -191,7 +193,7 @@ Exhibit.Database._LocalImpl.prototype.loadProperties = function(propertyEntries,
                         if (typeof this._properties[propertyID] !== "undefined") {
                             property = this._properties[propertyID];
                         } else {
-                            property = new Exhibit.Database.Property(propertyID, this);
+                            property = new Property(propertyID, this);
                             this._properties[propertyID] = property;
                         }
             
@@ -239,7 +241,7 @@ Exhibit.Database._LocalImpl.prototype.loadProperties = function(propertyEntries,
         
         $(document).trigger("onAfterLoadingProperties.exhibit");
     } catch(e) {
-        Exhibit.Debug.exception(e, Exhibit._("%database.error.loadPropertiesFailure"));
+        Debug.exception(e, _("%database.error.loadPropertiesFailure"));
     }
 };
 
@@ -255,7 +257,7 @@ Exhibit.Database._LocalImpl.prototype.loadProperties = function(propertyEntries,
  * @param {Numeric} timeout In milliseconds, the time between cycles
  * @param {Function} [complete] Method to call when done with all data
  */
-Exhibit.Database._LocalImpl._loadChunked = function(worker, data, size, timeout, complete) {
+LocalImpl._loadChunked = function(worker, data, size, timeout, complete) {
     var index, length;
     index = 0;
     length = data.length;
@@ -280,7 +282,7 @@ Exhibit.Database._LocalImpl._loadChunked = function(worker, data, size, timeout,
  * @param {Object} itemEntries The "items" subsection of Exhibit JSON.
  * @param {String} baseURI The base URI for normalizing URIs in the object.
  */
-Exhibit.Database._LocalImpl.prototype.loadItems = function(itemEntries, baseURI) {
+LocalImpl.prototype.loadItems = function(itemEntries, baseURI) {
     $(document).trigger("onBeforeLoadingItems.exhibit");
     var self, lastChar, spo, ops, indexPut, indexTriple, finish, loader;
     self = this;
@@ -294,7 +296,7 @@ Exhibit.Database._LocalImpl.prototype.loadItems = function(itemEntries, baseURI)
         
         spo = this._spo;
         ops = this._ops;
-        indexPut = Exhibit.Database._indexPut;
+        indexPut = Database._indexPut;
         indexTriple = function(s, p, o) {
             indexPut(spo, s, p, o);
             indexPut(ops, o, p, s);
@@ -311,9 +313,9 @@ Exhibit.Database._LocalImpl.prototype.loadItems = function(itemEntries, baseURI)
             }
         };
 
-        Exhibit.Database._LocalImpl._loadChunked(loader, itemEntries, 1000, 10, finish);
+        LocalImpl._loadChunked(loader, itemEntries, 1000, 10, finish);
     } catch(e) {
-        Exhibit.Debug.exception(e, Exhibit._("%database.error.loadItemsFailure"));
+        Debug.exception(e, _("%database.error.loadItemsFailure"));
     }
 };
 
@@ -324,7 +326,7 @@ Exhibit.Database._LocalImpl.prototype.loadItems = function(itemEntries, baseURI)
  * @param {String} typeID The type identifier.
  * @returns {Exhibit.Database.Type} The corresponding database type.
  */
-Exhibit.Database._LocalImpl.prototype.getType = function(typeID) {
+LocalImpl.prototype.getType = function(typeID) {
     return typeof this._types[typeID] ?
         this._types[typeID] :
         null;
@@ -337,7 +339,7 @@ Exhibit.Database._LocalImpl.prototype.getType = function(typeID) {
  * @param {String} propertyID The property identifier.
  * @returns {Exhibit.Database._Property} The corresponding database property.
  */
-Exhibit.Database._LocalImpl.prototype.getProperty = function(propertyID) {
+LocalImpl.prototype.getProperty = function(propertyID) {
     return typeof this._properties[propertyID] !== "undefined" ?
         this._properties[propertyID] :
         null;
@@ -348,7 +350,7 @@ Exhibit.Database._LocalImpl.prototype.getProperty = function(propertyID) {
  *
  * @returns {Array} The array of property identifiers.
  */
-Exhibit.Database._LocalImpl.prototype.getAllProperties = function() {
+LocalImpl.prototype.getAllProperties = function() {
     var propertyID;
 
     if (this._propertyArray === null) {
@@ -368,8 +370,8 @@ Exhibit.Database._LocalImpl.prototype.getAllProperties = function() {
  *
  * @returns {Exhibit.Set} The set of all items.
  */
-Exhibit.Database._LocalImpl.prototype.getAllItems = function() {
-    var items = new Exhibit.Set();
+LocalImpl.prototype.getAllItems = function() {
+    var items = new Set();
     items.addSet(this._items);
 
     return items;
@@ -380,7 +382,7 @@ Exhibit.Database._LocalImpl.prototype.getAllItems = function() {
  *
  * @returns {Number} The number of items in the database.
  */
-Exhibit.Database._LocalImpl.prototype.getAllItemsCount = function() {
+LocalImpl.prototype.getAllItemsCount = function() {
     return this._items.size();
 };
 
@@ -390,7 +392,7 @@ Exhibit.Database._LocalImpl.prototype.getAllItemsCount = function() {
  * @param {String} itemID The item identifier.
  * @returns {Boolean} True if the item ID is in the database.
  */
-Exhibit.Database._LocalImpl.prototype.containsItem = function(itemID) {
+LocalImpl.prototype.containsItem = function(itemID) {
     return this._items.contains(itemID);
 };
 
@@ -406,7 +408,7 @@ Exhibit.Database._LocalImpl.prototype.containsItem = function(itemID) {
  * @param {Object} idToQualifiedName Maps URIs to QNames.
  * @param {Object} prefixToBase Maps prefixes to full base URIs.
  */
-Exhibit.Database._LocalImpl.prototype.getNamespaces = function(idToQualifiedName, prefixToBase) {
+LocalImpl.prototype.getNamespaces = function(idToQualifiedName, prefixToBase) {
     var bases = {}, propertyID, property, uri, hash, base, slash,
         baseToPrefix, letters, i, prefix, qname;
     for (propertyID in this._properties) {
@@ -465,7 +467,7 @@ Exhibit.Database._LocalImpl.prototype.getNamespaces = function(idToQualifiedName
  * @param {Exhibit.Set} [filter] Only include objects in this set.
  * @returns {Exhibit.Set} The filled set of objects.
  */
-Exhibit.Database._LocalImpl.prototype.getObjects = function(s, p, set, filter) {
+LocalImpl.prototype.getObjects = function(s, p, set, filter) {
     return this._get(this._spo, s, p, set, filter);
 };
 
@@ -478,7 +480,7 @@ Exhibit.Database._LocalImpl.prototype.getObjects = function(s, p, set, filter) {
  * @param {Exhibit.Set} [filter] Only include objects in this filter.
  * @returns {Number} The count of distinct objects.
  */
-Exhibit.Database._LocalImpl.prototype.countDistinctObjects = function(s, p, filter) {
+LocalImpl.prototype.countDistinctObjects = function(s, p, filter) {
     return this._countDistinct(this._spo, s, p, filter);
 };
 
@@ -492,7 +494,7 @@ Exhibit.Database._LocalImpl.prototype.countDistinctObjects = function(s, p, filt
  * @param {Exhibit.Set} [filter] Only include objects in this filter.
  * @returns {Exhibit.Set} The filled set of objects.
  */
-Exhibit.Database._LocalImpl.prototype.getObjectsUnion = function(subjects, p, set, filter) {
+LocalImpl.prototype.getObjectsUnion = function(subjects, p, set, filter) {
     return this._getUnion(this._spo, subjects, p, set, filter);
 };
 
@@ -506,7 +508,7 @@ Exhibit.Database._LocalImpl.prototype.getObjectsUnion = function(subjects, p, se
  * @param {Exhibit.Set} [filter] Only include objects in this filter.
  * @returns {Number} The count of distinct matching objects.
  */
-Exhibit.Database._LocalImpl.prototype.countDistinctObjectsUnion = function(subjects, p, filter) {
+LocalImpl.prototype.countDistinctObjectsUnion = function(subjects, p, filter) {
     return this._countDistinctUnion(this._spo, subjects, p, filter);
 };
 
@@ -519,7 +521,7 @@ Exhibit.Database._LocalImpl.prototype.countDistinctObjectsUnion = function(subje
  * @param {Exhibit.Set} [filter] Only include subjects in this filter.
  * @returns {Exhibit.Set} The filled set of matching subject identifiers.
  */
-Exhibit.Database._LocalImpl.prototype.getSubjects = function(o, p, set, filter) {
+LocalImpl.prototype.getSubjects = function(o, p, set, filter) {
     return this._get(this._ops, o, p, set, filter);
 };
 
@@ -532,7 +534,7 @@ Exhibit.Database._LocalImpl.prototype.getSubjects = function(o, p, set, filter) 
  * @param {Exhibit.Set} [filter] Only include subjects in this filter.
  * @returns {Number} The count of matching, distinct subjects.
  */
-Exhibit.Database._LocalImpl.prototype.countDistinctSubjects = function(o, p, filter) {
+LocalImpl.prototype.countDistinctSubjects = function(o, p, filter) {
     return this._countDistinct(this._ops, o, p, filter);
 };
 
@@ -546,7 +548,7 @@ Exhibit.Database._LocalImpl.prototype.countDistinctSubjects = function(o, p, fil
  * @param {Exhibit.Set} [filter] Only include subjects in this filter.
  * @returns {Exhibit.Set} The filled set of subjects.
  */
-Exhibit.Database._LocalImpl.prototype.getSubjectsUnion = function(objects, p, set, filter) {
+LocalImpl.prototype.getSubjectsUnion = function(objects, p, set, filter) {
     return this._getUnion(this._ops, objects, p, set, filter);
 };
 
@@ -559,7 +561,7 @@ Exhibit.Database._LocalImpl.prototype.getSubjectsUnion = function(objects, p, se
  * @param {Exhibit.Set} [filter] Only include subjects in this filter.
  * @returns {Number} The count of matching subjects.
  */
-Exhibit.Database._LocalImpl.prototype.countDistinctSubjectsUnion = function(objects, p, filter) {
+LocalImpl.prototype.countDistinctSubjectsUnion = function(objects, p, filter) {
     return this._countDistinctUnion(this._ops, objects, p, filter);
 };
 
@@ -571,7 +573,7 @@ Exhibit.Database._LocalImpl.prototype.countDistinctSubjectsUnion = function(obje
  * @param {String} p The predicate identifier.
  * @returns {String} One matching object.
  */
-Exhibit.Database._LocalImpl.prototype.getObject = function(s, p) {
+LocalImpl.prototype.getObject = function(s, p) {
     var hash, array;
 
     hash = this._spo[s];
@@ -592,7 +594,7 @@ Exhibit.Database._LocalImpl.prototype.getObject = function(s, p) {
  * @param {String} p The predicate identifier.
  * @returns {String} One matching subject identifier.
  */
-Exhibit.Database._LocalImpl.prototype.getSubject = function(o, p) {
+LocalImpl.prototype.getSubject = function(o, p) {
     var hash, array;
 
     hash = this._ops[o];
@@ -611,7 +613,7 @@ Exhibit.Database._LocalImpl.prototype.getSubject = function(o, p) {
  * @param {String} s The subject identifier.
  * @returns {Array} The predicate identifiers.
  */
-Exhibit.Database._LocalImpl.prototype.getForwardProperties = function(s) {
+LocalImpl.prototype.getForwardProperties = function(s) {
     return this._getProperties(this._spo, s);
 };
 
@@ -621,7 +623,7 @@ Exhibit.Database._LocalImpl.prototype.getForwardProperties = function(s) {
  * @param {String} o The object identifier.
  * @returns {Array} The predicate identifiers.
  */
-Exhibit.Database._LocalImpl.prototype.getBackwardProperties = function(o) {
+LocalImpl.prototype.getBackwardProperties = function(o) {
     return this._getProperties(this._ops, o);
 };
 
@@ -637,7 +639,7 @@ Exhibit.Database._LocalImpl.prototype.getBackwardProperties = function(o) {
  * @param {Exhibit.Set} [filter] Only include subjects in this filter.
  * @returns {Exhibit.Set} The filled set of matching subject identifiers.
  */
-Exhibit.Database._LocalImpl.prototype.getSubjectsInRange = function(p, min, max, inclusive, set, filter) {
+LocalImpl.prototype.getSubjectsInRange = function(p, min, max, inclusive, set, filter) {
     var property, rangeIndex;
     property = this.getProperty(p);
     if (property !== null) {
@@ -646,7 +648,7 @@ Exhibit.Database._LocalImpl.prototype.getSubjectsInRange = function(p, min, max,
             return rangeIndex.getSubjectsInRange(min, max, inclusive, set, filter);
         }
     }
-    return (!set) ? new Exhibit.Set() : set;
+    return (!set) ? new Set() : set;
 };
 
 /**
@@ -656,7 +658,7 @@ Exhibit.Database._LocalImpl.prototype.getSubjectsInRange = function(p, min, max,
  * @param {Exhibit.Set} set A set of subject identifiers.
  * @returns {Exhibit.Set} A set of type identifiers.
  */
-Exhibit.Database._LocalImpl.prototype.getTypeIDs = function(set) {
+LocalImpl.prototype.getTypeIDs = function(set) {
     return this.getObjectsUnion(set, "type", null, null);
 };
 
@@ -668,8 +670,8 @@ Exhibit.Database._LocalImpl.prototype.getTypeIDs = function(set) {
  * @param {String} p The predicate identifier.
  * @param {String} o The object.
  */
-Exhibit.Database._LocalImpl.prototype.addStatement = function(s, p, o) {
-    var indexPut = Exhibit.Database._indexPut;
+LocalImpl.prototype.addStatement = function(s, p, o) {
+    var indexPut = Database._indexPut;
     indexPut(this._spo, s, p, o);
     indexPut(this._ops, o, p, s);
 };
@@ -683,9 +685,9 @@ Exhibit.Database._LocalImpl.prototype.addStatement = function(s, p, o) {
  * @param {String} o The object.
  * @returns {String} Either the object or the subject.
  */
-Exhibit.Database._LocalImpl.prototype.removeStatement = function(s, p, o) {
+LocalImpl.prototype.removeStatement = function(s, p, o) {
     var indexRemove, removedObject, removedSubject;
-    indexRemove = Exhibit.Database._indexRemove;
+    indexRemove = Database._indexRemove;
     removedObject = indexRemove(this._spo, s, p, o);
     removedSubject = indexRemove(this._ops, o, p, s);
     return removedObject || removedSubject;
@@ -699,10 +701,10 @@ Exhibit.Database._LocalImpl.prototype.removeStatement = function(s, p, o) {
  * @param {String} p The predicate identifier.
  * @returns {Boolean} True if removed.
  */
-Exhibit.Database._LocalImpl.prototype.removeObjects = function(s, p) {
+LocalImpl.prototype.removeObjects = function(s, p) {
     var indexRemove, indexRemoveList, objects, i;
-    indexRemove = Exhibit.Database._indexRemove;
-    indexRemoveList = Exhibit.Database._indexRemoveList;
+    indexRemove = Database._indexRemove;
+    indexRemoveList = Database._indexRemoveList;
     objects = indexRemoveList(this._spo, s, p);
     if (objects === null) {
         return false;
@@ -722,10 +724,10 @@ Exhibit.Database._LocalImpl.prototype.removeObjects = function(s, p) {
  * @param {String} p The predicate identifier.
  * @returns {Boolean} True if removed.
  */
-Exhibit.Database._LocalImpl.prototype.removeSubjects = function(o, p) {
+LocalImpl.prototype.removeSubjects = function(o, p) {
     var indexRemove, indexRemoveList, subjects, i;
-    indexRemove = Exhibit.Database._indexRemove;
-    indexRemoveList = Exhibit.Database._indexRemoveList;
+    indexRemove = Database._indexRemove;
+    indexRemoveList = Database._indexRemoveList;
     subjects = indexRemoveList(this._ops, o, p);
     if (subjects === null) {
         return false;
@@ -740,13 +742,13 @@ Exhibit.Database._LocalImpl.prototype.removeSubjects = function(o, p) {
 /**
  * Reset the entire database to its empty state.
  */
-Exhibit.Database._LocalImpl.prototype.removeAllStatements = function() {
+LocalImpl.prototype.removeAllStatements = function() {
     $(document).trigger("onBeforeRemovingAllStatements.exhibit");
     var propertyID;
     try {
         this._spo = {};
         this._ops = {};
-        this._items = new Exhibit.Set();
+        this._items = new Set();
     
         for (propertyID in this._properties) {
             if (this._properties.hasOwnProperty(propertyID)) {
@@ -757,7 +759,7 @@ Exhibit.Database._LocalImpl.prototype.removeAllStatements = function() {
         
         $(document).trigger("onAfterRemovingAllStatements.exhibit");
     } catch(e) {
-        Exhibit.Debug.exception(e, Exhibit._("%database.error.removeAllStatementsFailure"));
+        Debug.exception(e, _("%database.error.removeAllStatementsFailure"));
     }
 };
 
@@ -767,7 +769,7 @@ Exhibit.Database._LocalImpl.prototype.removeAllStatements = function() {
  * @param {Array} links An array of DOM link elements.
  * @param {Exhibit.Database} database The database to load into.
  */
-Exhibit.Database._LocalImpl.prototype._loadLinks = function(links, database) {
+LocalImpl.prototype._loadLinks = function(links, database) {
     var fNext, link, type, importer;
     links = [].concat(links);
     fNext = function() {
@@ -778,12 +780,12 @@ Exhibit.Database._LocalImpl.prototype._loadLinks = function(links, database) {
                 type = "application/json";
             }
 
-            importer = Exhibit.Importer.getImporter(type);
+            importer = Importer.getImporter(type);
             if (typeof importer !== "undefined" && importer !== null) {
-                importer.load(link, database, fNext);
+                ImporterUtilities.load(importer, link, database, fNext);
                 return;
             } else {
-                Exhibit.Debug.log(Exhibit._("%database.error.noImporterFailure", type));
+                Debug.log(_("%database.error.noImporterFailure", type));
             }
         }
 
@@ -800,12 +802,12 @@ Exhibit.Database._LocalImpl.prototype._loadLinks = function(links, database) {
  * @param {Function} indexFunction A function that indexes new triples.
  * @param {String} baseURI The base URI to resolve URI fragments against.
  */
-Exhibit.Database._LocalImpl.prototype._loadItem = function(itemEntry, indexFunction, baseURI) {
+LocalImpl.prototype._loadItem = function(itemEntry, indexFunction, baseURI) {
     var id, label, uri, type, isArray, p, v, j;
 
     if (typeof itemEntry.label === "undefined" &&
         typeof itemEntry.id === "undefined") {
-        Exhibit.Debug.warn(Exhibit._("%database.error.itemSyntaxError",
+        Debug.warn(_("%database.error.itemSyntaxError",
                                      JSON.stringify(itemEntry)));
 	    itemEntry.label = "item" + Math.ceil(Math.random()*1000000);
     }
@@ -813,8 +815,8 @@ Exhibit.Database._LocalImpl.prototype._loadItem = function(itemEntry, indexFunct
     if (typeof itemEntry.label === "undefined") {
         id = itemEntry.id;
         if (!this._items.contains(id)) {
-            Exhibit.Debug.warn(
-                Exhibit._("%database.error.itemMissingLabelFailure",
+            Debug.warn(
+                _("%database.error.itemMissingLabelFailure",
                           JSON.stringify(itemEntry))
             );
         }
@@ -890,10 +892,10 @@ Exhibit.Database._LocalImpl.prototype._loadItem = function(itemEntry, indexFunct
  * @param {String} typeID The type identifier.
  * @param {String} baseURI The base URI to resolve URI fragments against.
  */
-Exhibit.Database._LocalImpl.prototype._ensureTypeExists = function(typeID, baseURI) {
+LocalImpl.prototype._ensureTypeExists = function(typeID, baseURI) {
     var type;
     if (typeof this._types[typeID] === "undefined") {
-        type = new Exhibit.Database.Type(typeID);
+        type = new Type(typeID);
         
         type._custom.uri = baseURI + "type#" + encodeURIComponent(typeID);
         type._custom.label = typeID;
@@ -910,10 +912,10 @@ Exhibit.Database._LocalImpl.prototype._ensureTypeExists = function(typeID, baseU
  * @param {String} baseURI The base URI to resolve URI fragments against.
  * @returns {Exhibit.Database.Property} The corresponding database property.
  */
-Exhibit.Database._LocalImpl.prototype._ensurePropertyExists = function(propertyID, baseURI) {
+LocalImpl.prototype._ensurePropertyExists = function(propertyID, baseURI) {
     var property;
     if (typeof this._properties[propertyID] === "undefined") {
-        property = new Exhibit.Database.Property(propertyID, this);
+        property = new Property(propertyID, this);
         
         property._uri = baseURI + "property#" + encodeURIComponent(propertyID);
         property._valueType = "text";
@@ -921,8 +923,8 @@ Exhibit.Database._LocalImpl.prototype._ensurePropertyExists = function(propertyI
         property._label = propertyID;
         property._pluralLabel = property._label;
         
-        property._reverseLabel = Exhibit._("%database.reverseLabel", property._label);
-        property._reversePluralLabel = Exhibit._("%database.reversePluralLabel", property._pluralLabel);
+        property._reverseLabel = _("%database.reverseLabel", property._label);
+        property._reversePluralLabel = _("%database.reversePluralLabel", property._pluralLabel);
         
         property._groupingLabel = property._label;
         property._reverseGroupingLabel = property._reverseLabel;
@@ -946,7 +948,7 @@ Exhibit.Database._LocalImpl.prototype._ensurePropertyExists = function(propertyI
  * @param {Exhibit.Set} set The set to fill.
  * @param {Exhibit.Set} [filter] Only include values in this filter.
  */
-Exhibit.Database._LocalImpl.prototype._indexFillSet = function(index, x, y, set, filter) {
+LocalImpl.prototype._indexFillSet = function(index, x, y, set, filter) {
     var hash, array, i, z;
     hash = index[x];
     if (typeof hash !== "undefined") {
@@ -978,7 +980,7 @@ Exhibit.Database._LocalImpl.prototype._indexFillSet = function(index, x, y, set,
  * @param {Exhibit.Set} [filter] Only include values in this filter.
  * @returns {Number} The count of values.
  */
-Exhibit.Database._LocalImpl.prototype._indexCountDistinct = function(index, x, y, filter) {
+LocalImpl.prototype._indexCountDistinct = function(index, x, y, filter) {
     var count, hash, array, i;
     count = 0;
     hash = index[x];
@@ -1010,9 +1012,9 @@ Exhibit.Database._LocalImpl.prototype._indexCountDistinct = function(index, x, y
  * @param {Exhibit.Set} [filter] Only include values in this filter.
  * @returns {Exhibit.Set}
  */
-Exhibit.Database._LocalImpl.prototype._get = function(index, x, y, set, filter) {
+LocalImpl.prototype._get = function(index, x, y, set, filter) {
     if (typeof set === "undefined" || set === null) {
-        set = new Exhibit.Set();
+        set = new Set();
     }
     this._indexFillSet(index, x, y, set, filter);
     return set;
@@ -1029,10 +1031,10 @@ Exhibit.Database._LocalImpl.prototype._get = function(index, x, y, set, filter) 
  * @param {Exhibit.Set} [filter] Only include values in this filter.
  * @returns {Exhibit.Set} The filled set.
  */
-Exhibit.Database._LocalImpl.prototype._getUnion = function(index, xSet, y, set, filter) {
+LocalImpl.prototype._getUnion = function(index, xSet, y, set, filter) {
     var database;
     if (typeof set === "undefined" || set === null) {
-        set = new Exhibit.Set();
+        set = new Set();
     }
     
     database = this;
@@ -1053,7 +1055,7 @@ Exhibit.Database._LocalImpl.prototype._getUnion = function(index, xSet, y, set, 
  * @param {Exhibit.Set} [filter] Only include values in this filter.
  * @returns {Number} The count of matching values.
  */
-Exhibit.Database._LocalImpl.prototype._countDistinctUnion = function(index, xSet, y, filter) {
+LocalImpl.prototype._countDistinctUnion = function(index, xSet, y, filter) {
     var count, database;
     count = 0;
     database = this;
@@ -1072,7 +1074,7 @@ Exhibit.Database._LocalImpl.prototype._countDistinctUnion = function(index, xSet
  * @param {Exhibit.Set} [filter] Only include values in this filter.
  * @returns {Number} The count of matching values.
  */
-Exhibit.Database._LocalImpl.prototype._countDistinct = function(index, x, y, filter) {
+LocalImpl.prototype._countDistinct = function(index, x, y, filter) {
     return this._indexCountDistinct(index, x, y, filter);
 };
 
@@ -1083,7 +1085,7 @@ Exhibit.Database._LocalImpl.prototype._countDistinct = function(index, x, y, fil
  * @param {String} x The first-level key.
  * @returns {Array} An array of second-level keys, property identifiers.
  */
-Exhibit.Database._LocalImpl.prototype._getProperties = function(index, x) {
+LocalImpl.prototype._getProperties = function(index, x) {
     var hash, properties, p;
     hash = index[x];
     properties = [];
@@ -1103,9 +1105,9 @@ Exhibit.Database._LocalImpl.prototype._getProperties = function(index, x) {
  * @param {String} countStyleClass
  * @returns {jQuery}
  */
-Exhibit.Database._LocalImpl.prototype.labelItemsOfType = function(count, typeID, countStyleClass) {
+LocalImpl.prototype.labelItemsOfType = function(count, typeID, countStyleClass) {
     var label, type, pluralLabel, span;
-    label = Exhibit._((count === 1) ? "" : "");
+    label = _((count === 1) ? "" : "");
     type = this.getType(typeID);
     if (typeof type !== "undefined" && type !== null) {
         label = type.getLabel();
@@ -1132,7 +1134,7 @@ Exhibit.Database._LocalImpl.prototype.labelItemsOfType = function(count, typeID,
  *
  * @param {String} id Identifier of database item to clone and return.
  */
-Exhibit.Database._LocalImpl.prototype.getItem = function(id) {
+LocalImpl.prototype.getItem = function(id) {
 };
 
 /**
@@ -1141,7 +1143,7 @@ Exhibit.Database._LocalImpl.prototype.getItem = function(id) {
  *
  * @param {Object} item An object representing the item to add.
  */
-Exhibit.Database._LocalImpl.prototype.addItem = function(item) {
+LocalImpl.prototype.addItem = function(item) {
 };
 
 /**
@@ -1152,7 +1154,7 @@ Exhibit.Database._LocalImpl.prototype.addItem = function(item) {
  * @param {String} prop The property identifier.
  * @param {String} value The new value for the object.
  */
-Exhibit.Database._LocalImpl.prototype.editItem = function(id, prop, value) {
+LocalImpl.prototype.editItem = function(id, prop, value) {
 };
 
 /**
@@ -1161,9 +1163,9 @@ Exhibit.Database._LocalImpl.prototype.editItem = function(id, prop, value) {
  *
  * @param {String} id The identifier of the item to remove.
  */
-Exhibit.Database._LocalImpl.prototype.removeItem = function(id) {
+LocalImpl.prototype.removeItem = function(id) {
 };
 
     // end define
-    return Exhibit;
+    return LocalImpl;
 });

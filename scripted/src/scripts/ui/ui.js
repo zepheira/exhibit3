@@ -4,27 +4,32 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(
-    ["lib/jquery",
-     "exhibit",
-     "lib/jquery.simile.dom",
-     "lib/jquery.simile.bubble"],
-    function($, Exhibit) {
+define([
+    "lib/jquery",
+    "util/localizer",
+    "exhibit",
+    "util/debug",
+    "util/settings",
+    "ui/ui-context",
+    "ui/lens",
+    "ui/coordinator",
+    "ui/control-panel",
+    "ui/views/view-panel",
+    "ui/widgets/logo",
+    "ui/views/tile-view",
+    "ui/facets/list-facet",
+    "ui/coders/color-coder",
+    "lib/jquery.simile.dom",
+    "lib/jquery.simile.bubble"
+], function($, _, Exhibit, Debug, SettingUtilities, UIContext, Lens, Coordinator, ControlPanel, ViewPanel, Logo, TileView, ListFacet, ColorCoder) {
 /**
  * @namespace
  */
-Exhibit.UI = {
+var UI = {
     /**
      * Map of components used for instantiating new UI objects.
      */
-    componentMap: {},
-
-    /**
-     * Link to JSON validating service.
-     */
-    validator: (typeof Exhibit.babelPrefix !== "undefined") ?
-        Exhibit.babelPrefix + "validator?url=" :
-        Exhibit.validateJSON
+    componentMap: {}
 };
 
 /**
@@ -32,18 +37,18 @@ Exhibit.UI = {
  * @param {String} name
  * @param {String} comp
  */
-Exhibit.UI.registerComponent = function(name, comp) {
-    var msg = Exhibit._("%general.error.cannotRegister", name);
-    if (typeof Exhibit.UI.componentMap[name] !== "undefined") {
-        Exhibit.Debug.warn(Exhibit._("%general.error.componentNameTaken", msg));
+UI.registerComponent = function(name, comp) {
+    var msg = _("%general.error.cannotRegister", name);
+    if (typeof UI.componentMap[name] !== "undefined") {
+        Debug.warn(_("%general.error.componentNameTaken", msg));
     } else if (typeof comp === "undefined" || comp === null) {
-        Exhibit.Debug.warn(Exhibit._("%general.error.noComponentObject", msg));
+        Debug.warn(_("%general.error.noComponentObject", msg));
     } else if (typeof comp.create === "undefined") {
-        Exhibit.Debug.warn(Exhibit._("%general.error.missingCreateFunction", msg));
+        Debug.warn(_("%general.error.missingCreateFunction", msg));
     } else if (typeof comp.createFromDOM === "undefined") {
-        Exhibit.Debug.warn(Exhibit._("%general.error.missingDOMCreateFunction", msg));
+        Debug.warn(_("%general.error.missingDOMCreateFunction", msg));
     } else {
-        Exhibit.UI.componentMap[name] = comp;
+        UI.componentMap[name] = comp;
     }
 };
 
@@ -53,7 +58,7 @@ Exhibit.UI.registerComponent = function(name, comp) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Object}
  */
-Exhibit.UI.create = function(configuration, elmt, uiContext) {
+UI.create = function(configuration, elmt, uiContext) {
     var role, createFunc;
 
     if (typeof configuration["role"] !== "undefined") {
@@ -62,30 +67,30 @@ Exhibit.UI.create = function(configuration, elmt, uiContext) {
             role = role.substr("exhibit-".length);
         }
         
-        if (typeof Exhibit.UI.componentMap[role] !== "undefined") {
-            createFunc = Exhibit.UI.componentMap[role].create;
+        if (typeof UI.componentMap[role] !== "undefined") {
+            createFunc = UI.componentMap[role].create;
             return createFunc(configuration, elmt, uiContext);
         }
         
         switch (role) {
         case "lens":
         case "edit-lens":
-            Exhibit.UIContext.registerLens(configuration, uiContext.getLensRegistry());
+            UIContext.registerLens(configuration, uiContext.getLensRegistry());
             return null;
         case "view":
-            return Exhibit.UI.createView(configuration, elmt, uiContext);
+            return UI.createView(configuration, elmt, uiContext);
         case "facet":
-            return Exhibit.UI.createFacet(configuration, elmt, uiContext);
+            return UI.createFacet(configuration, elmt, uiContext);
         case "coordinator":
-            return Exhibit.UI.createCoordinator(configuration, uiContext);
+            return UI.createCoordinator(configuration, uiContext);
         case "coder":
-            return Exhibit.UI.createCoder(configuration, uiContext);
+            return UI.createCoder(configuration, uiContext);
         case "viewPanel":
-            return Exhibit.ViewPanel.create(configuration, elmt, uiContext);
+            return ViewPanel.create(configuration, elmt, uiContext);
         case "logo":
-            return Exhibit.Logo.create(configuration, elmt, uiContext);
+            return Logo.create(configuration, elmt, uiContext);
         case "controlPanel":
-            return Exhibit.ControlPanel.create(configuration, elmt, uiContext);
+            return ControlPanel.create(configuration, elmt, uiContext);
         case "hiddenContent":
             $(elmt).hide();
             return null;
@@ -99,35 +104,35 @@ Exhibit.UI.create = function(configuration, elmt, uiContext) {
  * @param {Exhibit.UIContext} uiContext
  * returns {Object}
  */
-Exhibit.UI.createFromDOM = function(elmt, uiContext) {
+UI.createFromDOM = function(elmt, uiContext) {
     var role, createFromDOMFunc;
 
     role = Exhibit.getRoleAttribute(elmt);
     
-    if (typeof Exhibit.UI.componentMap[role] !== "undefined") {
-        createFromDOMFunc = Exhibit.UI.componentMap[role].createFromDOM;
+    if (typeof UI.componentMap[role] !== "undefined") {
+        createFromDOMFunc = UI.componentMap[role].createFromDOM;
         return createFromDOMFunc(elmt, uiContext);
     }
     
     switch (role) {
     case "lens":
     case "edit-lens":
-        Exhibit.UIContext.registerLensFromDOM(elmt, uiContext.getLensRegistry());
+        UIContext.registerLensFromDOM(elmt, uiContext.getLensRegistry());
         return null;
     case "view":
-        return Exhibit.UI.createViewFromDOM(elmt, null, uiContext);
+        return UI.createViewFromDOM(elmt, null, uiContext);
     case "facet":
-        return Exhibit.UI.createFacetFromDOM(elmt, null, uiContext);
+        return UI.createFacetFromDOM(elmt, null, uiContext);
     case "coordinator":
-        return Exhibit.UI.createCoordinatorFromDOM(elmt, uiContext);
+        return UI.createCoordinatorFromDOM(elmt, uiContext);
     case "coder":
-        return Exhibit.UI.createCoderFromDOM(elmt, uiContext);
+        return UI.createCoderFromDOM(elmt, uiContext);
     case "viewPanel":
-        return Exhibit.ViewPanel.createFromDOM(elmt, uiContext);
+        return ViewPanel.createFromDOM(elmt, uiContext);
     case "controlPanel":
-        return Exhibit.ControlPanel.createFromDOM(elmt, null, uiContext);
+        return ControlPanel.createFromDOM(elmt, null, uiContext);
     case "logo":
-        return Exhibit.Logo.createFromDOM(elmt, uiContext);
+        return Logo.createFromDOM(elmt, uiContext);
     case "hiddenContent":
         $(elmt).hide();
         return null;
@@ -139,13 +144,13 @@ Exhibit.UI.createFromDOM = function(elmt, uiContext) {
  * @param {Object} constructor
  * @returns {Object}
  */
-Exhibit.UI.generateCreationMethods = function(constructor) {
+UI.generateCreationMethods = function(constructor) {
     constructor.create = function(configuration, elmt, uiContext) {
         var newContext, settings;
-        newContext = Exhibit.UIContext.create(configuration, uiContext);
+        newContext = UIContext.create(configuration, uiContext);
         settings = {};
         
-        Exhibit.SettingsUtilities.collectSettings(
+        SettingsUtilities.collectSettings(
             configuration, 
             constructor._settingSpecs || {}, 
             settings);
@@ -154,10 +159,10 @@ Exhibit.UI.generateCreationMethods = function(constructor) {
     };
     constructor.createFromDOM = function(elmt, uiContext) {
         var newContext, settings;
-        newContext = Exhibit.UIContext.createFromDOM(elmt, uiContext);
+        newContext = UIContext.createFromDOM(elmt, uiContext);
         settings = {};
         
-        Exhibit.SettingsUtilities.collectSettingsFromDOM(
+        SettingsUtilities.collectSettingsFromDOM(
             elmt, 
             constructor._settingSpecs || {},
             settings);
@@ -172,12 +177,12 @@ Exhibit.UI.generateCreationMethods = function(constructor) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Object}
  */
-Exhibit.UI.createView = function(configuration, elmt, uiContext) {
+UI.createView = function(configuration, elmt, uiContext) {
     var viewClass = typeof configuration["viewClass"] !== "undefined" ?
         configuration.viewClass :
-        Exhibit.TileView;
+        TileView;
     if (typeof viewClass === "string") {
-        viewClass = Exhibit.UI.viewClassNameToViewClass(viewClass);
+        viewClass = UI.viewClassNameToViewClass(viewClass);
     }
     return viewClass.create(configuration, elmt, uiContext);
 };
@@ -188,8 +193,8 @@ Exhibit.UI.createView = function(configuration, elmt, uiContext) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Object}
  */
-Exhibit.UI.createViewFromDOM = function(elmt, container, uiContext) {
-    var viewClass = Exhibit.UI.viewClassNameToViewClass(Exhibit.getAttribute(elmt, "viewClass"));
+UI.createViewFromDOM = function(elmt, container, uiContext) {
+    var viewClass = UI.viewClassNameToViewClass(Exhibit.getAttribute(elmt, "viewClass"));
     return viewClass.createFromDOM(elmt, container, uiContext);
 };
 
@@ -197,15 +202,15 @@ Exhibit.UI.createViewFromDOM = function(elmt, container, uiContext) {
  * @param {String} name
  * @returns {Object}
  */
-Exhibit.UI.viewClassNameToViewClass = function(name) {
+UI.viewClassNameToViewClass = function(name) {
     if (typeof name !== "undefined" && name !== null && name.length > 0) {
         try {
-            return Exhibit.UI._stringToObject(name, "View");
+            return UI._stringToObject(name, "View");
         } catch (e) {
-            Exhibit.Debug.warn(Exhibit._("%general.error.unknownViewClass", name));
+            Debug.warn(_("%general.error.unknownViewClass", name));
         }
     }
-    return Exhibit.TileView;
+    return TileView;
 };
 
 /**
@@ -214,12 +219,12 @@ Exhibit.UI.viewClassNameToViewClass = function(name) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Object}
  */
-Exhibit.UI.createFacet = function(configuration, elmt, uiContext) {
+UI.createFacet = function(configuration, elmt, uiContext) {
     var facetClass = typeof configuration["facetClass"] !== "undefined" ?
         configuration.facetClass :
-        Exhibit.ListFacet;
+        ListFacet;
     if (typeof facetClass === "string") {
-        facetClass = Exhibit.UI.facetClassNameToFacetClass(facetClass);
+        facetClass = UI.facetClassNameToFacetClass(facetClass);
     }
     return facetClass.create(configuration, elmt, uiContext);
 };
@@ -230,8 +235,8 @@ Exhibit.UI.createFacet = function(configuration, elmt, uiContext) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Object}
  */
-Exhibit.UI.createFacetFromDOM = function(elmt, container, uiContext) {
-    var facetClass = Exhibit.UI.facetClassNameToFacetClass(Exhibit.getAttribute(elmt, "facetClass"));
+UI.createFacetFromDOM = function(elmt, container, uiContext) {
+    var facetClass = UI.facetClassNameToFacetClass(Exhibit.getAttribute(elmt, "facetClass"));
     return facetClass.createFromDOM(elmt, container, uiContext);
 };
 
@@ -239,15 +244,15 @@ Exhibit.UI.createFacetFromDOM = function(elmt, container, uiContext) {
  * @param {String} name
  * @returns {Object}
  */
-Exhibit.UI.facetClassNameToFacetClass = function(name) {
+UI.facetClassNameToFacetClass = function(name) {
     if (typeof name !== "undefined" && name !== null && name.length > 0) {
         try {
-            return Exhibit.UI._stringToObject(name, "Facet");
+            return UI._stringToObject(name, "Facet");
         } catch (e) {
-            Exhibit.Debug.warn(Exhibit._("%general.error.unknownFacetClass", name));
+            Debug.warn(_("%general.error.unknownFacetClass", name));
         }
     }
-    return Exhibit.ListFacet;
+    return ListFacet;
 };
 
 /**
@@ -255,12 +260,12 @@ Exhibit.UI.facetClassNameToFacetClass = function(name) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Object}
  */
-Exhibit.UI.createCoder = function(configuration, uiContext) {
+UI.createCoder = function(configuration, uiContext) {
     var coderClass = typeof configuration["coderClass"] !== "undefined" ?
         configuration.coderClass :
-        Exhibit.ColorCoder;
+        ColorCoder;
     if (typeof coderClass === "string") {
-        coderClass = Exhibit.UI.coderClassNameToCoderClass(coderClass);
+        coderClass = UI.coderClassNameToCoderClass(coderClass);
     }
     return coderClass.create(configuration, uiContext);
 };
@@ -270,8 +275,8 @@ Exhibit.UI.createCoder = function(configuration, uiContext) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Object}
  */
-Exhibit.UI.createCoderFromDOM = function(elmt, uiContext) {
-    var coderClass = Exhibit.UI.coderClassNameToCoderClass(Exhibit.getAttribute(elmt, "coderClass"));
+UI.createCoderFromDOM = function(elmt, uiContext) {
+    var coderClass = UI.coderClassNameToCoderClass(Exhibit.getAttribute(elmt, "coderClass"));
     return coderClass.createFromDOM(elmt, uiContext);
 };
 
@@ -279,15 +284,15 @@ Exhibit.UI.createCoderFromDOM = function(elmt, uiContext) {
  * @param {String} name
  * @returns {Object}
  */
-Exhibit.UI.coderClassNameToCoderClass = function(name) {
+UI.coderClassNameToCoderClass = function(name) {
     if (typeof name !== "undefined" && name !== null && name.length > 0) {
         try {
-            return Exhibit.UI._stringToObject(name, "Coder");
+            return UI._stringToObject(name, "Coder");
         } catch (e) {
-            Exhibit.Debug.warn(Exhibit._("%general.error.unknownCoderClass", name));
+            Debug.warn(_("%general.error.unknownCoderClass", name));
         }
     }
-    return Exhibit.ColorCoder;
+    return ColorCoder;
 };
 
 /**
@@ -295,8 +300,8 @@ Exhibit.UI.coderClassNameToCoderClass = function(name) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.Coordinator}
  */
-Exhibit.UI.createCoordinator = function(configuration, uiContext) {
-    return Exhibit.Coordinator.create(configuration, uiContext);
+UI.createCoordinator = function(configuration, uiContext) {
+    return Coordinator.create(configuration, uiContext);
 };
 
 /**
@@ -304,8 +309,8 @@ Exhibit.UI.createCoordinator = function(configuration, uiContext) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.Coordinator}
  */
-Exhibit.UI.createCoordinatorFromDOM = function(elmt, uiContext) {
-    return Exhibit.Coordinator.createFromDOM(elmt, uiContext);
+UI.createCoordinatorFromDOM = function(elmt, uiContext) {
+    return Coordinator.createFromDOM(elmt, uiContext);
 };
 
 /**
@@ -315,7 +320,8 @@ Exhibit.UI.createCoordinatorFromDOM = function(elmt, uiContext) {
  * @returns {Object}
  * @throws {Error}
  */
-Exhibit.UI._stringToObject = function(name, suffix) {
+UI._stringToObject = function(name, suffix) {
+    // @@@ This needs to possibly be rewritten with requirejs changes in naming
     if (!name.startsWith("Exhibit.")) {
         if (!name.endsWith(suffix)) {
             try {
@@ -346,7 +352,7 @@ Exhibit.UI._stringToObject = function(name, suffix) {
         // ignore
     }
     
-    throw new Error(Exhibit._("%general.error.unknownClass", name));
+    throw new Error(_("%general.error.unknownClass", name));
 };
 
 /*----------------------------------------------------------------------
@@ -360,86 +366,14 @@ Exhibit.UI._stringToObject = function(name, suffix) {
  * @param {String} url
  * @param {String} target
  */
-Exhibit.UI.showHelp = function(message, url, target) {
+UI.showHelp = function(message, url, target) {
     target = (target) ? target : "_blank";
     if (typeof url !== "undefined" && url !== null) {
-        if (window.confirm(Exhibit._("%general.showDocumentationMessage", message))) {
+        if (window.confirm(_("%general.showDocumentationMessage", message))) {
             window.open(url, target);
         }
     } else {
         window.alert(message);
-    }
-};
-
-/**
- * @static
- * @param {String} message
- * @param {String} url
- */
-Exhibit.UI.showJsonFileValidation = function(message, url) {
-    var target = "_blank";
-    if (typeof Exhibit.babelPrefix !== "undefined" && url.indexOf("file:") === 0) {
-        if (window.confirm(Exhibit._("%general.showJsonValidationFormMessage", message))) {
-            window.open(Exhibit.UI.validator, target);
-        }
-    } else {
-        if (window.confirm(Exhibit._("%general.showJsonValidationMessage", message))) {
-            window.open(Exhibit.UI.validator + url, target);
-        }
-    }
-};
-
-/*----------------------------------------------------------------------
- *  Status Indication and Feedback
- *----------------------------------------------------------------------
- */
-Exhibit.UI._busyIndicator = null;
-Exhibit.UI._busyIndicatorCount = 0;
-
-/**
- * @static
- */
-Exhibit.UI.showBusyIndicator = function() {
-    var scrollTop, height, top;
-
-    Exhibit.UI._busyIndicatorCount++;
-    if (Exhibit.UI._busyIndicatorCount > 1) {
-        return;
-    }
-    
-    if (Exhibit.UI._busyIndicator === null) {
-        Exhibit.UI._busyIndicator = Exhibit.UI.createBusyIndicator();
-    }
-    
-    // @@@ jQuery simplification?
-    scrollTop = typeof document.body["scrollTop"] !== "undefined" ?
-        document.body.scrollTop :
-        document.body.parentNode.scrollTop;
-    height = typeof window["innerHeight"] !== "undefined" ?
-        window.innerHeight :
-        (typeof document.body["clientHeight"] !== "undefined" ?
-            document.body.clientHeight :
-            document.body.parentNode.clientHeight);
-        
-    top = Math.floor(scrollTop + height / 3);
-    
-    $(Exhibit.UI._busyIndicator).css("top", top + "px");
-    $(document.body).append(Exhibit.UI._busyIndicator);
-};
-
-/**
- * @static
- */
-Exhibit.UI.hideBusyIndicator = function() {
-    Exhibit.UI._busyIndicatorCount--;
-    if (Exhibit.UI._busyIndicatorCount > 0) {
-        return;
-    }
-    
-    try {
-        Exhibit.UI._busyIndicator.remove();
-    } catch(e) {
-        // silent
     }
 };
 
@@ -452,165 +386,8 @@ Exhibit.UI.hideBusyIndicator = function() {
  * @static
  * @param {Element|jQuery} elmt
  */
-Exhibit.UI.protectUI = function(elmt) {
+UI.protectUI = function(elmt) {
     $(elmt).addClass("exhibit-ui-protection");
-};
-
-/**
- * @static
- * @param {String} text
- * @param {Function} handler
- * @returns {jQuery}
- */
-Exhibit.UI.makeActionLink = function(text, handler) {
-    var a, handler2;
-
-    a = $("<a>" + text + "</a>").
-        attr("href", "#").
-        addClass("exhibit-action");
-    
-    handler2 = function(evt) {
-        if (typeof $(this).attr("disabled") === "undefined") {
-            evt.preventDefault();
-            handler(evt);
-        }
-    };
-
-    $(a).bind("click", handler2);
-    
-    return a;
-};
-
-/**
- * @static
- * @param {Element} a
- * @param {Boolean} enabled
- */
-Exhibit.UI.enableActionLink = function(a, enabled) {
-    if (enabled) {
-        $(a).removeAttr("disabled");
-        $(a).addClass("exhibit-action").removeClass("exhibit-action-disabled");
-    } else {
-        $(a).attr("disabled", true);
-        $(a).removeClass("exhibit-action").addClass("exhibit-action-disabled");
-    }
-};
-
-/**
- * @static
- * @param {String} itemID
- * @param {String} label
- * @param {Exhibit.UIContext} uiContext
- * @returns {jQuery}
- */
-Exhibit.UI.makeItemSpan = function(itemID, label, uiContext) {
-    var database, a, handler;
-
-    database = uiContext.getDatabase();
-
-    if (typeof label === "undefined" || label === null) {
-        label = database.getObject(itemID, "label");
-        if (typeof label === "undefined" || label === null) {
-            label = itemID;
-        }
-    }
-    
-    a = $("<a>" + label + "</a>").
-        attr("href", Exhibit.Persistence.getItemLink(itemID)).
-        addClass("exhibit-item");
-        
-    handler = function(evt) {
-        Exhibit.UI.showItemInPopup(itemID, this, uiContext);
-        evt.preventDefault();
-        evt.stopPropagation();
-    };
-
-    a.bind("click", handler);
-
-    return a.get(0);
-};
-
-/**
- * @static
- * @param {String} label
- * @param {String} valueType
- * @returns {jQuery}
- */
-Exhibit.UI.makeValueSpan = function(label, valueType) {
-    var span, url;
-
-    span = $("<span>").addClass("exhibit-value")
-;
-    if (valueType === "url") {
-        url = label;
-        if (Exhibit.params.safe && url.trim().startsWith("javascript:")) {
-            span.text(url);
-        } else {
-            span.html("<a href=\"" + url + "\" target=\"_blank\">" +
-                      (label.length > 50 ? 
-                       label.substr(0, 20) + " ... " + label.substr(label.length - 20) :
-                       label) +
-                      "</a>");
-        }
-    } else {
-        if (Exhibit.params.safe) {
-            label = Exhibit.Formatter.encodeAngleBrackets(label);
-        }
-        span.html(label);
-    }
-    return span.get(0);
-};
-
-/**
- * @static
- * @param {Element} elmt
- */
-Exhibit.UI.calculatePopupPosition = function(elmt) {
-    var coords = $(elmt).offset();
-    return {
-        x: coords.left + Math.round($(elmt).outerWidth() / 2),
-        y: coords.top + Math.round($(elmt).outerHeight() / 2)
-    };
-};
-
-/**
- * @static
- * @param {String} itemID
- * @param {Element} elmt
- * @param {Exhibit.UIContext} uiContext
- * @param {Object} opts
- */
-Exhibit.UI.showItemInPopup = function(itemID, elmt, uiContext, opts) {
-    var itemLensDiv, lensOpts;
-
-    $(document).trigger("closeAllModeless.exhibit");
-
-    opts = opts || {};
-    opts.coords = opts.coords || Exhibit.UI.calculatePopupPosition(elmt);
-    
-    itemLensDiv = $("<div>");
-
-    lensOpts = {
-        inPopup: true,
-        coords: opts.coords
-    };
-
-    if (opts.lensType === "normal") {
-        lensOpts.lensTemplate = uiContext.getLensRegistry().getNormalLens(itemID, uiContext);
-    } else if (opts.lensType === "edit") {
-        lensOpts.lensTemplate = uiContext.getLensRegistry().getEditLens(itemID, uiContext);
-    } else if (opts.lensType) {
-        Exhibit.Debug.warn(Exhibit._("%general.error.unknownLensType", opts.lensType));
-    }
-
-    uiContext.getLensRegistry().createLens(itemID, itemLensDiv, uiContext, lensOpts);
-    
-    $.simileBubble("createBubbleForContentAndPoint",
-        itemLensDiv, 
-        opts.coords.x,
-        opts.coords.y, 
-        uiContext.getSetting("bubbleWidth")
-    );
 };
 
 /**
@@ -620,7 +397,7 @@ Exhibit.UI.showItemInPopup = function(itemID, elmt, uiContext, opts) {
  * @param {String} className
  * @returns {Element}
  */
-Exhibit.UI.createButton = function(name, handler, className) {
+UI.createButton = function(name, handler, className) {
     var button = $("<button>").
         html(name).
         addClass((className || "exhibit-button")).
@@ -634,7 +411,7 @@ Exhibit.UI.createButton = function(name, handler, className) {
  * @param {Element} element
  * @returns {Object}
  */
-Exhibit.UI.createPopupMenuDom = function(element) {
+UI.createPopupMenuDom = function(element) {
     var div, dom;
 
     div = $("<div>").
@@ -697,79 +474,8 @@ Exhibit.UI.createPopupMenuDom = function(element) {
             this.elmt.append("<hr/>");
         }
     };
-    Exhibit.UI.setupDialog(dom, false);
+    UI.setupDialog(dom, false);
     return dom;
-};
-
-/**
- * @static
- * @returns {Element}
- */
-Exhibit.UI.createBusyIndicator = function() {
-    var urlPrefix, containerDiv, topDiv, topRightDiv, middleDiv, middleRightDiv, contentDiv, bottomDiv, bottomRightDiv, img;
-    urlPrefix = Exhibit.urlPrefix + "images/";
-    containerDiv = $("<div>");
-    if ($.simileBubble("pngIsTranslucent")) {
-        topDiv = $("<div>").css({
-            "height": "33px",
-            "padding-left": "44px",
-            "background": "url(" + urlPrefix + "message-bubble/message-top-left.png) top left no-repeat"
-        });
-        containerDiv.append(topDiv);
-        
-        topRightDiv = $("<div>").css({
-            "height": "33px",
-            "background": "url(" + urlPrefix + "message-bubble/message-top-right.png) top right no-repeat"
-        });
-        topDiv.append(topRightDiv);
-        
-        middleDiv = $("<div>").css({
-            "padding-left": "44px",
-            "background": "url(" + urlPrefix + "message-bubble/message-left.png) top left repeat-y"
-        });
-        containerDiv.append(middleDiv);
-        
-        middleRightDiv = $("<div>").css({
-            "padding-right": "44px",
-            "background": "url(" + urlPrefix + "message-bubble/message-right.png) top right repeat-y"
-        });
-        middleDiv.append(middleRightDiv);
-        
-        contentDiv = $("<div>");
-        middleRightDiv.append(contentDiv);
-        
-        bottomDiv = $("<div>").css({
-            "height": "55px",
-            "padding-left": "44px",
-            "background": "url(" + urlPrefix + "message-bubble/message-bottom-left.png) bottom left no-repeat"
-        });
-        containerDiv.append(bottomDiv);
-        
-        bottomRightDiv = $("<div>").css({
-            "height": "55px",
-            "background": "url(" + urlPrefix + "message-bubble/message-bottom-right.png) bottom right no-repeat"
-        });
-        bottomDiv.append(bottomRightDiv);
-    } else {
-        containerDiv.css({
-            "border": "2px solid #7777AA",
-            "padding": "20px",
-            "background": "white",
-            "opacity": 0.9
-        });
-        
-        contentDiv = $("<div>");
-        containerDiv.append(contentDiv);
-    }
-
-    containerDiv.addClass("exhibit-busyIndicator");
-    contentDiv.addClass("exhibit-busyIndicator-content");
-    
-    img = $("<img />").attr("src", urlPrefix + "progress-running.gif");
-    contentDiv.append(img);
-    contentDiv.append(document.createTextNode(Exhibit._("%general.busyIndicatorMessage")));
-    
-    return containerDiv;
 };
 
 /**
@@ -779,7 +485,7 @@ Exhibit.UI.createBusyIndicator = function() {
  * @param {Object} configuration
  * @returns {Object}
  */
-Exhibit.UI.createFocusDialogBox = function(itemID, exhibit, configuration) {
+UI.createFocusDialogBox = function(itemID, exhibit, configuration) {
     var template, dom;
     template = {
         tag:        "div",
@@ -794,7 +500,7 @@ Exhibit.UI.createFocusDialogBox = function(itemID, exhibit, configuration) {
                 children: [
                     {   tag:        "button",
                         field:      "closeButton",
-                        children:   [ Exhibit._("%general.focusDialogBoxCloseButtonLabel") ]
+                        children:   [ _("%general.focusDialogBoxCloseButtonLabel") ]
                     }
                 ]
             }
@@ -806,7 +512,7 @@ Exhibit.UI.createFocusDialogBox = function(itemID, exhibit, configuration) {
      */
     dom = $.simileDOM("template", template);
 
-    Exhibit.UI.setupDialog(dom, true);
+    UI.setupDialog(dom, true);
 
     /**
      * @ignore Can't get JSDocTK to ignore this one method for some reason.
@@ -814,7 +520,7 @@ Exhibit.UI.createFocusDialogBox = function(itemID, exhibit, configuration) {
     dom.open = function() {
         var lens;
         $(document).trigger("modalSuperseded.exhibit");
-        lens = new Exhibit.Lens(itemID, dom.viewContainer, exhibit, configuration);
+        lens = new Lens(itemID, dom.viewContainer, exhibit, configuration);
         
         $(dom.elmt).css("top", (document.body.scrollTop + 100) + "px");
         $(document.body).append(dom.elmt);
@@ -831,32 +537,12 @@ Exhibit.UI.createFocusDialogBox = function(itemID, exhibit, configuration) {
 };
 
 /**
- * @static
- * @param {String} relativeUrl
- * @param {String} verticalAlign
- * @returns {Element}
- */
-Exhibit.UI.createTranslucentImage = function(relativeUrl, verticalAlign) {
-    return $.simileBubble("createTranslucentImage", Exhibit.urlPrefix + relativeUrl, verticalAlign);
-};
-
-/**
- * @static
- * @param {String} relativeUrl
- * @param {String} verticalAlign
- * @returns {Element}
- */
-Exhibit.UI.createTranslucentImageHTML = function(relativeUrl, verticalAlign) {
-    return $.simileBubble("createTranslucentImageHTML", Exhibit.urlPrefix + relativeUrl, verticalAlign);
-};
-
-/**
  * @param {Number} x
  * @param {Number} y
  * @param {Element} elmt
  * @returns {Boolean}
  */
-Exhibit.UI._clickInElement = function(x, y, elmt) {
+UI._clickInElement = function(x, y, elmt) {
     var offset = $(elmt).offset();
     var dims = { "w": $(elmt).outerWidth(),
                  "h": $(elmt).outerHeight() };
@@ -879,7 +565,7 @@ Exhibit.UI._clickInElement = function(x, y, elmt) {
  * @param {Boolean} modal Whether the dialog is modal or not.
  * @param {Element} [dialogParent] The element containing the parent dialog.
  */
-Exhibit.UI.setupDialog = function(dom, modal, dialogParent) {
+UI.setupDialog = function(dom, modal, dialogParent) {
     var clickHandler, cancelHandler, cancelAllHandler, createdHandler, i, trap;
 
     if (typeof parentDialog !== "undefined" && parentDialog !== null) {
@@ -890,10 +576,10 @@ Exhibit.UI.setupDialog = function(dom, modal, dialogParent) {
         dom._dialogDescendants = [];
         
         clickHandler = function(evt) {
-            if (!Exhibit.UI._clickInElement(evt.pageX, evt.pageY, dom.elmt)) {
+            if (!UI._clickInElement(evt.pageX, evt.pageY, dom.elmt)) {
                 trap = false;
                 for (i = 0; i < dom._dialogDescendants; i++) {
-                    trap = trap || Exhibit.UI._clickInElement(evt.pageX, evt.pageY, dom._dialogDescendants[i]);
+                    trap = trap || UI._clickInElement(evt.pageX, evt.pageY, dom._dialogDescendants[i]);
                     if (trap) {
                         break;
                     }
@@ -947,7 +633,7 @@ Exhibit.UI.setupDialog = function(dom, modal, dialogParent) {
 
         clickHandler = function(evt) {
             if (dom._superseded === 0 &&
-                !Exhibit.UI._clickInElement(evt.pageX, evt.pageY, dom.elmt)) {
+                !UI._clickInElement(evt.pageX, evt.pageY, dom.elmt)) {
                 evt.preventDefault();
                 evt.stopImmediatePropagation();
             }
@@ -982,5 +668,5 @@ Exhibit.UI.setupDialog = function(dom, modal, dialogParent) {
 };
 
     // end define
-    return Exhibit;
+    return UI;
 });

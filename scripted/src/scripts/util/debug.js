@@ -9,7 +9,7 @@ define(["exhibit"], function(Exhibit) {
 /**
  * @namespace
  */
-Exhibit.Debug = {
+var Debug = {
     silent: false
 };
 
@@ -17,7 +17,7 @@ Exhibit.Debug = {
  * @static
  * @param {String} msg
  */
-Exhibit.Debug.log = function(msg) {
+Debug.log = function(msg) {
     var f;
     if (typeof window["console"] !== "undefined" &&
         typeof window.console["log"] === "function") {
@@ -26,12 +26,12 @@ Exhibit.Debug.log = function(msg) {
         };
     } else {
         f = function(msg2) {
-            if (!Exhibit.Debug.silent) {
+            if (!Debug.silent) {
                 alert(msg2);
             }
         };
     }
-    Exhibit.Debug.log = f;
+    Debug.log = f;
     f(msg);
 };
     
@@ -39,7 +39,7 @@ Exhibit.Debug.log = function(msg) {
  * @static
  * @pararm {String} msg
  */
-Exhibit.Debug.warn = function(msg) {
+Debug.warn = function(msg) {
     var f;
     if (typeof window["console"] !== "undefined" &&
         typeof window.console["warn"] === "function") {
@@ -48,12 +48,12 @@ Exhibit.Debug.warn = function(msg) {
         };
     } else {
         f = function(msg2) {
-            if (!Exhibit.Debug.silent) {
+            if (!Debug.silent) {
                 alert(msg2);
             }
         };
     }
-    Exhibit.Debug.warn = f;
+    Debug.warn = f;
     f(msg);
 };
 
@@ -62,7 +62,7 @@ Exhibit.Debug.warn = function(msg) {
  * @param {Exception} e
  * @param {String} msg
  */
-Exhibit.Debug.exception = function(e, msg) {
+Debug.exception = function(e, msg) {
     var f, params = Exhibit.parseURLParameters();
     if (params.errors === "throw" || Exhibit.params.errors === "throw") {
         f = function(e2, msg2) {
@@ -80,13 +80,13 @@ Exhibit.Debug.exception = function(e, msg) {
         };
     } else {
         f = function(e2, msg2) {
-            if (!Exhibit.Debug.silent) {
+            if (!Debug.silent) {
                 alert("Caught exception: " + msg2 + "\n\nDetails: " + (typeof e2["description"] !== "undefined" ? e2.description : e2));
             }
             throw(e2); // do not hide from browser's native debugging features
         };
     }
-    Exhibit.Debug.exception = f;
+    Debug.exception = f;
     f(e, msg);
 };
     
@@ -95,8 +95,8 @@ Exhibit.Debug.exception = function(e, msg) {
  * @param {Object} o
  * @returns {String}
  */
-Exhibit.Debug.objectToString = function(o) {
-    return Exhibit.Debug._objectToString(o, "");
+Debug.objectToString = function(o) {
+    return Debug._objectToString(o, "");
 };
 
 /**
@@ -105,13 +105,13 @@ Exhibit.Debug.objectToString = function(o) {
  * @param {String} indent
  * @returns {String}
  */
-Exhibit.Debug._objectToString = function(o, indent) {
+Debug._objectToString = function(o, indent) {
     var indent2 = indent + " ", s, n;
     if (typeof o === "object") {
         s = "{";
         for (n in o) {
             if (o.hasOwnProperty(n)) {
-                s += indent2 + n + ": " + Exhibit.Debug._objectToString(o[n], indent2) + "\n";
+                s += indent2 + n + ": " + Debug._objectToString(o[n], indent2) + "\n";
             }
         }
         s += indent + "}";
@@ -119,7 +119,7 @@ Exhibit.Debug._objectToString = function(o, indent) {
     } else if (typeof o === "array") {
         s = "[";
         for (n = 0; n < o.length; n++) {
-            s += Exhibit.Debug._objectToString(o[n], indent2) + "\n";
+            s += Debug._objectToString(o[n], indent2) + "\n";
         }
         s += indent + "]";
         return s;
@@ -131,5 +131,5 @@ Exhibit.Debug._objectToString = function(o, indent) {
 };
 
     // end define
-    return Exhibit;
+    return Debug;
 });

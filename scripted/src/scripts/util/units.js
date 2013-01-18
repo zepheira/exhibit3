@@ -4,11 +4,11 @@
  * @fileOverview
  */
 
-define(["exhibit"], function(Exhibit) {
+define(["util/date-time"], function(DateTime) {
 /**
  * @namespace Utility functions for working with built-in Date objects.
  */
-Exhibit.NativeDateUnit = {};
+var NativeDateUnit = {};
 
 /**
  * Return right now as a Date object.
@@ -16,7 +16,7 @@ Exhibit.NativeDateUnit = {};
  * @static
  * @returns {Date} Right now.
  */
-Exhibit.NativeDateUnit.makeDefaultValue = function() {
+NativeDateUnit.makeDefaultValue = function() {
     return new Date();
 };
 
@@ -27,7 +27,7 @@ Exhibit.NativeDateUnit.makeDefaultValue = function() {
  * @param {Date} v Original Date object.
  * @returns {Date} New Date object with the same value, not identical.
  */
-Exhibit.NativeDateUnit.cloneValue = function(v) {
+NativeDateUnit.cloneValue = function(v) {
     return new Date(v.getTime());
 };
 
@@ -44,13 +44,13 @@ Exhibit.NativeDateUnit.cloneValue = function(v) {
  * @returns {Function} A function that takes a string in the given format
  *                     and returns a Date object.
  */
-Exhibit.NativeDateUnit.getParser = function(format) {
+NativeDateUnit.getParser = function(format) {
     if (typeof format === "string") {
         format = format.toLowerCase();
     }
     return (format === "iso8601" || format === "iso 8601") ?
-        Exhibit.DateTime.parseIso8601DateTime : 
-        Exhibit.DateTime.parseGregorianDateTime;
+        DateTime.parseIso8601DateTime : 
+        DateTime.parseGregorianDateTime;
 };
 
 /**
@@ -61,8 +61,8 @@ Exhibit.NativeDateUnit.getParser = function(format) {
  * @param {Date|String} o The object to return or parse.
  * @returns {Date} The parsed string or original object.
  */
-Exhibit.NativeDateUnit.parseFromObject = function(o) {
-    return Exhibit.DateTime.parseGregorianDateTime(o);
+NativeDateUnit.parseFromObject = function(o) {
+    return DateTime.parseGregorianDateTime(o);
 };
 
 /**
@@ -72,7 +72,7 @@ Exhibit.NativeDateUnit.parseFromObject = function(o) {
  * @param {Date} v The Date object to convert.
  * @returns {Number} The date value in seconds since epoch.
  */
-Exhibit.NativeDateUnit.toNumber = function(v) {
+NativeDateUnit.toNumber = function(v) {
     return v.getTime();
 };
 
@@ -83,7 +83,7 @@ Exhibit.NativeDateUnit.toNumber = function(v) {
  * @param {Number} n Seconds since epoch.
  * @returns {Date} The corresponding Date object.
  */
-Exhibit.NativeDateUnit.fromNumber = function(n) {
+NativeDateUnit.fromNumber = function(n) {
     return new Date(n);
 };
 
@@ -101,7 +101,7 @@ Exhibit.NativeDateUnit.fromNumber = function(n) {
  * @returns {Number} Integer with negative, zero, or positive value depending
  *                   on relative date values.
  */
-Exhibit.NativeDateUnit.compare = function(v1, v2) {
+NativeDateUnit.compare = function(v1, v2) {
     var n1, n2;
     if (typeof v1 === "object") {
         n1 = v1.getTime();
@@ -125,8 +125,8 @@ Exhibit.NativeDateUnit.compare = function(v1, v2) {
  * @param {Date} v2 The second Date object to compare.
  * @returns {Date} The earlier of the two arguments.
  */
-Exhibit.NativeDateUnit.earlier = function(v1, v2) {
-    return Exhibit.NativeDateUnit.compare(v1, v2) < 0 ? v1 : v2;
+NativeDateUnit.earlier = function(v1, v2) {
+    return NativeDateUnit.compare(v1, v2) < 0 ? v1 : v2;
 };
 
 /**
@@ -137,8 +137,8 @@ Exhibit.NativeDateUnit.earlier = function(v1, v2) {
  * @param {Date} v2 The second Date object to compare.
  * @returns {Date} The later of the two arguments.
  */
-Exhibit.NativeDateUnit.later = function(v1, v2) {
-    return Exhibit.NativeDateUnit.compare(v1, v2) > 0 ? v1 : v2;
+NativeDateUnit.later = function(v1, v2) {
+    return NativeDateUnit.compare(v1, v2) > 0 ? v1 : v2;
 };
 
 /**
@@ -150,10 +150,10 @@ Exhibit.NativeDateUnit.later = function(v1, v2) {
  *                   to the Date object.
  * @returns {Date} A new Date object with the seconds added.
  */
-Exhibit.NativeDateUnit.change = function(v, n) {
+NativeDateUnit.change = function(v, n) {
     return new Date(v.getTime() + n);
 };
 
     // end define
-    return Exhibit;
+    return NativeDateUnit;
 });

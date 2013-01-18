@@ -3,7 +3,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "exhibit"], function($, Exhibit) {
+define(["lib/jquery", "exhibit", "util/localizer"], function($, Exhibit, _) {
 /**
  * @class
  * @constructor
@@ -11,7 +11,7 @@ define(["lib/jquery", "exhibit"], function($, Exhibit) {
  * @param {Element|jQuery} div
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.Facet = function(key, div, uiContext) {
+var Facet = function(key, div, uiContext) {
     var self, _id, _instanceKey, _div, _uiContext, _registered, _expression, _expressionString, _setIdentifier;
 
     /**
@@ -72,7 +72,7 @@ Exhibit.Facet = function(key, div, uiContext) {
         if (typeof this._settings.facetLabel !== "undefined") {
             return this._settings.facetLabel;
         } else {
-            return Exhibit._("%facets.missingLabel", Exhibit.makeExhibitAttribute("facetLabel"));
+            return _("%facets.missingLabel", Exhibit.makeExhibitAttribute("facetLabel"));
         }
     };
 
@@ -159,7 +159,7 @@ Exhibit.Facet = function(key, div, uiContext) {
      */
     this.register = function() {
         this.getUIContext().getMain().getRegistry().register(
-            Exhibit.Facet.getRegistryKey(),
+            Facet.getRegistryKey(),
             this.getID(),
             this
         );
@@ -171,7 +171,7 @@ Exhibit.Facet = function(key, div, uiContext) {
      */
     this.unregister = function() {
         self.getUIContext().getMain().getRegistry().unregister(
-            Exhibit.Facet.getRegistryKey(),
+            Facet.getRegistryKey(),
             self.getID()
         );
         _registered = false;
@@ -205,7 +205,7 @@ Exhibit.Facet = function(key, div, uiContext) {
     _setIdentifier = function() {
         _id = $(_div).attr("id");
         if (typeof _id === "undefined" || _id === null) {
-            _id = Exhibit.Facet.getRegistryKey()
+            _id = Facet.getRegistryKey()
                 + "-"
                 + _instanceKey
                 + "-"
@@ -213,21 +213,21 @@ Exhibit.Facet = function(key, div, uiContext) {
                 + "-"
                 + self.getUIContext().getCollection().getID()
                 + "-"
-                + self.getUIContext().getMain().getRegistry().generateIdentifier(Exhibit.Facet.getRegistryKey());
+                + self.getUIContext().getMain().getRegistry().generateIdentifier(Facet.getRegistryKey());
         }
     };
 
     _setIdentifier();
-    self.addSettingSpecs(Exhibit.Facet._settingSpecs);
+    self.addSettingSpecs(Facet._settingSpecs);
 };
 
 /**
  * @private
  * @constant
  */
-Exhibit.Facet._registryKey = "facet";
+Facet._registryKey = "facet";
 
-Exhibit.Facet._settingSpecs = {
+Facet._settingSpecs = {
     "facetLabel":       { "type": "text" }
 };
 
@@ -236,8 +236,8 @@ Exhibit.Facet._settingSpecs = {
  * @static
  * @returns {String}
  */
-Exhibit.Facet.getRegistryKey = function() {
-    return Exhibit.Facet._registryKey;
+Facet.getRegistryKey = function() {
+    return Facet._registryKey;
 };
 
 /**
@@ -245,18 +245,18 @@ Exhibit.Facet.getRegistryKey = function() {
  * @param {jQuery.Event} evt
  * @param {Exhibit.Registry} reg
  */
-Exhibit.Facet.registerComponent = function(evt, reg) {
-    if (!reg.hasRegistry(Exhibit.Facet.getRegistryKey())) {
-        reg.createRegistry(Exhibit.Facet.getRegistryKey());
+Facet.registerComponent = function(evt, reg) {
+    if (!reg.hasRegistry(Facet.getRegistryKey())) {
+        reg.createRegistry(Facet.getRegistryKey());
         $(document).trigger("registerFacets.exhibit");
     }
 };
 
 $(document).one(
     "registerComponents.exhibit",
-    Exhibit.Facet.registerComponent
+    Facet.registerComponent
 );
 
     // end define
-    return Exhibit;
+    return Facet;
 });

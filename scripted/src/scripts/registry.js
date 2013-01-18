@@ -3,12 +3,12 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["exhibit"], function(Exhibit) {
+define(["exhibit", "util/localizer"], function(Exhibit, _) {
 /**
  * @namespace
  * @class
  */
-Exhibit.Registry = function(isStatic) {
+var Registry = function(isStatic) {
     this._registry = {};
     this._idCache = {};
     this._components = [];
@@ -17,7 +17,7 @@ Exhibit.Registry = function(isStatic) {
         false;
 };
 
-Exhibit.Registry.prototype.isStatic = function() {
+Registry.prototype.isStatic = function() {
     return this._isStatic;
 };
 
@@ -25,7 +25,7 @@ Exhibit.Registry.prototype.isStatic = function() {
  * @param {String} component
  * @returns {Boolean}
  */
-Exhibit.Registry.prototype.createRegistry = function(component) {
+Registry.prototype.createRegistry = function(component) {
     this._registry[component] = {};
     this._components.push(component);
 };
@@ -33,7 +33,7 @@ Exhibit.Registry.prototype.createRegistry = function(component) {
 /**
  * @returns {Array}
  */
-Exhibit.Registry.prototype.components = function() {
+Registry.prototype.components = function() {
     return this._components;
 };
 
@@ -41,7 +41,7 @@ Exhibit.Registry.prototype.components = function() {
  * @param {String} component
  * @returns {Boolean}
  */
-Exhibit.Registry.prototype.hasRegistry = function(component) {
+Registry.prototype.hasRegistry = function(component) {
     return typeof this._registry[component] !== "undefined";
 };
 
@@ -49,7 +49,7 @@ Exhibit.Registry.prototype.hasRegistry = function(component) {
  * @param {String} component
  * @returns {Number}
  */
-Exhibit.Registry.prototype.generateIdentifier = function(component) {
+Registry.prototype.generateIdentifier = function(component) {
     var branch, key, size;
     size = 0;
     branch = this._registry[component];
@@ -60,7 +60,7 @@ Exhibit.Registry.prototype.generateIdentifier = function(component) {
             }
         }
     } else {
-        throw new Error(Exhibit._("%registry.error.noSuchRegistry", component));
+        throw new Error(_("%registry.error.noSuchRegistry", component));
     }
     return size;
 };
@@ -70,7 +70,7 @@ Exhibit.Registry.prototype.generateIdentifier = function(component) {
  * @param {String} id
  * @returns {Boolean}
  */
-Exhibit.Registry.prototype.isRegistered = function(component, id) {
+Registry.prototype.isRegistered = function(component, id) {
     return (this.hasRegistry(component) &&
             typeof this._registry[component][id] !== "undefined");
 };
@@ -81,7 +81,7 @@ Exhibit.Registry.prototype.isRegistered = function(component, id) {
  * @param {Object} handler
  * @returns {Boolean}
  */
-Exhibit.Registry.prototype.register = function(component, id, handler) {
+Registry.prototype.register = function(component, id, handler) {
     if (!this.isRegistered(component, id)) {
         this._registry[component][id] = handler;
         if (!this.isStatic() && typeof this._idCache[id] === "undefined") {
@@ -97,7 +97,7 @@ Exhibit.Registry.prototype.register = function(component, id, handler) {
  * @param {String} component
  * @returns {Object}
  */
-Exhibit.Registry.prototype.componentHandlers = function(component) {
+Registry.prototype.componentHandlers = function(component) {
     if (this.hasRegistry(component)) {
         return this._registry[component];
     } else {
@@ -109,7 +109,7 @@ Exhibit.Registry.prototype.componentHandlers = function(component) {
  * @param {String} component
  * @returns {Array}
  */
-Exhibit.Registry.prototype.getKeys = function(component) {
+Registry.prototype.getKeys = function(component) {
     var hash, key, keys;
     hash = this._registry[component];
     keys = [];
@@ -130,7 +130,7 @@ Exhibit.Registry.prototype.getKeys = function(component) {
  * @returns {Object}
  * @see Exhibit.Registry.prototype.getID
  */
-Exhibit.Registry.prototype.get = function(component, id) {
+Registry.prototype.get = function(component, id) {
     if (this.isRegistered(component, id)) {
         return this._registry[component][id];
     } else {
@@ -147,7 +147,7 @@ Exhibit.Registry.prototype.get = function(component, id) {
  * @returns {Object}
  * @see Exhibit.Registry.prototype.get
  */
-Exhibit.Registry.prototype.getID = function(id) {
+Registry.prototype.getID = function(id) {
     if (!this.isStatic()) {
         if (typeof this._idCache[id] !== "undefined") {
             return this._idCache[id];
@@ -164,7 +164,7 @@ Exhibit.Registry.prototype.getID = function(id) {
  * @param {String} id
  * @returns {Boolean}
  */
-Exhibit.Registry.prototype.unregister = function(component, id) {
+Registry.prototype.unregister = function(component, id) {
     var c;
     if (this.isRegistered(component, id)) {
         c = this.get(component, id);
@@ -178,5 +178,5 @@ Exhibit.Registry.prototype.unregister = function(component, id) {
 };
 
     // end define
-    return Exhibit;
+    return Registry;
 });

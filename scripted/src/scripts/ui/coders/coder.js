@@ -3,7 +3,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "exhibit"], function($, Exhibit) {
+define(["lib/jquery"], function($) {
 /**
  * @class
  * @constructor
@@ -11,7 +11,7 @@ define(["lib/jquery", "exhibit"], function($, Exhibit) {
  * @param {Element|jQuery} div
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.Coder = function(key, div, uiContext) {
+var Coder = function(key, div, uiContext) {
     var self, _instanceKey, _registered, _id, _uiContext, _div, _setIdentifier;
 
     /**
@@ -97,7 +97,7 @@ Exhibit.Coder = function(key, div, uiContext) {
 
     this.register = function() {
         this.getUIContext().getMain().getRegistry().register(
-            Exhibit.Coder.getRegistryKey(),
+            Coder.getRegistryKey(),
             this.getID(),
             this
         );
@@ -106,7 +106,7 @@ Exhibit.Coder = function(key, div, uiContext) {
 
     this.unregister = function() {
         self.getUIContext().getMain().getRegistry().unregister(
-            Exhibit.Coder.getRegistryKey(),
+            Coder.getRegistryKey(),
             self.getID()
         );
         _registered = false;
@@ -133,7 +133,7 @@ Exhibit.Coder = function(key, div, uiContext) {
                 + "-"
                 + self.getUIContext().getCollection().getID()
                 + "-"
-                + self.getUIContext().getMain().getRegistry().generateIdentifier(Exhibit.Coder.getRegistryKey());
+                + self.getUIContext().getMain().getRegistry().generateIdentifier(Coder.getRegistryKey());
         }
     };
 
@@ -144,15 +144,15 @@ Exhibit.Coder = function(key, div, uiContext) {
  * @private
  * @constant
  */
-Exhibit.Coder._registryKey = "coder";
+Coder._registryKey = "coder";
 
 /**
  * @public
  * @static
  * @returns {String}
  */
-Exhibit.Coder.getRegistryKey = function() {
-    return Exhibit.Coder._registryKey;
+Coder.getRegistryKey = function() {
+    return Coder._registryKey;
 };
 
 /**
@@ -161,17 +161,17 @@ Exhibit.Coder.getRegistryKey = function() {
  * @param {jQuery.Event} evt
  * @param {Exhibit.Registry} reg
  */
-Exhibit.Coder.registerComponent = function(evt, reg) {
-    if (!reg.hasRegistry(Exhibit.Coder.getRegistryKey())) {
-        reg.createRegistry(Exhibit.Coder.getRegistryKey());
+Coder.registerComponent = function(evt, reg) {
+    if (!reg.hasRegistry(Coder.getRegistryKey())) {
+        reg.createRegistry(Coder.getRegistryKey());
     }
 };
 
 $(document).one(
     "registerComponents.exhibit",
-    Exhibit.Coder.registerComponent
+    Coder.registerComponent
 );
 
     // end define
-    return Exhibit;
+    return Coder;
 });

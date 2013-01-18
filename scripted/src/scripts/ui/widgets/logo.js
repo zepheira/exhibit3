@@ -4,16 +4,18 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(
-    ["lib/jquery", "exhibit", "lib/jquery.simile.bubble"],
-    function($, Exhibit) {
+define([
+    "lib/jquery",
+    "exhibit",
+    "lib/jquery.simile.bubble"
+], function($, Exhibit) {
 /**
  * @constructor
  * @class
  * @param {Element} elmt
  * @param {Exhibit._Impl} exhibit
  */ 
-Exhibit.Logo = function(elmt, exhibit) {
+var Logo = function(elmt, exhibit) {
     this._exhibit = exhibit;
     this._elmt = elmt;
     this._color = "Silver";
@@ -26,10 +28,10 @@ Exhibit.Logo = function(elmt, exhibit) {
  * @param {Exhibit._Impl} exhibit
  * @returns {Exhibit.Logo}
  */
-Exhibit.Logo.create = function(configuration, elmt, exhibit) {
+Logo.create = function(configuration, elmt, exhibit) {
     var logo;
 
-    logo = new Exhibit.Logo(elmt, exhibit);
+    logo = new Logo(elmt, exhibit);
     
     if (typeof configuration.color !== "undefined") {
         logo._color = configuration.color;
@@ -45,9 +47,9 @@ Exhibit.Logo.create = function(configuration, elmt, exhibit) {
  * @param {Exhibit._Impl} exhibit
  * @returns {Exhibit.Logo}
  */
-Exhibit.Logo.createFromDOM = function(elmt, exhibit) {
+Logo.createFromDOM = function(elmt, exhibit) {
     var logo, color;
-    logo = new Exhibit.Logo(elmt, exhibit);
+    logo = new Logo(elmt, exhibit);
     
     color = Exhibit.getAttribute(elmt, "color");
     if (color !== null && color.length > 0) {
@@ -61,7 +63,7 @@ Exhibit.Logo.createFromDOM = function(elmt, exhibit) {
 /**
  *
  */
-Exhibit.Logo.prototype.dispose = function() {
+Logo.prototype.dispose = function() {
     this._elmt = null;
     this._exhibit = null;
 };
@@ -69,7 +71,7 @@ Exhibit.Logo.prototype.dispose = function() {
 /**
  * @private
  */
-Exhibit.Logo.prototype._initializeUI = function() {
+Logo.prototype._initializeUI = function() {
     var logoURL, img, id, a;
 
     logoURL = Exhibit.urlPrefix + "images/logos/exhibit-small-" + this._color + ".png";
@@ -88,5 +90,5 @@ Exhibit.Logo.prototype._initializeUI = function() {
 };
 
     // end define
-    return Exhibit;
+    return Logo;
 });

@@ -5,14 +5,22 @@
 
 // @@@ integrate bit.ly or some other url shortener?
 
-define(["lib/jquery", "exhibit"], function($, Exhibit) {
+define([
+    "lib/jquery",
+    "exhibit",
+    "util/localizer",
+    "util/bookmark",
+    "util/ui",
+    "ui/ui",
+    "ui/ui-context"
+], function($, Exhibit, _, Bookmark, UIUtilities, UI, UIContext) {
 /**
  * @class
  * @constructor
  * @param {Element} elmt
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.BookmarkWidget = function(elmt, uiContext) {
+var BookmarkWidget = function(elmt, uiContext) {
     this._uiContext = uiContext;
     this._div = elmt;
     this._settings = {};
@@ -27,25 +35,32 @@ Exhibit.BookmarkWidget = function(elmt, uiContext) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.BookmarkWidget}
  */
-Exhibit.BookmarkWidget.create = function(configuration, elmt, uiContext) {
-    var widget = new Exhibit.BookmarkWidget(
+BookmarkWidget.create = function(configuration, elmt, uiContext) {
+    var widget = new BookmarkWidget(
         elmt,
-        Exhibit.UIContext.create(configuration, uiContext)
+        UIContext.create(configuration, uiContext)
     );
-    Exhibit.BookmarkWidget._configure(widget, configuration);
+    BookmarkWidget._configure(widget, configuration);
     widget._initializeUI();
     return widget;
 };
 
-Exhibit.BookmarkWidget.createFromDOM = function(configElmt, containerElmt, uiContext) {
+/**
+ * @static
+ * @param {Element} configElmt
+ * @param {Element} containerElmt
+ * @param {Exhibit.UIContext} uiContext
+ * @returns {Exhibit.BookmarkWidget}
+ */
+BookmarkWidget.createFromDOM = function(configElmt, containerElmt, uiContext) {
     var configuration, widget;
     configuration = Exhibit.getConfigurationFromDOM(configElmt);
-    widget = new Exhibit.BookmarkWidget(
+    widget = new BookmarkWidget(
         (typeof containerElmt !== "undefined" && containerElmt !== null) ?
             containerElmt : configElmt,
-        Exhibit.UIContext.createFromDOM(configElmt, uiContext)
+        UIContext.createFromDOM(configElmt, uiContext)
     );
-    Exhibit.BookmarkWidget._configure(widget, configuration);
+    BookmarkWidget._configure(widget, configuration);
     widget._initializeUI();
     return widget;
 };
@@ -56,13 +71,13 @@ Exhibit.BookmarkWidget.createFromDOM = function(configElmt, containerElmt, uiCon
  * @param {Exhibit.BookmarkWidget} widget
  * @param {Object} configuration
  */
-Exhibit.BookmarkWidget._configure = function(widget, configuration) {
+BookmarkWidget._configure = function(widget, configuration) {
 };
 
 /**
  *
  */
-Exhibit.BookmarkWidget.prototype._initializeUI = function() {
+BookmarkWidget.prototype._initializeUI = function() {
     var popup;
     popup = $("<div>")
         .attr("class", "exhibit-bookmarkWidget-popup");
@@ -75,7 +90,7 @@ Exhibit.BookmarkWidget.prototype._initializeUI = function() {
  * @public
  * @param {Exhibit.ControlPanel} panel
  */
-Exhibit.BookmarkWidget.prototype.reconstruct = function(panel) {
+BookmarkWidget.prototype.reconstruct = function(panel) {
     this._popup = null;
     this._initializeUI();
 };
@@ -83,14 +98,14 @@ Exhibit.BookmarkWidget.prototype.reconstruct = function(panel) {
 /**
  * @param {jQuery} popup
  */
-Exhibit.BookmarkWidget.prototype._fillPopup = function(popup) {
+BookmarkWidget.prototype._fillPopup = function(popup) {
     var self, img;
 
     self = this;
-    img = Exhibit.UI.createTranslucentImage("images/bookmark-icon.png");
+    img = UIUtilities.createTranslucentImage("images/bookmark-icon.png");
     $(img)
         .attr("class", "exhibit-bookmarkWidget-button")
-        .attr("title", Exhibit._("%widget.bookmark.tooltip"))
+        .attr("title", _("%widget.bookmark.tooltip"))
         .bind("click", function(evt) {
             self._showBookmark(img, evt);
         })
@@ -101,13 +116,13 @@ Exhibit.BookmarkWidget.prototype._fillPopup = function(popup) {
  * @param {jQuery} elmt
  * @param {jQuery.Event} evt
  */
-Exhibit.BookmarkWidget.prototype._showBookmark = function(elmt, evt) {
+BookmarkWidget.prototype._showBookmark = function(elmt, evt) {
     var self, popupDom, el;
     self = this;
     self._controlPanel.childOpened();
-    popupDom = Exhibit.UI.createPopupMenuDom(elmt);
+    popupDom = UI.createPopupMenuDom(elmt);
     el = $('<input type="text" />').
-        attr("value", Exhibit.Bookmark.generateBookmark()).
+        attr("value", Bookmark.generateBookmark()).
         attr("size", 40);
     $(popupDom.elmt).append($(el));
     $(popupDom.elmt).one("closed.exhibit", function(evt) {
@@ -120,14 +135,14 @@ Exhibit.BookmarkWidget.prototype._showBookmark = function(elmt, evt) {
 /**
  * @returns {jQuery}
  */
-Exhibit.BookmarkWidget.prototype.getContainer = function() {
+BookmarkWidget.prototype.getContainer = function() {
     return $(this._div);
 };
 
 /**
  *
  */
-Exhibit.BookmarkWidget.prototype.dispose = function() {
+BookmarkWidget.prototype.dispose = function() {
     this._uiContext.dispose();
     this._uiContext = null;
     this._div = null;
@@ -137,17 +152,17 @@ Exhibit.BookmarkWidget.prototype.dispose = function() {
 /**
  * @param {Exhibit.ControlPanel} panel
  */
-Exhibit.BookmarkWidget.prototype.setControlPanel = function(panel) {
+BookmarkWidget.prototype.setControlPanel = function(panel) {
     this._controlPanel = panel;
 };
 
 /**
  *
  */
-Exhibit.BookmarkWidget.prototype.dismiss = function() {
+BookmarkWidget.prototype.dismiss = function() {
     this._controlPanel.childClosed();
 };
 
     // end define
-    return Exhibit;
+    return BookmarkWidget;
 });

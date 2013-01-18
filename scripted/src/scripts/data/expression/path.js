@@ -4,12 +4,16 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["exhibit", "data/expression"], function(Exhibit) {
+define([
+    "util/localizer",
+    "util/set",
+    "data/expression/collection"
+], function(_, Set, ExpressionCollection) {
 /**
  * @class
  * @constructor
  */
-Exhibit.Expression.Path = function() {
+var Path = function() {
     this._rootName = null;
     this._segments = [];
 };
@@ -19,8 +23,8 @@ Exhibit.Expression.Path = function() {
  * @param {Boolean} forward
  * @returns {Exhibit.Expression.Path}
  */
-Exhibit.Expression.Path.create = function(property, forward) {
-    var path = new Exhibit.Expression.Path();
+Path.create = function(property, forward) {
+    var path = new Path();
     path._segments.push({ property: property,
                           forward: forward,
                           isArray: false });
@@ -30,7 +34,7 @@ Exhibit.Expression.Path.create = function(property, forward) {
 /**
  * @param {String} rootName
  */
-Exhibit.Expression.Path.prototype.setRootName = function(rootName) {
+Path.prototype.setRootName = function(rootName) {
     this._rootName = rootName;
 };
 
@@ -38,7 +42,7 @@ Exhibit.Expression.Path.prototype.setRootName = function(rootName) {
  * @param {String} property
  * @param {String} hopOperator
  */
-Exhibit.Expression.Path.prototype.appendSegment = function(property, hopOperator) {
+Path.prototype.appendSegment = function(property, hopOperator) {
     this._segments.push({
         property:   property,
         forward:    hopOperator.charAt(0) === ".",
@@ -50,7 +54,7 @@ Exhibit.Expression.Path.prototype.appendSegment = function(property, hopOperator
  * @param {Number} index
  * @returns {Object}
  */
-Exhibit.Expression.Path.prototype.getSegment = function(index) {
+Path.prototype.getSegment = function(index) {
     var segment;
     if (index < this._segments.length) {
         segment = this._segments[index];
@@ -67,14 +71,14 @@ Exhibit.Expression.Path.prototype.getSegment = function(index) {
 /**
  * @returns {Object}
  */
-Exhibit.Expression.Path.prototype.getLastSegment = function() {
+Path.prototype.getLastSegment = function() {
     return this.getSegment(this._segments.length - 1);
 };
 
 /**
  * @returns {Number}
  */
-Exhibit.Expression.Path.prototype.getSegmentCount = function() {
+Path.prototype.getSegmentCount = function() {
     return this._segments.length;
 };
 
@@ -86,7 +90,7 @@ Exhibit.Expression.Path.prototype.getSegmentCount = function() {
  * @returns {Exhibit.Expression._Collection}
  * @throws Error
  */
-Exhibit.Expression.Path.prototype.evaluate = function(
+Path.prototype.evaluate = function(
     roots, 
     rootValueTypes, 
     defaultRootName, 
@@ -103,15 +107,15 @@ Exhibit.Expression.Path.prototype.evaluate = function(
     collection = null;
     if (typeof roots[rootName] !== "undefined") {
         root = roots[rootName];
-        if (root instanceof Exhibit.Set || root instanceof Array) {
-            collection = new Exhibit.Expression._Collection(root, valueType);
+        if (root instanceof Set || root instanceof Array) {
+            collection = new ExpressionCollection(root, valueType);
         } else {
-            collection = new Exhibit.Expression._Collection([root], valueType);
+            collection = new ExpressionCollection([root], valueType);
         }
         
         return this._walkForward(collection, database);
     } else {
-        throw new Error(Exhibit._("%expression.error.noSuchVariable", rootName));
+        throw new Error(_("%expression.error.noSuchVariable", rootName));
     }
 };
 
@@ -121,13 +125,13 @@ Exhibit.Expression.Path.prototype.evaluate = function(
  * @param {Exhibit.Set} filter
  * @param {Exhibit.Database} database
  */
-Exhibit.Expression.Path.prototype.evaluateBackward = function(
+Path.prototype.evaluateBackward = function(
     value,
     valueType,
     filter,
     database
 ) {
-    var collection = new Exhibit.Expression._Collection([ value ], valueType);
+    var collection = new ExpressionCollection([ value ], valueType);
     
     return this._walkBackward(collection, filter, database);
 };
@@ -137,12 +141,12 @@ Exhibit.Expression.Path.prototype.evaluateBackward = function(
  * @param {String} valueType
  * @param {Exhibit.Database} database
  */
-Exhibit.Expression.Path.prototype.walkForward = function(
+Path.prototype.walkForward = function(
     values,
     valueType,
     database
 ) {
-    return this._walkForward(new Exhibit.Expression._Collection(values, valueType), database);
+    return this._walkForward(new ExpressionCollection(values, valueType), database);
 };
 
 /**
@@ -151,13 +155,13 @@ Exhibit.Expression.Path.prototype.walkForward = function(
  * @param {Exhibit.Set} filter
  * @param {Exhibit.Database} database
  */
-Exhibit.Expression.Path.prototype.walkBackward = function(
+Path.prototype.walkBackward = function(
     values,
     valueType,
     filter,
     database
 ) {
-    return this._walkBackward(new Exhibit.Expression._Collection(values, valueType), filter, database);
+    return this._walkBackward(new ExpressionCollection(values, valueType), filter, database);
 };
 
 /**
@@ -166,7 +170,7 @@ Exhibit.Expression.Path.prototype.walkBackward = function(
  * @param {Exhibit.Database} database
  * @returns {Exhibit.Expression._Collection}
  */
-Exhibit.Expression.Path.prototype._walkForward = function(collection, database) {
+Path.prototype._walkForward = function(collection, database) {
     var i, segment, a, valueType, property, values, makeForEach;
     makeForEach = function(forward, as, s) {
         var fn = forward ? database.getObjects : database.getSubjects;
@@ -189,7 +193,7 @@ Exhibit.Expression.Path.prototype._walkForward = function(collection, database) 
             } else {
                 valueType = "item";
             }
-            collection = new Exhibit.Expression._Collection(a, valueType);
+            collection = new ExpressionCollection(a, valueType);
         } else {
             if (segment.forward) {
                 values = database.getObjectsUnion(collection.getSet(), segment.property);
@@ -197,10 +201,10 @@ Exhibit.Expression.Path.prototype._walkForward = function(collection, database) 
                 valueType = (typeof property !== "undefined" && property !== null) ?
                     property.getValueType() :
                     "text";
-                collection = new Exhibit.Expression._Collection(values, valueType);
+                collection = new ExpressionCollection(values, valueType);
             } else {
                 values = database.getSubjectsUnion(collection.getSet(), segment.property);
-                collection = new Exhibit.Expression._Collection(values, "item");
+                collection = new ExpressionCollection(values, "item");
             }
         }
     }
@@ -215,7 +219,7 @@ Exhibit.Expression.Path.prototype._walkForward = function(collection, database) 
  * @param {Exhibit.Database} database
  * @param {Exhibit.Expression._Collection}
  */
-Exhibit.Expression.Path.prototype._walkBackward = function(collection, filter, database) {
+Path.prototype._walkBackward = function(collection, filter, database) {
     var i, segment, a, valueType, property, values, makeForEach;
     makeForEach = function(forward, as, s, idx) {
         var fn = forward ? database.getObjects : database.getSubjects;
@@ -240,16 +244,16 @@ Exhibit.Expression.Path.prototype._walkBackward = function(collection, filter, d
             } else {
                 valueType = "item";
             }
-            collection = new Exhibit.Expression._Collection(a, valueType);
+            collection = new ExpressionCollection(a, valueType);
         } else {
             if (segment.forward) {
                 values = database.getSubjectsUnion(collection.getSet(), segment.property, null, i === 0 ? filter : null);
-                collection = new Exhibit.Expression._Collection(values, "item");
+                collection = new ExpressionCollection(values, "item");
             } else {
                 values = database.getObjectsUnion(collection.getSet(), segment.property, null, i === 0 ? filter : null);
                 property = database.getProperty(segment.property);
                 valueType = (typeof property !== "undefined" && property !== null) ? property.getValueType() : "text";
-                collection = new Exhibit.Expression._Collection(values, valueType);
+                collection = new ExpressionCollection(values, valueType);
             }
         }
     }
@@ -266,7 +270,7 @@ Exhibit.Expression.Path.prototype._walkBackward = function(collection, filter, d
  * @returns {Object}
  * @throws Error
  */
-Exhibit.Expression.Path.prototype.rangeBackward = function(
+Path.prototype.rangeBackward = function(
     from,
     to,
     inclusive,
@@ -274,14 +278,14 @@ Exhibit.Expression.Path.prototype.rangeBackward = function(
     database
 ) {
     var set, valueType, segment, i, property;
-    set = new Exhibit.Set();
+    set = new Set();
     valueType = "item";
     if (this._segments.length > 0) {
         segment = this._segments[this._segments.length - 1];
         if (segment.forward) {
             database.getSubjectsInRange(segment.property, from, to, inclusive, set, this._segments.length === 1 ? filter : null);
         } else {
-            throw new Error(Exhibit._("%expression.error.mustBeForward"));
+            throw new Error(_("%expression.error.mustBeForward"));
         }
                 
         for (i = this._segments.length - 2; i >= 0; i--) {
@@ -311,7 +315,7 @@ Exhibit.Expression.Path.prototype.rangeBackward = function(
  * @param {Exhibit.Database} database
  * @returns {Boolean}
  */
-Exhibit.Expression.Path.prototype.testExists = function(
+Path.prototype.testExists = function(
     roots, 
     rootValueTypes, 
     defaultRootName, 
@@ -321,5 +325,5 @@ Exhibit.Expression.Path.prototype.testExists = function(
 };
 
     // end define
-    return Exhibit;
+    return Path;
 });

@@ -4,7 +4,9 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["exhibit", "data/expression"], function(Exhibit) {
+define([
+    "data/expression/controls"
+], function(Controls) {
 /**
  * @class
  * @constructor
@@ -12,7 +14,7 @@ define(["exhibit", "data/expression"], function(Exhibit) {
  * @param {String} name
  * @param {Array} args
  */
-Exhibit.Expression._ControlCall = function(name, args) {
+var ControlCall = function(name, args) {
     this._name = name;
     this._args = args;
 };
@@ -24,15 +26,15 @@ Exhibit.Expression._ControlCall = function(name, args) {
  * @param {Exhibit.Database} database
  * @returns {Exhibit.Expression._Collection}
  */
-Exhibit.Expression._ControlCall.prototype.evaluate = function(
+ControlCall.prototype.evaluate = function(
     roots, 
     rootValueTypes, 
     defaultRootName, 
     database
 ) {
-    return Exhibit.Controls[this._name].f(this._args, roots, rootValueTypes, defaultRootName, database);
+    return Controls[this._name].f(this._args, roots, rootValueTypes, defaultRootName, database);
 };
 
     // end define
-    return Exhibit;
+    return ControlCall;
 });

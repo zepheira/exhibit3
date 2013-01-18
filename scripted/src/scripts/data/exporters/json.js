@@ -4,11 +4,17 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "exhibit", "data/exporter"], function($, Exhibit) {
+define([
+    "lib/jquery",
+    "data/exporter",
+    "util/localizer"
+], function($, Exporter, _) {
+    var ExhibitJSONExporter;
+
 /**
  * @namespace
  */
-Exhibit.Exporter.ExhibitJSON = {
+ExhibitJSONExporter = {
     _mimeType: "application/json",
     exporter: null
 };
@@ -17,7 +23,7 @@ Exhibit.Exporter.ExhibitJSON = {
  * @param {String} s
  * @returns {String}
  */
-Exhibit.Exporter.ExhibitJSON.wrap = function(s) {
+ExhibitJSONExporter.wrap = function(s) {
     return "{\n" +
         "    \"items\": [\n" +
             s +
@@ -31,7 +37,7 @@ Exhibit.Exporter.ExhibitJSON.wrap = function(s) {
  * @param {Boolean} last
  * @returns {String}
  */
-Exhibit.Exporter.ExhibitJSON.wrapOne = function(s, first, last) {
+ExhibitJSONExporter.wrapOne = function(s, first, last) {
     return s + (last ? "" : ",")  +"\n";
 };
 
@@ -41,28 +47,28 @@ Exhibit.Exporter.ExhibitJSON.wrapOne = function(s, first, last) {
  * @returns {String}
  * @depends JSON
  */
-Exhibit.Exporter.ExhibitJSON.exportOne = function(itemID, o) {
+ExhibitJSONExporter.exportOne = function(itemID, o) {
     return JSON.stringify(o);
 };
 
 /**
  * @private
  */
-Exhibit.Exporter.ExhibitJSON._register = function() {
-    Exhibit.Exporter.ExhibitJSON.exporter = new Exhibit.Exporter(
-        Exhibit.Exporter.ExhibitJSON._mimeType,
-        Exhibit._("%export.exhibitJsonExporterLabel"),
-        Exhibit.Exporter.ExhibitJSON.wrap,
-        Exhibit.Exporter.ExhibitJSON.wrapOne,
-        Exhibit.Exporter.ExhibitJSON.exportOne
+ExhibitJSONExporter._register = function() {
+    ExhibitJSONExporter.exporter = new Exporter(
+        ExhibitJSONExporter._mimeType,
+        _("%export.exhibitJsonExporterLabel"),
+        ExhibitJSONExporter.wrap,
+        ExhibitJSONExporter.wrapOne,
+        ExhibitJSONExporter.exportOne
     );
 };
 
 $(document).one(
     "registerExporters.exhibit",
-    Exhibit.Exporter.ExhibitJSON._register
+    ExhibitJSONExporter._register
 );
 
     // end define
-    return Exhibit;
+    return ExhibitJSONExporter;
 });

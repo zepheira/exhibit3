@@ -4,11 +4,13 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "exhibit", "data/importer"], function($, Exhibit) {
+define(["lib/jquery", "data/importer"], function($, Importer) {
+    var JSONP;
+
 /**
  * @namespace
  */
-Exhibit.Importer.JSONP = {
+JSONP = {
     _importer: null,
     _registryKey: "jsonpImporter"
 };
@@ -18,7 +20,7 @@ Exhibit.Importer.JSONP = {
  * @param {Object} s
  * @param {Function} callback
  */
-Exhibit.Importer.JSONP.parse = function(url, s, callback) {
+JSONP.parse = function(url, s, callback) {
     if (typeof callback === "function") {
         callback(s);
     }
@@ -44,7 +46,7 @@ Exhibit.Importer.JSONP.parse = function(url, s, callback) {
  * @param {Object} converters
  * @returns {Object}
  */
-Exhibit.Importer.JSONP.transformJSON = function(json, index, mapping, converters) {
+JSONP.transformJSON = function(json, index, mapping, converters) {
     var objects, items, i, object, item, name, index, property;
     objects = json;
     items = [];
@@ -87,14 +89,14 @@ Exhibit.Importer.JSONP.transformJSON = function(json, index, mapping, converters
  * @param {jQuery.Event} evt
  * @param {Exhibit.Registry} reg
  */
-Exhibit.Importer.JSONP._register = function(evt, reg) {
-    Exhibit.Importer.JSONP._importer = new Exhibit.Importer(
+JSONP._register = function(evt, reg) {
+    JSONP._importer = new Importer(
         "application/jsonp",
         "jsonp",
-        Exhibit.Importer.JSONP.parse
+        JSONP.parse
     );
-    if (!reg.hasRegistry(Exhibit.Importer.JSONP._registryKey)) {
-        reg.createRegistry(Exhibit.Importer.JSONP._registryKey);
+    if (!reg.hasRegistry(JSONP._registryKey)) {
+        reg.createRegistry(JSONP._registryKey);
         $(document).trigger(
             "registerJSONPImporters.exhibit",
             reg
@@ -104,9 +106,9 @@ Exhibit.Importer.JSONP._register = function(evt, reg) {
 
 $(document).one(
     "registerImporters.exhibit",
-    Exhibit.Importer.JSONP._register
+    JSONP._register
 );
 
     // end define
-    return Exhibit;
+    return JSONP;
 });

@@ -4,12 +4,12 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(
-    ["lib/jquery",
-     "exhibit",
-     "lib/jquery.simile.dom",
-     "lib/jquery.simile.bubble"],
-    function($, Exhibit) {
+define([
+    "lib/jquery",
+    "exhibit",
+    "lib/jquery.simile.dom",
+    "lib/jquery.simile.bubble"
+], function($, Exhibit) {
 /**
  * @constructor
  * @class
@@ -17,7 +17,7 @@ define(
  * @param {Element} containerElmt
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.OptionWidget = function(configuration, containerElmt, uiContext) {
+var OptionWidget = function(configuration, containerElmt, uiContext) {
     this._label = configuration.label;
     this._checked = typeof configuration.checked !== "undefined" ?
         configuration.checked :
@@ -35,14 +35,14 @@ Exhibit.OptionWidget = function(configuration, containerElmt, uiContext) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.OptionWidget}
  */
-Exhibit.OptionWidget.create = function(configuration, containerElmt, uiContext) {
-    return new Exhibit.OptionWidget(configuration, containerElmt, uiContext);
+OptionWidget.create = function(configuration, containerElmt, uiContext) {
+    return new OptionWidget(configuration, containerElmt, uiContext);
 };
 
 /**
  *
  */
-Exhibit.OptionWidget.prototype.dispose = function() {
+OptionWidget.prototype.dispose = function() {
     $(this._containerElmt).empty();
     
     this._dom = null;
@@ -53,39 +53,39 @@ Exhibit.OptionWidget.prototype.dispose = function() {
 /**
  * @constant
  */
-Exhibit.OptionWidget.uncheckedImageURL = Exhibit.urlPrefix + "images/option.png";
+OptionWidget.uncheckedImageURL = Exhibit.urlPrefix + "images/option.png";
 
 /**
  * @constant
  */
-Exhibit.OptionWidget.checkedImageURL = Exhibit.urlPrefix + "images/option-check.png";
+OptionWidget.checkedImageURL = Exhibit.urlPrefix + "images/option-check.png";
 
 /**
  * @constant
  */
-Exhibit.OptionWidget.uncheckedTemplate = 
+OptionWidget.uncheckedTemplate = 
     "<span id=\"uncheckedSpan\" style=\"display: none;\"><img id=\"uncheckedImage\" /> %1$s</span>";
     
 /**
  * @constant
  */
-Exhibit.OptionWidget.checkedTemplate = 
+OptionWidget.checkedTemplate = 
     "<span id=\"checkedSpan\" style=\"display: none;\"><img id=\"checkedImage\" /> %1$s</span>";
     
 /**
  *
  */
-Exhibit.OptionWidget.prototype._initializeUI = function() {
+OptionWidget.prototype._initializeUI = function() {
     this._containerElmt.className = "exhibit-optionWidget";
     this._dom = $.simileDOM(
         "string",
         this._containerElmt,
         sprintf(
-            Exhibit.OptionWidget.uncheckedTemplate + Exhibit.OptionWidget.checkedTemplate,
+            OptionWidget.uncheckedTemplate + OptionWidget.checkedTemplate,
             this._label
         ),
-        {   uncheckedImage: $.simileBubble("createTranslucentImage", Exhibit.OptionWidget.uncheckedImageURL),
-            checkedImage:   $.simileBubble("createTranslucentImage", Exhibit.OptionWidget.checkedImageURL)
+        {   uncheckedImage: $.simileBubble("createTranslucentImage", OptionWidget.uncheckedImageURL),
+            checkedImage:   $.simileBubble("createTranslucentImage", OptionWidget.checkedImageURL)
         }
     );
     
@@ -101,14 +101,14 @@ Exhibit.OptionWidget.prototype._initializeUI = function() {
 /**
  * @returns {Boolean}
  */
-Exhibit.OptionWidget.prototype.getChecked = function() {
+OptionWidget.prototype.getChecked = function() {
     return this._checked;
 };
 
 /**
  * @param {Boolean} checked
  */
-Exhibit.OptionWidget.prototype.setChecked = function(checked) {
+OptionWidget.prototype.setChecked = function(checked) {
     if (checked !== this._checked) {
         this._checked = checked;
         if (checked) {
@@ -124,10 +124,10 @@ Exhibit.OptionWidget.prototype.setChecked = function(checked) {
 /**
  *
  */
-Exhibit.OptionWidget.prototype.toggle = function() {
+OptionWidget.prototype.toggle = function() {
     this.setChecked(!this._checked);
 };
 
     // end define
-    return Exhibit;
+    return OptionWidget;
 });

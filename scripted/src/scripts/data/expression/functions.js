@@ -4,47 +4,22 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["exhibit"], function(Exhibit) {
+define([
+    "util/util",
+    "util/set",
+    "util/settings",
+    "util/date-time",
+    "data/expression/collection"
+], function(Util, Set, SettingsUtilities, DateTime, ExpressionCollection) {
 /**
  * @namespace
  */
-Exhibit.Functions = {};
+var Functions = {};
 
-/**
- * @namespace
- */
-Exhibit.FunctionUtilities = {};
-
-/**
- * @static
- * @param {String} name
- * @param {Function} f
- * @param {String} valueType
- */
-Exhibit.FunctionUtilities.registerSimpleMappingFunction = function(name, f, valueType) {
-    Exhibit.Functions[name] = {
-        f: function(args) {
-            var set = new Exhibit.Set(), i, fn;
-            fn = function() {
-                return function(v) {
-                    var v2 = f(v);
-                    if (typeof v2 !== "undefined") {
-                        set.add(v2);
-                    }
-                };
-            };
-            for (i = 0; i < args.length; i++) {
-                args[i].forEachValue(fn());
-            }
-            return new Exhibit.Expression._Collection(set, valueType);
-        }
-    };
-};
-
-Exhibit.Functions["union"] = {
+Functions["union"] = {
     f: function(args) {
         var set, valueType, i, arg;
-        set = new Exhibit.Set();
+        set = new Set();
         valueType = null;
         
         if (args.length > 0) {
@@ -59,11 +34,11 @@ Exhibit.Functions["union"] = {
                 }
             }
         }
-        return new Exhibit.Expression._Collection(set, (typeof valueType !== "undefined" && valueType !== null) ? valueType : "text");
+        return new ExpressionCollection(set, (typeof valueType !== "undefined" && valueType !== null) ? valueType : "text");
     }
 };
 
-Exhibit.Functions["contains"] = {
+Functions["contains"] = {
     f: function(args) {
         var result, set;
         result = args[0].size > 0;
@@ -76,49 +51,49 @@ Exhibit.Functions["contains"] = {
             }
         });
         
-        return new Exhibit.Expression._Collection([ result ], "boolean");
+        return new ExpressionCollection([ result ], "boolean");
     }
 };
 
-Exhibit.Functions["exists"] = {
+Functions["exists"] = {
     f: function(args) {
-        return new Exhibit.Expression._Collection([ args[0].size > 0 ], "boolean");
+        return new ExpressionCollection([ args[0].size > 0 ], "boolean");
     }
 };
 
-Exhibit.Functions["count"] = {
+Functions["count"] = {
     f: function(args) {
-        return new Exhibit.Expression._Collection([ args[0].size ], "number");
+        return new ExpressionCollection([ args[0].size ], "number");
     }
 };
 
-Exhibit.Functions["not"] = {
+Functions["not"] = {
     f: function(args) {
-        return new Exhibit.Expression._Collection([ !args[0].contains(true) ], "boolean");
+        return new ExpressionCollection([ !args[0].contains(true) ], "boolean");
     }
 };
 
-Exhibit.Functions["and"] = {
+Functions["and"] = {
     f: function(args) {
         var r = true, i;
         for (i = 0; r && i < args.length; i++) {
             r = r && args[i].contains(true);
         }
-        return new Exhibit.Expression._Collection([ r ], "boolean");
+        return new ExpressionCollection([ r ], "boolean");
     }
 };
 
-Exhibit.Functions["or"] = {
+Functions["or"] = {
     f: function(args) {
         var r = false, i;
         for (i = 0; !r && i < args.length; i++) {
             r = r || args[i].contains(true);
         }
-        return new Exhibit.Expression._Collection([ r ], "boolean");
+        return new ExpressionCollection([ r ], "boolean");
     }
 };
 
-Exhibit.Functions["add"] = {
+Functions["add"] = {
     f: function(args) {
         var total, i, fn;
         total = 0;
@@ -140,12 +115,12 @@ Exhibit.Functions["add"] = {
             args[i].forEachValue(fn());
         }
         
-        return new Exhibit.Expression._Collection([ total ], "number");
+        return new ExpressionCollection([ total ], "number");
     }
 };
 
 // Note: arguments expanding to multiple items get concatenated in random order
-Exhibit.Functions["concat"] = {
+Functions["concat"] = {
     f: function(args) {
         var result = [], i, fn;
         fn = function() {
@@ -159,11 +134,11 @@ Exhibit.Functions["concat"] = {
             args[i].forEachValue(fn());
         }
 
-        return new Exhibit.Expression._Collection([ result.join('') ], "text");
+        return new ExpressionCollection([ result.join('') ], "text");
     }
 };
 
-Exhibit.Functions["multiply"] = {
+Functions["multiply"] = {
     f: function(args) {
         var product = 1, i, fn;
         fn = function() {
@@ -185,11 +160,11 @@ Exhibit.Functions["multiply"] = {
             args[i].forEachValue(fn());
         }
         
-        return new Exhibit.Expression._Collection([ product ], "number");
+        return new ExpressionCollection([ product ], "number");
     }
 };
 
-Exhibit.Functions["date-range"] = {
+Functions["date-range"] = {
     _parseDate: function (v) {
         if (typeof v === "undefined" || v === null) {
             return Number.NEGATIVE_INFINITY;
@@ -197,7 +172,7 @@ Exhibit.Functions["date-range"] = {
             return v.getTime();
         } else {
             try {
-                return Exhibit.DateTime.parseIso8601DateTime(v).getTime();
+                return DateTime.parseIso8601DateTime(v).getTime();
             } catch (e) {
                 return Number.NEGATIVE_INFINITY;
             }
@@ -206,8 +181,8 @@ Exhibit.Functions["date-range"] = {
     _computeRange: function(from, to, interval) {
         var range = to - from;
         if (isFinite(range)) {
-            if (typeof Exhibit.DateTime[interval.toUpperCase()] !== "undefined") {
-                range = Math.round(range / Exhibit.DateTime.gregorianUnitLengths[Exhibit.DateTime[interval.toUpperCase()]]);
+            if (typeof DateTime[interval.toUpperCase()] !== "undefined") {
+                range = Math.round(range / DateTime.gregorianUnitLengths[DateTime[interval.toUpperCase()]]);
             }
             return range;
         }
@@ -232,11 +207,11 @@ Exhibit.Functions["date-range"] = {
         });
             
         range = this._computeRange(from, to, interval);
-        return new Exhibit.Expression._Collection((typeof range !== "undefined" && range !== null) ? [ range ] : [], "number");
+        return new ExpressionCollection((typeof range !== "undefined" && range !== null) ? [ range ] : [], "number");
     }
 };
 
-Exhibit.Functions["distance"] = {
+Functions["distance"] = {
     _units: {
         km:         1e3,
         mile:       1609.344
@@ -250,7 +225,7 @@ Exhibit.Functions["distance"] = {
             if (typeof this._units[unit] !== "undefined") {
                 range = range / this._units[unit];
             }
-            return Exhibit.Util.round(range, roundTo);
+            return Util.round(range, roundTo);
         }
         return null;
     },
@@ -272,11 +247,11 @@ Exhibit.Functions["distance"] = {
         to = new GLatLng( data.lat, data.lng );
         
         range = this._computeDistance(from, to, data.unit, data.round);
-        return new Exhibit.Expression._Collection((typeof range !== "undefined" && range !== null) ? [ range ] : [], "number");
+        return new ExpressionCollection((typeof range !== "undefined" && range !== null) ? [ range ] : [], "number");
     }
 };
 
-Exhibit.Functions["min"] = {
+Functions["min"] = {
     f: function(args) {
         /** @ignore */
         var returnMe = function (val) { return val; }, min, valueType, i, arg, currentValueType, parser, fn;
@@ -295,16 +270,16 @@ Exhibit.Functions["min"] = {
         for (i = 0; i < args.length; i++) {
             arg = args[i];
             currentValueType = arg.valueType ? arg.valueType : 'text';
-            parser = Exhibit.SettingsUtilities._typeToParser(currentValueType);
+            parser = SettingsUtilities._typeToParser(currentValueType);
                 
             arg.forEachValue(fn(parser, currentValueType));
         }
         
-        return new Exhibit.Expression._Collection([ min ], (typeof valueType !== "undefined" && valueType !== null) ? valueType : "text");
+        return new ExpressionCollection([ min ], (typeof valueType !== "undefined" && valueType !== null) ? valueType : "text");
     }
 };
 
-Exhibit.Functions["max"] = {
+Functions["max"] = {
     f: function(args) {
         var returnMe = function (val) { return val; }, max, valueType, i, arg, currentValueType, parser, fn;
         max = Number.NEGATIVE_INFINITY;
@@ -323,15 +298,15 @@ Exhibit.Functions["max"] = {
         for (i = 0; i < args.length; i++) {
             arg = args[i];
             currentValueType = arg.valueType ? arg.valueType : 'text';
-            parser = Exhibit.SettingsUtilities._typeToParser(currentValueType);
+            parser = SettingsUtilities._typeToParser(currentValueType);
             
             arg.forEachValue(fn(parser, c));
         }
-        return new Exhibit.Expression._Collection([ max ], (typeof valueType !== "undefined" && valueType !== null) ? valueType : "text");
+        return new ExpressionCollection([ max ], (typeof valueType !== "undefined" && valueType !== null) ? valueType : "text");
     }
 };
 
-Exhibit.Functions["remove"] = {
+Functions["remove"] = {
     f: function(args) {
         var set, valueType, i, arg;
         set = args[0].getSet();
@@ -342,16 +317,16 @@ Exhibit.Functions["remove"] = {
                 set.removeSet(arg.getSet());
             }
         }
-        return new Exhibit.Expression._Collection(set, valueType);
+        return new ExpressionCollection(set, valueType);
     }
 };
 
-Exhibit.Functions["now"] = {
+Functions["now"] = {
     f: function(args) {
-        return new Exhibit.Expression._Collection([ new Date() ], "date");
+        return new ExpressionCollection([ new Date() ], "date");
     }
 };
 
     // end define
-    return Exhibit;
+    return Functions;
 });

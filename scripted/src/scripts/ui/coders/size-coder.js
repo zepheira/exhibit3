@@ -4,32 +4,40 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "exhibit"], function($, Exhibit) {
+define([
+    "lib/jquery",
+    "exhibit",
+    "util/localizer",
+    "util/debug",
+    "util/settings",
+    "ui/ui-context",
+    "ui/coders/coder"
+], function($, Exhibit, _, Debug, SettingsUtilities, UIContext, Coder) {
 /**
  * @class
  * @constructor
  * @param {Element|jQuery} containerElmt
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.SizeCoder = function(containerElmt, uiContext) {
-    $.extend(this, new Exhibit.Coder(
+var SizeCoder = function(containerElmt, uiContext) {
+    $.extend(this, new Coder(
         "size",
         containerElmt,
         uiContext
     ));
-    this.addSettingSpecs(Exhibit.SizeCoder._settingSpecs);
+    this.addSettingSpecs(SizeCoder._settingSpecs);
     
     this._map = {};
     this._mixedCase = {
-        "label": Exhibit._("%coders.mixedCaseLabel"),
+        "label": _("%coders.mixedCaseLabel"),
         "size": 10
     };
     this._missingCase = {
-        "label": Exhibit._("%coders.missingCaseLabel"),
+        "label": _("%coders.missingCaseLabel"),
         "size": 10
     };
     this._othersCase = {
-        "label": Exhibit._("%coders.othersCaseLabel"),
+        "label": _("%coders.othersCaseLabel"),
         "size": 10
     };
 
@@ -39,7 +47,7 @@ Exhibit.SizeCoder = function(containerElmt, uiContext) {
 /**
  * @constant
  */
-Exhibit.SizeCoder._settingSpecs = {
+SizeCoder._settingSpecs = {
 };
 
 /**
@@ -47,17 +55,17 @@ Exhibit.SizeCoder._settingSpecs = {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.SizeCoder}
  */
-Exhibit.SizeCoder.create = function(configuration, uiContext) {
+SizeCoder.create = function(configuration, uiContext) {
     var coder, div;
     div = $("<div>")
         .hide()
         .appendTo("body");
-    coder = new Exhibit.SizeCoder(
+    coder = new SizeCoder(
         div,
-        Exhibit.UIContext.create(configuration, uiContext)
+        UIContext.create(configuration, uiContext)
     );
     
-    Exhibit.SizeCoder._configure(coder, configuration);
+    SizeCoder._configure(coder, configuration);
     return coder;
 };
 
@@ -66,18 +74,18 @@ Exhibit.SizeCoder.create = function(configuration, uiContext) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.SizeCoder}
  */
-Exhibit.SizeCoder.createFromDOM = function(configElmt, uiContext) {
+SizeCoder.createFromDOM = function(configElmt, uiContext) {
     var configuration, coder;
 
     $(configElmt).hide();
     
     configuration = Exhibit.getConfigurationFromDOM(configElmt);
-    coder = new Exhibit.SizeCoder(
+    coder = new SizeCoder(
         configElmt,
-        Exhibit.UIContext.create(configuration, uiContext)
+        UIContext.create(configuration, uiContext)
     );
     
-    Exhibit.SettingsUtilities.collectSettingsFromDOM(
+    SettingsUtilities.collectSettingsFromDOM(
         configElmt,
         coder.getSettingSpecs(),
         coder._settings
@@ -92,10 +100,10 @@ Exhibit.SizeCoder.createFromDOM = function(configElmt, uiContext) {
             );
         });
     } catch (e) {
-        Exhibit.Debug.exception(e, Exhibit._("%coders.error.configuration", "SizeCoder"));
+        Debug.exception(e, _("%coders.error.configuration", "SizeCoder"));
     }
     
-    Exhibit.SizeCoder._configure(coder, configuration);
+    SizeCoder._configure(coder, configuration);
     return coder;
 };
 
@@ -103,10 +111,10 @@ Exhibit.SizeCoder.createFromDOM = function(configElmt, uiContext) {
  * @param {Exhibit.SizeCoder} coder
  * @param {Object} configuration
  */
-Exhibit.SizeCoder._configure = function(coder, configuration) {
+SizeCoder._configure = function(coder, configuration) {
     var entries, i;
 
-    Exhibit.SettingsUtilities.collectSettings(
+    SettingsUtilities.collectSettings(
         configuration,
         coder.getSettingSpecs(),
         coder._settings
@@ -123,7 +131,7 @@ Exhibit.SizeCoder._configure = function(coder, configuration) {
 /**
  *
  */
-Exhibit.SizeCoder.prototype.dispose = function() {
+SizeCoder.prototype.dispose = function() {
     this._map = null;
     this._dispose();
 };
@@ -133,7 +141,7 @@ Exhibit.SizeCoder.prototype.dispose = function() {
  * @param {String} key
  * @param {Number} size
  */
-Exhibit.SizeCoder.prototype._addEntry = function(kase, key, size) {  
+SizeCoder.prototype._addEntry = function(kase, key, size) {  
     var entry = null;
     switch (kase) {
     case "others":  entry = this._othersCase; break;
@@ -153,7 +161,7 @@ Exhibit.SizeCoder.prototype._addEntry = function(kase, key, size) {
  * @param {Object} flags
  * @returns {Number}
  */
-Exhibit.SizeCoder.prototype.translate = function(key, flags) {
+SizeCoder.prototype.translate = function(key, flags) {
     if (typeof this._map[key] !== "undefined") {
         if (typeof flags !== "undefined" && flags !== null) {
             flags.keys.add(key);
@@ -177,7 +185,7 @@ Exhibit.SizeCoder.prototype.translate = function(key, flags) {
  * @param {Object} flags
  * @returns {Number}
  */
-Exhibit.SizeCoder.prototype.translateSet = function(keys, flags) {
+SizeCoder.prototype.translateSet = function(keys, flags) {
     var size, self;
     size = null;
     self = this;
@@ -208,45 +216,45 @@ Exhibit.SizeCoder.prototype.translateSet = function(keys, flags) {
 /**
  * @returns {String}
  */
-Exhibit.SizeCoder.prototype.getOthersLabel = function() {
+SizeCoder.prototype.getOthersLabel = function() {
     return this._othersCase.label;
 };
 
 /**
  * @returns {Number}
  */
-Exhibit.SizeCoder.prototype.getOthersSize = function() {
+SizeCoder.prototype.getOthersSize = function() {
     return this._othersCase.size;
 };
 
 /**
  * @returns {String}
  */
-Exhibit.SizeCoder.prototype.getMissingLabel = function() {
+SizeCoder.prototype.getMissingLabel = function() {
     return this._missingCase.label;
 };
 
 /**
  * @returns {Number}
  */
-Exhibit.SizeCoder.prototype.getMissingSize = function() {
+SizeCoder.prototype.getMissingSize = function() {
     return this._missingCase.size;
 };
 
 /**
  * @returns {String}
  */
-Exhibit.SizeCoder.prototype.getMixedLabel = function() {
+SizeCoder.prototype.getMixedLabel = function() {
     return this._mixedCase.label;
 };
 
 /**
  * @returns {Number}
  */
-Exhibit.SizeCoder.prototype.getMixedSize = function() {
+SizeCoder.prototype.getMixedSize = function() {
     return this._mixedCase.size;
 };
 
     // end define
-    return Exhibit;
+    return SizeCoder;
 });

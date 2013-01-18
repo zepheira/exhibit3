@@ -10,23 +10,32 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "exhibit"], function($, Exhibit) {
+define([
+    "lib/jquery",
+    "exhibit",
+    "util/localizer",
+    "util/debug",
+    "util/settings",
+    "util/coders",
+    "ui/ui-context",
+    "ui/coders/coder"
+], function($, Exhibit, _, Debug, SettingsUtilities, Coders, UIContext, Coder) {
 /**
  * @constructor
  * @class
  * @param {Element|jQuery} containerElmt
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.OrderedColorCoder = function(containerElmt, uiContext) {
-    $.extend(this, new Exhibit.Coder(
+var OrderedColorCoder = function(containerElmt, uiContext) {
+    $.extend(this, new Coder(
         "orderedcolor",
         containerElmt,
         uiContext
     ));
-    this.addSettingSpecs(Exhibit.OrderedColorCoder._settingSpecs);
+    this.addSettingSpecs(OrderedColorCoder._settingSpecs);
     
     this._map = {};
-    this._order = new Exhibit.OrderedColorCoder._OrderedHash();
+    this._order = new OrderedColorCoder._OrderedHash();
     this._usePriority = "highest";
     this._mixedCase = { 
         "label": null,
@@ -34,13 +43,13 @@ Exhibit.OrderedColorCoder = function(containerElmt, uiContext) {
 	    "isDefault": true
     };
     this._missingCase = { 
-        "label": Exhibit._("%coders.missingCaseLabel"),
-        "color": Exhibit.Coders.missingCaseColor,
+        "label": _("%coders.missingCaseLabel"),
+        "color": Coders.missingCaseColor,
 	    "isDefault": true
     };
     this._othersCase = { 
-        "label": Exhibit._("%coders.othersCaseLabel"),
-        "color": Exhibit.Coders.othersCaseColor,
+        "label": _("%coders.othersCaseLabel"),
+        "color": Coders.othersCaseColor,
 	    "isDefault": true
     };
 
@@ -52,7 +61,7 @@ Exhibit.OrderedColorCoder = function(containerElmt, uiContext) {
  * @class
  * @public
  */
-Exhibit.OrderedColorCoder._OrderedHash = function() {
+OrderedColorCoder._OrderedHash = function() {
     this.size = 0;
     this.hash = {};
 };
@@ -60,14 +69,14 @@ Exhibit.OrderedColorCoder._OrderedHash = function() {
 /**
  * @param {String} key
  */
-Exhibit.OrderedColorCoder._OrderedHash.prototype.add = function(key) {
+OrderedColorCoder._OrderedHash.prototype.add = function(key) {
     this.hash[key] = this.size++;
 };
 
 /**
  * @returns {Number}
  */
-Exhibit.OrderedColorCoder._OrderedHash.prototype.size = function() {
+OrderedColorCoder._OrderedHash.prototype.size = function() {
     return this.size;
 };
 
@@ -75,14 +84,14 @@ Exhibit.OrderedColorCoder._OrderedHash.prototype.size = function() {
  * @param {String} key
  * @returns {String}
  */
-Exhibit.OrderedColorCoder._OrderedHash.prototype.get = function(key) {
+OrderedColorCoder._OrderedHash.prototype.get = function(key) {
     return this.hash[key];
 };
 
 /**
  * @constant
  */
-Exhibit.OrderedColorCoder._settingSpecs = {
+OrderedColorCoder._settingSpecs = {
 };
 
 /**
@@ -90,17 +99,17 @@ Exhibit.OrderedColorCoder._settingSpecs = {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.OrderedColorCoder}
  */
-Exhibit.OrderedColorCoder.create = function(configuration, uiContext) {
+OrderedColorCoder.create = function(configuration, uiContext) {
     var coder, div;
     div = $("<div>")
         .hide()
         .appendTo("body");
-    coder = new Exhibit.OrderedColorCoder(
+    coder = new OrderedColorCoder(
         div,
-        Exhibit.UIContext.create(configuration, uiContext)
+        UIContext.create(configuration, uiContext)
     );
     
-    Exhibit.OrderedColorCoder._configure(coder, configuration);
+    OrderedColorCoder._configure(coder, configuration);
     return coder;
 };
 
@@ -109,18 +118,18 @@ Exhibit.OrderedColorCoder.create = function(configuration, uiContext) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.OrderedColorCoder}
  */
-Exhibit.OrderedColorCoder.createFromDOM = function(configElmt, uiContext) {
+OrderedColorCoder.createFromDOM = function(configElmt, uiContext) {
     var configuration, coder;
 
     $(configElmt).hide();
     
     configuration = Exhibit.getConfigurationFromDOM(configElmt);
-    coder = new Exhibit.OrderedColorCoder(
+    coder = new OrderedColorCoder(
         configElmt,
-        Exhibit.UIContext.create(configuration, uiContext)
+        UIContext.create(configuration, uiContext)
     );
     
-    Exhibit.SettingsUtilities.collectSettingsFromDOM(
+    SettingsUtilities.collectSettingsFromDOM(
         configElmt,
         coder.getSettingSpecs(),
         coder._settings
@@ -148,10 +157,10 @@ Exhibit.OrderedColorCoder.createFromDOM = function(configElmt, uiContext) {
 		        coder.getMissingColor());
 	    }
     } catch (e) {
-        Exhibit.Debug.exception(e, Exhibit._("%coders.error.configuration", "OrderedColorCoder"));
+        Debug.exception(e, _("%coders.error.configuration", "OrderedColorCoder"));
     }
     
-    Exhibit.OrderedColorCoder._configure(coder, configuration);
+    OrderedColorCoder._configure(coder, configuration);
     return coder;
 };
 
@@ -159,10 +168,10 @@ Exhibit.OrderedColorCoder.createFromDOM = function(configElmt, uiContext) {
  * @param {Exhibit.OrderedColorCoder} coder
  * @param {Object} configuration
  */
-Exhibit.OrderedColorCoder._configure = function(coder, configuration) {
+OrderedColorCoder._configure = function(coder, configuration) {
     var entires, i;
 
-    Exhibit.SettingsUtilities.collectSettings(
+    SettingsUtilities.collectSettings(
         configuration,
         coder.getSettingSpecs(),
         coder._settings
@@ -191,7 +200,7 @@ Exhibit.OrderedColorCoder._configure = function(coder, configuration) {
 /**
  *
  */
-Exhibit.OrderedColorCoder.prototype.dispose = function() {
+OrderedColorCoder.prototype.dispose = function() {
     this._map = null;
     this._order = null;
     this._dispose();
@@ -200,7 +209,7 @@ Exhibit.OrderedColorCoder.prototype.dispose = function() {
 /**
  * @constant
  */
-Exhibit.OrderedColorCoder._colorTable = {
+OrderedColorCoder._colorTable = {
     "red" :     "#ff0000",
     "green" :   "#00ff00",
     "blue" :    "#0000ff",
@@ -214,11 +223,11 @@ Exhibit.OrderedColorCoder._colorTable = {
  * @param {String} key
  * @param {String} color
  */
-Exhibit.OrderedColorCoder.prototype._addEntry = function(kase, key, color) {
+OrderedColorCoder.prototype._addEntry = function(kase, key, color) {
     var entry, mixed;
 
-    if (typeof Exhibit.OrderedColorCoder._colorTable[color] !== "undefined") {
-        color = Exhibit.OrderedColorCoder._colorTable[color];
+    if (typeof OrderedColorCoder._colorTable[color] !== "undefined") {
+        color = OrderedColorCoder._colorTable[color];
     }
     
     entry = null;
@@ -247,7 +256,7 @@ Exhibit.OrderedColorCoder.prototype._addEntry = function(kase, key, color) {
  * @param {Object} flags
  * @returns {String}
  */
-Exhibit.OrderedColorCoder.prototype.translate = function(key, flags) {
+OrderedColorCoder.prototype.translate = function(key, flags) {
     if (typeof this._map[key] !== "undefined") {
         if (typeof flags !== "undefined" && flags !== null) {
             flags.keys.add(key);
@@ -271,7 +280,7 @@ Exhibit.OrderedColorCoder.prototype.translate = function(key, flags) {
  * @param {Object} flags
  * @returns {String}
  */
-Exhibit.OrderedColorCoder.prototype.translateSet = function(keys, flags) {
+OrderedColorCoder.prototype.translateSet = function(keys, flags) {
     var color, lastKey, self, keyOrder, lastKeyOrder;
     color = null;
     lastKey = null;
@@ -321,66 +330,66 @@ Exhibit.OrderedColorCoder.prototype.translateSet = function(keys, flags) {
 /**
  * @returns {String}
  */
-Exhibit.OrderedColorCoder.prototype.getOthersLabel = function() {
+OrderedColorCoder.prototype.getOthersLabel = function() {
     return this._othersCase.label;
 };
 
 /**
  * @returns {String}
  */
-Exhibit.OrderedColorCoder.prototype.getOthersColor = function() {
+OrderedColorCoder.prototype.getOthersColor = function() {
     return this._othersCase.color;
 };
 
 /**
  * @returns {Boolean}
  */
-Exhibit.OrderedColorCoder.prototype.getOthersIsDefault = function() {
+OrderedColorCoder.prototype.getOthersIsDefault = function() {
     return this._othersCase.isDefault;
 };
 
 /**
  * @returns {String}
  */
-Exhibit.OrderedColorCoder.prototype.getMissingLabel = function() {
+OrderedColorCoder.prototype.getMissingLabel = function() {
     return this._missingCase.label;
 };
 
 /**
  * @returns {String}
  */
-Exhibit.OrderedColorCoder.prototype.getMissingColor = function() {
+OrderedColorCoder.prototype.getMissingColor = function() {
     return this._missingCase.color;
 };
 
 /**
  * @returns {Boolean}
  */
-Exhibit.OrderedColorCoder.prototype.getMissingIsDefault = function() {
+OrderedColorCoder.prototype.getMissingIsDefault = function() {
     return this._missingCase.isDefault;
 };
 
 /**
  * @returns {String}
  */
-Exhibit.OrderedColorCoder.prototype.getMixedLabel = function() {
+OrderedColorCoder.prototype.getMixedLabel = function() {
     return this._mixedCase.label;
 };
 
 /**
  * @returns {String}
  */
-Exhibit.OrderedColorCoder.prototype.getMixedColor = function() {
+OrderedColorCoder.prototype.getMixedColor = function() {
     return this._mixedCase.color;
 };
 
 /**
  * @returns {Boolean}
  */
-Exhibit.OrderedColorCoder.prototype.getMixedIsDefault = function() {
+OrderedColorCoder.prototype.getMixedIsDefault = function() {
     return this._mixedCase.isDefault;
 };
 
     // end define
-    return Exhibit;
+    return OrderedColorCoder;
 });

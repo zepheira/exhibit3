@@ -4,7 +4,7 @@
  * @fileOverview Pertaining to the Exhibit.Set datatype.
  */
 
-define(["exhibit"], function(Exhibit) {
+define(function() {
 /**
  * A basic set (in the mathematical sense) data structure.  Only numerical
  * or string values can be used.  Any other data type would be considered
@@ -16,7 +16,7 @@ define(["exhibit"], function(Exhibit) {
  * @example
  * var set = new Exhibit.Set(['a']);
  */
-Exhibit.Set = function(a) {
+var Set = function(a) {
     this._hash = {};
     this._count = 0;
     var i;
@@ -25,7 +25,7 @@ Exhibit.Set = function(a) {
         for (i = 0; i < a.length; i++) {
             this.add(a[i]);
         }
-    } else if (a instanceof Exhibit.Set) {
+    } else if (a instanceof Set) {
         this.addSet(a);
     }
 };
@@ -37,7 +37,7 @@ Exhibit.Set = function(a) {
  * @param {String|Number|Boolean} o The object to add.
  * @returns {Boolean} True if the object was added, false if not.
  */
-Exhibit.Set.prototype.add = function(o) {
+Set.prototype.add = function(o) {
     if ((typeof o === "number" || typeof o === "string" || typeof o === "boolean")
         && typeof this._hash[o] === "undefined") {
         this._hash[o] = true;
@@ -52,7 +52,7 @@ Exhibit.Set.prototype.add = function(o) {
  *
  * @param {Exhibit.Set} set The set of elements to add.
  */
-Exhibit.Set.prototype.addSet = function(set) {
+Set.prototype.addSet = function(set) {
     var o;
     for (o in set._hash) {
         if (set._hash.hasOwnProperty(o)) {
@@ -68,7 +68,7 @@ Exhibit.Set.prototype.addSet = function(set) {
  * @returns {Boolean} True if the object was successfully removed,
  *   false otherwise.
  */
-Exhibit.Set.prototype.remove = function(o) {
+Set.prototype.remove = function(o) {
     if (typeof this._hash[o] !== "undefined") {
         delete this._hash[o];
         this._count--;
@@ -83,7 +83,7 @@ Exhibit.Set.prototype.remove = function(o) {
  *
  * @param {Exhibit.Set} set The set of elements to remove.
  */
-Exhibit.Set.prototype.removeSet = function(set) {
+Set.prototype.removeSet = function(set) {
     var o;
     for (o in set._hash) {
         if (set._hash.hasOwnProperty(o)) {
@@ -98,7 +98,7 @@ Exhibit.Set.prototype.removeSet = function(set) {
  *
  * @param {Exhibit.Set} set The set to intersect.
  */
-Exhibit.Set.prototype.retainSet = function(set) {
+Set.prototype.retainSet = function(set) {
     var o;
     for (o in this._hash) {
         if (this._hash.hasOwnProperty(o)) {
@@ -116,7 +116,7 @@ Exhibit.Set.prototype.retainSet = function(set) {
  * @param {String|Number} o The object to test for.
  * @returns {Boolean} True if the object is present, false otherwise.
  */
-Exhibit.Set.prototype.contains = function(o) {
+Set.prototype.contains = function(o) {
     return typeof this._hash[o] !== "undefined";
 };
 
@@ -125,7 +125,7 @@ Exhibit.Set.prototype.contains = function(o) {
  *
  * @returns {Number} The number of elements in this set.
  */
-Exhibit.Set.prototype.size = function() {
+Set.prototype.size = function() {
     return this._count;
 };
 
@@ -134,7 +134,7 @@ Exhibit.Set.prototype.size = function() {
  *
  * @returns {Array} A new array containing the elements of this set.
  */
-Exhibit.Set.prototype.toArray = function() {
+Set.prototype.toArray = function() {
     var o, a = [];
     for (o in this._hash) {
         if (this._hash.hasOwnProperty(o)) {
@@ -150,7 +150,7 @@ Exhibit.Set.prototype.toArray = function() {
  *
  * @param {Function} f A function of form f(element).
  */
-Exhibit.Set.prototype.visit = function(f) {
+Set.prototype.visit = function(f) {
     var o;
     for (o in this._hash) {
         if (this._hash.hasOwnProperty(o)) {
@@ -172,8 +172,8 @@ Exhibit.Set.prototype.visit = function(f) {
  * @returns {Exhibit.Set} Either a new set or the modified set containing
  *                        the intersection of sets.
  */
-Exhibit.Set.createIntersection = function(set1, set2, result) {
-    var setA, setB, set = (result) ? result : new Exhibit.Set();
+Set.createIntersection = function(set1, set2, result) {
+    var setA, setB, set = (result) ? result : new Set();
     if (set1.size() < set2.size()) {
         setA = set1;
         setB = set2;
@@ -190,5 +190,5 @@ Exhibit.Set.createIntersection = function(set1, set2, result) {
 };
 
     // end define
-    return Exhibit;
+    return Set;
 });

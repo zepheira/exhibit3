@@ -4,20 +4,28 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "exhibit"], function(Exhibit) {
+define([
+    "lib/jquery",
+    "exhibit",
+    "util/localizer",
+    "util/debug",
+    "util/settings",
+    "ui/ui-context",
+    "ui/coders/coder"
+], function($, Exhibit, _, Debug, SettingsUtilities, UIContext, Coder) {
 /**
  * @class
  * @constructor
  * @param {Element|jQuery} containerElmt
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.SizeGradientCoder = function(containerElmt, uiContext) {
-    $.extend(this, new Exhibit.Coder(
+var SizeGradientCoder = function(containerElmt, uiContext) {
+    $.extend(this, new Coder(
         "sizegradient",
         containerElmt,
         uiContext
     ));
-    this.addSettingSpecs(Exhibit.SizeGradientCoder._settingSpecs);
+    this.addSettingSpecs(SizeGradientCoder._settingSpecs);
 
     this._log = { 
         func: function(size) { return Math.ceil(Math.log(size)); },
@@ -40,15 +48,15 @@ Exhibit.SizeGradientCoder = function(containerElmt, uiContext) {
     
     this._gradientPoints = [];
     this._mixedCase = {
-        "label": Exhibit._("%coders.mixedCaseLabel"),
+        "label": _("%coders.mixedCaseLabel"),
         "size": 20
     };
     this._missingCase = {
-        "label": Exhibit._("%coders.missingCaseLabel"),
+        "label": _("%coders.missingCaseLabel"),
         "size": 20
     };
     this._othersCase = {
-        "label": Exhibit._("%coders.othersCaseLabel"),
+        "label": _("%coders.othersCaseLabel"),
         "size": 20
     };
     this.register();
@@ -57,7 +65,7 @@ Exhibit.SizeGradientCoder = function(containerElmt, uiContext) {
 /**
  * @constant
  */
-Exhibit.SizeGradientCoder._settingSpecs = {
+SizeGradientCoder._settingSpecs = {
 };
 
 /**
@@ -65,17 +73,17 @@ Exhibit.SizeGradientCoder._settingSpecs = {
  * @param {Exhibit.UIContext} uiContext
  * @param {Exhibit.SizeGradientCoder}
  */
-Exhibit.SizeGradientCoder.create = function(configuration, uiContext) {
+SizeGradientCoder.create = function(configuration, uiContext) {
     var coder, div;
     div = $("<div>")
         .hide()
         .appendTo("body");
-    coder = new Exhibit.SizeGradientCoder(
+    coder = new SizeGradientCoder(
         div,
-        Exhibit.UIContext.create(configuration, uiContext)
+        UIContext.create(configuration, uiContext)
     );
     
-    Exhibit.SizeGradientCoder._configure(coder, configuration);
+    SizeGradientCoder._configure(coder, configuration);
     return coder;
 };
 
@@ -84,15 +92,15 @@ Exhibit.SizeGradientCoder.create = function(configuration, uiContext) {
  * @param {Exhibit.UIContext} uiContext
  * @param {Exhibit.SizeGradientCoder}
  */
-Exhibit.SizeGradientCoder.createFromDOM = function(configElmt, uiContext) {
+SizeGradientCoder.createFromDOM = function(configElmt, uiContext) {
     var configuration, coder, markerScale, gradientPoints, i, point, value, size;
 
     $(configElmt).hide();
     
     configuration = Exhibit.getConfigurationFromDOM(configElmt);
-    coder = new Exhibit.SizeGradientCoder(configElmt, Exhibit.UIContext.create(configuration, uiContext));
+    coder = new SizeGradientCoder(configElmt, UIContext.create(configuration, uiContext));
     
-    Exhibit.SettingsUtilities.collectSettingsFromDOM(
+    SettingsUtilities.collectSettingsFromDOM(
         configElmt,
         coder.getSettingSpecs(),
         coder._settings);
@@ -119,10 +127,10 @@ Exhibit.SizeGradientCoder.createFromDOM = function(configElmt, uiContext) {
             );
         });
     } catch (e) {
-        Exhibit.Debug.exception(e, Exhibit._("%coders.error.configuration", "SizeGradientCoder"));
+        Debug.exception(e, _("%coders.error.configuration", "SizeGradientCoder"));
     }
     
-    Exhibit.SizeGradientCoder._configure(coder, configuration);
+    SizeGradientCoder._configure(coder, configuration);
     return coder;
 };
 
@@ -130,10 +138,10 @@ Exhibit.SizeGradientCoder.createFromDOM = function(configElmt, uiContext) {
  * @param {Exhibit.SizeGradientCoder} coder
  * @param {Object} configuration
  */
-Exhibit.SizeGradientCoder._configure = function(coder, configuration) {
+SizeGradientCoder._configure = function(coder, configuration) {
     var entries, i;
 
-    Exhibit.SettingsUtilities.collectSettings(
+    SettingsUtilities.collectSettings(
         configuration,
         coder.getSettingSpecs(),
         coder._settings);
@@ -149,7 +157,7 @@ Exhibit.SizeGradientCoder._configure = function(coder, configuration) {
 /**
  *
  */
-Exhibit.SizeGradientCoder.prototype.dispose = function() {
+SizeGradientCoder.prototype.dispose = function() {
     this._gradientPoints = null;
     this._dispose();
 };
@@ -159,7 +167,7 @@ Exhibit.SizeGradientCoder.prototype.dispose = function() {
  * @param {String} key
  * @param {Number} size
  */
-Exhibit.SizeGradientCoder.prototype._addEntry = function(kase, key, size) {
+SizeGradientCoder.prototype._addEntry = function(kase, key, size) {
     var entry = null;
     switch (kase) {
     case "others":  entry = this._othersCase; break;
@@ -177,7 +185,7 @@ Exhibit.SizeGradientCoder.prototype._addEntry = function(kase, key, size) {
  * @param {Object} flags
  * @returns {Number}
  */
-Exhibit.SizeGradientCoder.prototype.translate = function(key, flags) {
+SizeGradientCoder.prototype.translate = function(key, flags) {
     var self, gradientPoints, getSize;
 	self = this;
 	gradientPoints = this._gradientPoints;
@@ -222,7 +230,7 @@ Exhibit.SizeGradientCoder.prototype.translate = function(key, flags) {
  * @param {Object} flags
  * @returns {Number}
  */
-Exhibit.SizeGradientCoder.prototype.translateSet = function(keys, flags) {
+SizeGradientCoder.prototype.translateSet = function(keys, flags) {
     var size, self;
     size = null;
     self = this;
@@ -253,45 +261,45 @@ Exhibit.SizeGradientCoder.prototype.translateSet = function(keys, flags) {
 /**
  * @returns {String}
  */
-Exhibit.SizeGradientCoder.prototype.getOthersLabel = function() {
+SizeGradientCoder.prototype.getOthersLabel = function() {
     return this._othersCase.label;
 };
 
 /**
  * @returns {Number}
  */
-Exhibit.SizeGradientCoder.prototype.getOthersSize = function() {
+SizeGradientCoder.prototype.getOthersSize = function() {
     return this._othersCase.size;
 };
 
 /**
  * @returns {String}
  */
-Exhibit.SizeGradientCoder.prototype.getMissingLabel = function() {
+SizeGradientCoder.prototype.getMissingLabel = function() {
     return this._missingCase.label;
 };
 
 /**
  * @returns {Number}
  */
-Exhibit.SizeGradientCoder.prototype.getMissingSize = function() {
+SizeGradientCoder.prototype.getMissingSize = function() {
     return this._missingCase.size;
 };
 
 /**
  * @returns {String}
  */
-Exhibit.SizeGradientCoder.prototype.getMixedLabel = function() {
+SizeGradientCoder.prototype.getMixedLabel = function() {
     return this._mixedCase.label;
 };
 
 /**
  * @returns {Number}
  */
-Exhibit.SizeGradientCoder.prototype.getMixedSize = function() {
+SizeGradientCoder.prototype.getMixedSize = function() {
     return this._mixedCase.size;
 };
 
     // end define
-    return Exhibit;
+    return SizeGradientCoder;
 });

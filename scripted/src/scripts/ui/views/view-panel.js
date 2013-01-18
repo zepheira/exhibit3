@@ -4,16 +4,23 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(
-    ["lib/jquery", "exhibit", "lib/jquery.simile.dom"],
-    function($, Exhibit) {
+define([
+    "lib/jquery",
+    "exhibit",
+    "util/localizer",
+    "util/debug",
+    "util/history",
+    "ui/ui",
+    "ui/views/tile-view",
+    "lib/jquery.simile.dom"
+], function($, Exhibit, _, Debug, EHistory, UI, TileView) {
 /**
  * @constructor
  * @class
  * @param {Element} div
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.ViewPanel = function(div, uiContext) {
+var ViewPanel = function(div, uiContext) {
     this._uiContext = uiContext;
     this._div = div;
     this._uiContextCache = {};
@@ -34,16 +41,16 @@ Exhibit.ViewPanel = function(div, uiContext) {
  * @private
  * @constant
  */
-Exhibit.ViewPanel._registryKey = "viewPanel";
+ViewPanel._registryKey = "viewPanel";
 
 /**
  * @private
  * @param {jQuery.Event} evt
  * @param {Exhibit.Registry} reg
  */
-Exhibit.ViewPanel._registerComponent = function(evt, reg) {
-    if (!reg.hasRegistry(Exhibit.ViewPanel._registryKey)) {
-        reg.createRegistry(Exhibit.ViewPanel._registryKey);
+ViewPanel._registerComponent = function(evt, reg) {
+    if (!reg.hasRegistry(ViewPanel._registryKey)) {
+        reg.createRegistry(ViewPanel._registryKey);
     }
 };
 
@@ -53,9 +60,9 @@ Exhibit.ViewPanel._registerComponent = function(evt, reg) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.ViewPanel}
  */
-Exhibit.ViewPanel.create = function(configuration, div, uiContext) {
+ViewPanel.create = function(configuration, div, uiContext) {
     var viewPanel, i, viewConfig, viewClass, label, tooltip, id, viewClassName;
-    viewPanel = new Exhibit.ViewPanel(div, uiContext);
+    viewPanel = new ViewPanel(div, uiContext);
     
     if (typeof configuration.views !== "undefined") {
         for (i = 0; i < configuration.views.length; i++) {
@@ -63,10 +70,10 @@ Exhibit.ViewPanel.create = function(configuration, div, uiContext) {
             
             viewClass = (typeof view.viewClass !== "undefined") ?
                 view.viewClass :
-                Exhibit.TileView;
+                TileView;
             if (typeof viewClass === "string") {
                 viewClassName = viewClass;
-                viewClass = Exhibit.UI.viewClassNameToViewClass(viewClass);
+                viewClass = UI.viewClassNameToViewClass(viewClass);
             }
             
             label = null;
@@ -74,12 +81,12 @@ Exhibit.ViewPanel.create = function(configuration, div, uiContext) {
                 label = viewConfig.viewLabel;
             } else if (typeof viewConfig.label !== "undefined") {
                 label = viewConfig.label;
-            } else if (Exhibit.ViewPanel.getViewLabel(viewClassName) !== null) {
-                label = Exhibit.ViewPanel.getViewLabel(viewClassName);
+            } else if (ViewPanel.getViewLabel(viewClassName) !== null) {
+                label = ViewPanel.getViewLabel(viewClassName);
             } else if (typeof viewClassName !== "undefined") {
                 label = viewClassName;
             } else {
-                label = Exhibit._("%viewPanel.noViewLabel");
+                label = _("%viewPanel.noViewLabel");
             }
             
             // @@@ if viewClassName is null, Tile View will come up as the
@@ -90,8 +97,8 @@ Exhibit.ViewPanel.create = function(configuration, div, uiContext) {
             tooltip = null;
             if (typeof viewConfig.tooltip !== "undefined") {
                 tooltip = viewConfig.tooltip;
-            } else if (Exhibit.ViewPanel.getViewTooltip(viewClassName) !== null) {
-                tooltip = Exhibit.ViewPanel.getViewTooltip(viewClassName);
+            } else if (ViewPanel.getViewTooltip(viewClassName) !== null) {
+                tooltip = ViewPanel.getViewTooltip(viewClassName);
             } else {
                 tooltip = label;
             }
@@ -121,20 +128,20 @@ Exhibit.ViewPanel.create = function(configuration, div, uiContext) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.ViewPanel}
  */
-Exhibit.ViewPanel.createFromDOM = function(div, uiContext) {
+ViewPanel.createFromDOM = function(div, uiContext) {
     var viewPanel, role, viewClass, viewClassName, viewLabel, tooltip, label, id, initialView, n;
-    viewPanel = new Exhibit.ViewPanel(div, Exhibit.UIContext.createFromDOM(div, uiContext, false));
+    viewPanel = new ViewPanel(div, uiContext.asParentFromDOM(div, false));
     
     $(div).children().each(function(index, elmt) {
         $(this).hide();
         role = Exhibit.getRoleAttribute(this);
         if (role === "view") {
-            viewClass = Exhibit.TileView;
+            viewClass = TileView;
             viewClassName = Exhibit.getAttribute(this, "viewClass");
             if (typeof viewClassName !== "undefined" && viewClassName !== null && viewClassName.length > 0) {
-                viewClass = Exhibit.UI.viewClassNameToViewClass(viewClassName);
+                viewClass = UI.viewClassNameToViewClass(viewClassName);
                 if (typeof viewClass === "undefined" || viewClass === null) {
-                    Exhibit.Debug.warn(Exhibit._("%viewPanel.error.unknownView", viewClassName));
+                    Debug.warn(_("%viewPanel.error.unknownView", viewClassName));
                 }
             }
 
@@ -145,19 +152,19 @@ Exhibit.ViewPanel.createFromDOM = function(div, uiContext) {
             tooltip = Exhibit.getAttribute(this, "title");
                 
             if (typeof label === "undefined" || label === null) {
-                if (Exhibit.ViewPanel.getViewLabel(viewClassName) !== null) {
-                    label = Exhibit.ViewPanel.getViewLabel(viewClassName);
+                if (ViewPanel.getViewLabel(viewClassName) !== null) {
+                    label = ViewPanel.getViewLabel(viewClassName);
                 } else if (typeof viewClassName !== "undefined") {
                     label = viewClassName;
                 } else {
-                    label = Exhibit._("%viewPanel.noViewLabel");
+                    label = _("%viewPanel.noViewLabel");
                 }
             }
 
             // @@@ see note in above create method
             if (typeof tooltip === "undefined" || tooltip === null) {
-                if (Exhibit.ViewPanel.getViewTooltip(viewClassName) !== null) {
-                    tooltip = Exhibit.ViewPanel.getViewTooltip(viewClassName);
+                if (ViewPanel.getViewTooltip(viewClassName) !== null) {
+                    tooltip = ViewPanel.getViewTooltip(viewClassName);
                 } else {
                     tooltip = label;
                 }
@@ -195,8 +202,8 @@ Exhibit.ViewPanel.createFromDOM = function(div, uiContext) {
  * @param {String} viewClass
  * @returns {String}
  */
-Exhibit.ViewPanel.getViewLabel = function(viewClass) {
-    return Exhibit.ViewPanel._getLocalized(viewClass, "label");
+ViewPanel.getViewLabel = function(viewClass) {
+    return ViewPanel._getLocalized(viewClass, "label");
 };
 
 /**
@@ -204,8 +211,8 @@ Exhibit.ViewPanel.getViewLabel = function(viewClass) {
  * @param {String} viewClass
  * @returns {String}
  */
-Exhibit.ViewPanel.getViewTooltip = function(viewClass) {
-    return Exhibit.ViewPanel._getLocalized(viewClass, "tooltip");
+ViewPanel.getViewTooltip = function(viewClass) {
+    return ViewPanel._getLocalized(viewClass, "tooltip");
 };
 
 /**
@@ -214,7 +221,7 @@ Exhibit.ViewPanel.getViewTooltip = function(viewClass) {
  * @param {String} type
  * @returns {String}
  */
-Exhibit.ViewPanel._getLocalized = function(viewClass, type) {
+ViewPanel._getLocalized = function(viewClass, type) {
     if (typeof viewClass === "undefined" || viewClass === null) {
         return null;
     } else {
@@ -222,17 +229,18 @@ Exhibit.ViewPanel._getLocalized = function(viewClass, type) {
         if (viewClass.indexOf("View") === -1) {
             viewClass += "View";
         }
+        // @@@ may not need this with requirejs renaming
         if (viewClass.indexOf("Exhibit.") === 0) {
             viewClass = viewClass.substring("Exhibit.".length);
         }
-        return Exhibit._("%" + viewClass + "." + type);
+        return _("%" + viewClass + "." + type);
     }
 };
 
 /**
  *
  */
-Exhibit.ViewPanel.prototype.dispose = function() {
+ViewPanel.prototype.dispose = function() {
     if (this._view !== null) {
         this._view.dispose();
         this._view = null;
@@ -249,23 +257,23 @@ Exhibit.ViewPanel.prototype.dispose = function() {
 /**
  * @returns {jQuery}
  */
-Exhibit.ViewPanel.prototype.getContainer = function() {
+ViewPanel.prototype.getContainer = function() {
     return $(this._div);
 };
 
 /**
  *
  */
-Exhibit.ViewPanel.prototype._setIdentifier = function() {
+ViewPanel.prototype._setIdentifier = function() {
     this._id = $(this._div).attr("id");
 
     if (typeof this._id === "undefined" || this._id === null) {
-        this._id = Exhibit.ViewPanel._registryKey
+        this._id = ViewPanel._registryKey
             + "-"
             + this._uiContext.getCollection().getID()
             + "-"
             + this._uiContext.getMain().getRegistry().generateIdentifier(
-                Exhibit.ViewPanel._registryKey
+                ViewPanel._registryKey
             );
     }
 };
@@ -273,13 +281,13 @@ Exhibit.ViewPanel.prototype._setIdentifier = function() {
 /**
  * 
  */
-Exhibit.ViewPanel.prototype.register = function() {
+ViewPanel.prototype.register = function() {
     if (!this._uiContext.getMain().getRegistry().isRegistered(
-        Exhibit.ViewPanel._registryKey,
+        ViewPanel._registryKey,
         this.getID()
     )) {
         this._uiContext.getMain().getRegistry().register(
-            Exhibit.ViewPanel._registryKey,
+            ViewPanel._registryKey,
             this.getID(),
             this
         );
@@ -290,9 +298,9 @@ Exhibit.ViewPanel.prototype.register = function() {
 /**
  *
  */
-Exhibit.ViewPanel.prototype.unregister = function() {
+ViewPanel.prototype.unregister = function() {
     this._uiContext.getMain().getRegistry().unregister(
-        Exhibit.ViewPanel._registryKey,
+        ViewPanel._registryKey,
         this.getID()
     );
     this._registered = false;
@@ -301,19 +309,19 @@ Exhibit.ViewPanel.prototype.unregister = function() {
 /**
  * @returns {String}
  */
-Exhibit.ViewPanel.prototype.getID = function() {
+ViewPanel.prototype.getID = function() {
     return this._id;
 };
 
 /**
  *
  */
-Exhibit.ViewPanel.prototype._internalValidate = function() {
+ViewPanel.prototype._internalValidate = function() {
     if (this._viewConstructors.length === 0) {
-        this._viewConstructors.push(Exhibit.TileView);
+        this._viewConstructors.push(TileView);
         this._viewConfigs.push({});
-        this._viewLabels.push(Exhibit._("%TileView.label"));
-        this._viewTooltips.push(Exhibit._("%TileView.tooltip"));
+        this._viewLabels.push(_("%TileView.label"));
+        this._viewTooltips.push(_("%TileView.tooltip"));
         this._viewDomConfigs.push(null);
     }
     
@@ -324,7 +332,7 @@ Exhibit.ViewPanel.prototype._internalValidate = function() {
 /**
  *
  */
-Exhibit.ViewPanel.prototype._initializeUI = function() {
+ViewPanel.prototype._initializeUI = function() {
     var div, self;
     div = $("<div>");
     if ($(this._div).children().length > 0) {
@@ -334,7 +342,7 @@ Exhibit.ViewPanel.prototype._initializeUI = function() {
     }
     
     self = this;
-    this._dom = Exhibit.ViewPanel.constructDom(
+    this._dom = ViewPanel.constructDom(
         $(this._div).children().get(0),
         this._viewLabels,
         this._viewTooltips,
@@ -349,7 +357,7 @@ Exhibit.ViewPanel.prototype._initializeUI = function() {
 /**
  *
  */
-Exhibit.ViewPanel.prototype._createView = function() {
+ViewPanel.prototype._createView = function() {
     var viewContainer, viewDiv, index, context;
     viewContainer = this._dom.getViewContainer();
     $(viewContainer).empty();
@@ -374,8 +382,8 @@ Exhibit.ViewPanel.prototype._createView = function() {
             );
         }
     } catch (e) {
-        Exhibit.Debug.log(Exhibit._("%viewPanel.error.failedViewCreate", this._viewLabels[index], index));
-        Exhibit.Debug.exception(e);
+        Debug.log(_("%viewPanel.error.failedViewCreate", this._viewLabels[index], index));
+        Debug.exception(e);
     }
     
     this._uiContextCache[index] = this._view.getUIContext();
@@ -388,7 +396,7 @@ Exhibit.ViewPanel.prototype._createView = function() {
 /**
  * @param {Number} newIndex
  */
-Exhibit.ViewPanel.prototype._switchView = function(newIndex) {
+ViewPanel.prototype._switchView = function(newIndex) {
     $(this.getContainer()).trigger(
         "onBeforeViewPanelSwitch.exhibit",
         [ this._viewIndex ]
@@ -408,70 +416,17 @@ Exhibit.ViewPanel.prototype._switchView = function(newIndex) {
 /**
  * @param {Number} newIndex
  */
-Exhibit.ViewPanel.prototype._selectView = function(newIndex) {
+ViewPanel.prototype._selectView = function(newIndex) {
     var oldIndex, self;
     oldIndex = this._viewIndex;
     self = this;
-    Exhibit.History.pushComponentState(
+    EHistory.pushComponentState(
         this,
-        Exhibit.ViewPanel._registryKey,
+        ViewPanel._registryKey,
         this.exportState(this.makeState(newIndex)),
-        Exhibit._("%viewPanel.selectViewActionTitle", self._viewLabels[newIndex]),
+        _("%viewPanel.selectViewActionTitle", self._viewLabels[newIndex]),
         true
     );
-};
-
-/**
- * @param {String} itemID
- * @param {Array} propertyEntries
- * @param {Exhibit.Database} database
- * @returns {Array}
- */
-Exhibit.ViewPanel.getPropertyValuesPairs = function(itemID, propertyEntries, database) {
-    var pairs, enterPair, i, entry;
-    pairs = [];
-    enterPair = function(propertyID, forward) {
-        var property, values, count, itemValues, pair;
-        property = database.getProperty(propertyID);
-        values = forward ? 
-            database.getObjects(itemID, propertyID) :
-            database.getSubjects(itemID, propertyID);
-        count = values.size();
-        
-        if (count > 0) {
-            itemValues = property.getValueType() === "item";
-            pair = { 
-                propertyLabel:
-                    forward ?
-                        (count > 1 ? property.getPluralLabel() : property.getLabel()) :
-                        (count > 1 ? property.getReversePluralLabel() : property.getReverseLabel()),
-                valueType:  property.getValueType(),
-                values:     []
-            };
-            
-            if (itemValues) {
-                values.visit(function(value) {
-                    var label = database.getObject(value, "label");
-                    pair.values.push(typeof label !== "undefined" && label !== null ? label : value);
-                });
-            } else {
-                values.visit(function(value) {
-                    pair.values.push(value);
-                });
-            }
-            pairs.push(pair);
-        }
-    };
-    
-    for (i = 0; i < propertyEntries.length; i++) {
-        entry = propertyEntries[i];
-        if (typeof entry === "string") {
-            enterPair(entry, true);
-        } else {
-            enterPair(entry.property, entry.forward);
-        }
-    }
-    return pairs;
 };
 
 /**
@@ -480,7 +435,7 @@ Exhibit.ViewPanel.getPropertyValuesPairs = function(itemID, propertyEntries, dat
  * @param {Array} viewTooltips
  * @param {Function} onSelectView
  */
-Exhibit.ViewPanel.constructDom = function(
+ViewPanel.constructDom = function(
     div,
     viewLabels,
     viewTooltips,
@@ -514,7 +469,7 @@ Exhibit.ViewPanel.constructDom = function(
                 var selected, span, handler;
                 selected = (i === index);
                 if (i > 0) {
-                    $(dom.viewSelectionDiv).append(Exhibit._("%viewPanel.viewSeparator"));
+                    $(dom.viewSelectionDiv).append(_("%viewPanel.viewSeparator"));
                 }
                 
                 span = $("<span>");
@@ -548,7 +503,7 @@ Exhibit.ViewPanel.constructDom = function(
  * @param {Object} state
  * @returns {Object} state
  */
-Exhibit.ViewPanel.prototype.exportState = function(state) {
+ViewPanel.prototype.exportState = function(state) {
     if (typeof state === "undefined" || state === null) {
         return {
             "viewIndex": this._viewIndex
@@ -562,7 +517,7 @@ Exhibit.ViewPanel.prototype.exportState = function(state) {
  * @param {Object} state
  * @param {Number} state.viewIndex
  */
-Exhibit.ViewPanel.prototype.importState = function(state) {
+ViewPanel.prototype.importState = function(state) {
     if (this.stateDiffers(state)) {
         this._switchView(state.viewIndex);
     }
@@ -572,7 +527,7 @@ Exhibit.ViewPanel.prototype.importState = function(state) {
  * @param {Number} viewIndex
  * @returns {Object}
  */
-Exhibit.ViewPanel.prototype.makeState = function(viewIndex) {
+ViewPanel.prototype.makeState = function(viewIndex) {
     return {
         "viewIndex": viewIndex
     };
@@ -583,15 +538,15 @@ Exhibit.ViewPanel.prototype.makeState = function(viewIndex) {
  * @param {Number} state.viewIndex
  * @returns {Boolean}
  */
-Exhibit.ViewPanel.prototype.stateDiffers = function(state) {
+ViewPanel.prototype.stateDiffers = function(state) {
     return state.viewIndex !== this._viewIndex;
 };
 
 $(document).one(
     "registerComponents.exhibit",
-    Exhibit.ViewPanel._registerComponent
+    ViewPanel._registerComponent
 );
 
     // end define
-    return Exhibit;
+        return ViewPanel;
 });

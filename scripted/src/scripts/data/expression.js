@@ -4,19 +4,14 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["exhibit"], function(Exhibit) {
-/**
- * @namespace
- */
-Exhibit.Expression = {};
-
+define(function() {
 /**
  * @class
  * @constructor
  * @public
  * @param {Exhibit.Expression.Path} rootNode
  */
-Exhibit.Expression._Impl = function(rootNode) {
+var Expression = function(rootNode) {
     this._rootNode = rootNode;
 };
 
@@ -27,7 +22,7 @@ Exhibit.Expression._Impl = function(rootNode) {
  * @param {Exhibit.Database} database
  * @returns {Object}
  */
-Exhibit.Expression._Impl.prototype.evaluate = function(
+Expression.prototype.evaluate = function(
     roots, 
     rootValueTypes, 
     defaultRootName, 
@@ -46,7 +41,7 @@ Exhibit.Expression._Impl.prototype.evaluate = function(
  * @param {Exhibit.Database} database
  * @returns {Object}
  */
-Exhibit.Expression._Impl.prototype.evaluateOnItem = function(itemID, database) {
+Expression.prototype.evaluateOnItem = function(itemID, database) {
     return this.evaluate(
         { "value" : itemID }, 
         { "value" : "item" }, 
@@ -62,7 +57,7 @@ Exhibit.Expression._Impl.prototype.evaluateOnItem = function(itemID, database) {
  * @param {Exhibit.Database} database
  * @returns {Object}
  */
-Exhibit.Expression._Impl.prototype.evaluateSingle = function(
+Expression.prototype.evaluateSingle = function(
     roots, 
     rootValueTypes, 
     defaultRootName, 
@@ -85,7 +80,7 @@ Exhibit.Expression._Impl.prototype.evaluateSingle = function(
  * @param {Exhibit.Database} database
  * @returns {Object}
  */
-Exhibit.Expression._Impl.prototype.evaluateSingleOnItem = function(itemID, database) {
+Expression.prototype.evaluateSingleOnItem = function(itemID, database) {
     return this.evaluateSingle(
         { "value" : itemID }, 
         { "value" : "item" }, 
@@ -101,7 +96,7 @@ Exhibit.Expression._Impl.prototype.evaluateSingleOnItem = function(itemID, datab
  * @param {Exhibit.Database} database
  * @returns {Boolean}
  */
-Exhibit.Expression._Impl.prototype.testExists = function(
+Expression.prototype.testExists = function(
     roots, 
     rootValueTypes, 
     defaultRootName, 
@@ -115,19 +110,19 @@ Exhibit.Expression._Impl.prototype.testExists = function(
 /**
  * @returns {Boolean}
  */
-Exhibit.Expression._Impl.prototype.isPath = function() {
-    return this._rootNode instanceof Exhibit.Expression.Path;
+Expression.prototype.isPath = function() {
+    return this._rootNode instanceof Expression.Path;
 };
 
 /**
- * @returns {Exhibit.Expression.Path}
+ * @returns {Expression.Path}
  */
-Exhibit.Expression._Impl.prototype.getPath = function() {
+Expression.prototype.getPath = function() {
     return this.isPath() ?
         this._rootNode :
         null;
 };
 
     // end define
-    return Exhibit;
+    return Expression;
 });

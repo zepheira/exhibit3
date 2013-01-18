@@ -4,32 +4,40 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "exhibit"], function($, Exhibit) {
+define([
+    "lib/jquery",
+    "exhibit",
+    "util/localizer",
+    "util/debug",
+    "util/settings",
+    "ui/ui-context",
+    "ui/coders/coder"
+], function($, Exhibit, _, Debug, SettingsUtilities, UIContext, Coder) {
 /**
  * @constructor
  * @class
  * @param {Element|jQuery} containerElmt
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.IconCoder = function(containerElmt, uiContext) {
-    $.extend(this, new Exhibit.Coder(
+var IconCoder = function(containerElmt, uiContext) {
+    $.extend(this, new Coder(
         "icon",
         containerElmt,
         uiContext
     ));
-    this.addSettingSpecs(Exhibit.IconCoder._settingSpecs);
+    this.addSettingSpecs(IconCoder._settingSpecs);
     
     this._map = {};
     this._mixedCase = {
-        "label": Exhibit._("%coders.mixedCaseLabel"),
+        "label": _("%coders.mixedCaseLabel"),
         "icon": null
     };
     this._missingCase = {
-        "label": Exhibit._("%coders.missingCaseLabel"),
+        "label": _("%coders.missingCaseLabel"),
         "icon": null
     };
     this._othersCase = {
-        "label": Exhibit._("%coders.othersCaseLabel"),
+        "label": _("%coders.othersCaseLabel"),
         "icon": null
     };
 
@@ -39,13 +47,13 @@ Exhibit.IconCoder = function(containerElmt, uiContext) {
 /**
  * @constant
  */
-Exhibit.IconCoder._settingSpecs = {
+IconCoder._settingSpecs = {
 };
 
 /**
  * @constant
  */
-Exhibit.IconCoder._iconTable = {
+IconCoder._iconTable = {
     // add built-in icons?
 };
 
@@ -54,17 +62,17 @@ Exhibit.IconCoder._iconTable = {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.IconCoder}
  */
-Exhibit.IconCoder.create = function(configuration, uiContext) {
+IconCoder.create = function(configuration, uiContext) {
     var coder, div;
     div = $("<div>")
         .hide()
         .appendTo("body");
-    coder = new Exhibit.IconCoder(
+    coder = new IconCoder(
         div,
-        Exhibit.UIContext.create(configuration, uiContext)
+        UIContext.create(configuration, uiContext)
     );
     
-    Exhibit.IconCoder._configure(coder, configuration);
+    IconCoder._configure(coder, configuration);
     return coder;
 };
 
@@ -73,18 +81,18 @@ Exhibit.IconCoder.create = function(configuration, uiContext) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.IconCoder}
  */
-Exhibit.IconCoder.createFromDOM = function(configElmt, uiContext) {
+IconCoder.createFromDOM = function(configElmt, uiContext) {
     var configuration, coder;
 
     $(configElmt).hide();
     
     configuration = Exhibit.getConfigurationFromDOM(configElmt);
-    coder = new Exhibit.IconCoder(
+    coder = new IconCoder(
         configElmt,
-        Exhibit.UIContext.create(configuration, uiContext)
+        UIContext.create(configuration, uiContext)
     );
     
-    Exhibit.SettingsUtilities.collectSettingsFromDOM(
+    SettingsUtilities.collectSettingsFromDOM(
         configElmt,
         coder.getSettingSpecs(),
         coder._settings
@@ -99,10 +107,10 @@ Exhibit.IconCoder.createFromDOM = function(configElmt, uiContext) {
             );
         });
     } catch (e) {
-        Exhibit.Debug.exception(e, Exhibit._("%coders.error.configuration", "IconCoder"));
+        Debug.exception(e, _("%coders.error.configuration", "IconCoder"));
     }
     
-    Exhibit.IconCoder._configure(coder, configuration);
+    IconCoder._configure(coder, configuration);
     return coder;
 };
 
@@ -110,10 +118,10 @@ Exhibit.IconCoder.createFromDOM = function(configElmt, uiContext) {
  * @param {Exhibit.IconCoder} coder
  * @param {Object} configuration
  */ 
-Exhibit.IconCoder._configure = function(coder, configuration) {
+IconCoder._configure = function(coder, configuration) {
     var entries, i;
 
-    Exhibit.SettingsUtilities.collectSettings(
+    SettingsUtilities.collectSettings(
         configuration,
         coder.getSettingSpecs(),
         coder._settings
@@ -130,7 +138,7 @@ Exhibit.IconCoder._configure = function(coder, configuration) {
 /**
  *
  */
-Exhibit.IconCoder.prototype.dispose = function() {
+IconCoder.prototype.dispose = function() {
     this._map = null;
     this._dispose();
 };
@@ -140,12 +148,12 @@ Exhibit.IconCoder.prototype.dispose = function() {
  * @param {String} key
  * @param {String} icon
  */
-Exhibit.IconCoder.prototype._addEntry = function(kase, key, icon) {
+IconCoder.prototype._addEntry = function(kase, key, icon) {
     var entry;
 
     // used if there are built-in icons
-    if (typeof Exhibit.IconCoder._iconTable[icon] !== "undefined") {
-        icon = Exhibit.IconCoder._iconTable[icon];
+    if (typeof IconCoder._iconTable[icon] !== "undefined") {
+        icon = IconCoder._iconTable[icon];
     }
     
     entry = null;
@@ -167,7 +175,7 @@ Exhibit.IconCoder.prototype._addEntry = function(kase, key, icon) {
  * @param {Object} flags
  * @returns {String}
  */
-Exhibit.IconCoder.prototype.translate = function(key, flags) {
+IconCoder.prototype.translate = function(key, flags) {
     if (typeof this._map[key] !== "undefined") {
         if (typeof flags !== "undefined" && flags !== null) {
             flags.keys.add(key);
@@ -191,7 +199,7 @@ Exhibit.IconCoder.prototype.translate = function(key, flags) {
  * @param {Object} flags
  * @returns {String}
  */
-Exhibit.IconCoder.prototype.translateSet = function(keys, flags) {
+IconCoder.prototype.translateSet = function(keys, flags) {
     var icon, self;
     icon = null;
     self = this;
@@ -222,45 +230,45 @@ Exhibit.IconCoder.prototype.translateSet = function(keys, flags) {
 /**
  * @returns {String}
  */
-Exhibit.IconCoder.prototype.getOthersLabel = function() {
+IconCoder.prototype.getOthersLabel = function() {
     return this._othersCase.label;
 };
 
 /**
  * @returns {String}
  */
-Exhibit.IconCoder.prototype.getOthersIcon = function() {
+IconCoder.prototype.getOthersIcon = function() {
     return this._othersCase.icon;
 };
 
 /**
  * @returns {String}
  */
-Exhibit.IconCoder.prototype.getMissingLabel = function() {
+IconCoder.prototype.getMissingLabel = function() {
     return this._missingCase.label;
 };
 
 /**
  * @returns {String}
  */
-Exhibit.IconCoder.prototype.getMissingIcon = function() {
+IconCoder.prototype.getMissingIcon = function() {
     return this._missingCase.icon;
 };
 
 /**
  * @returns {String}
  */
-Exhibit.IconCoder.prototype.getMixedLabel = function() {
+IconCoder.prototype.getMixedLabel = function() {
     return this._mixedCase.label;
 };
 
 /**
  * @returns {String}
  */
-Exhibit.IconCoder.prototype.getMixedIcon = function() {
+IconCoder.prototype.getMixedIcon = function() {
     return this._mixedCase.icon;
 };
 
     // end define
-    return Exhibit;
+    return IconCoder;
 });

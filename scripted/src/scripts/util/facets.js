@@ -4,11 +4,21 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "exhibit"], function($, Exhibit) {
+define([
+    "lib/jquery",
+    "exhibit",
+    "util/util",
+    "util/localizer",
+    "util/set",
+    "util/ui",
+    "ui/widgets/resizable-div-widget",
+    "lib/jquery.simile.dom",
+    "lib/jquery.simile.bubble"
+], function($, Exhibit, Util, _, Set, UIUtilities, ResizableDivWidget) {
 /**
  * @namespace
  */
-Exhibit.FacetUtilities = {};
+var FacetUtilities = {};
 
 /**
  * @static
@@ -21,13 +31,13 @@ Exhibit.FacetUtilities = {};
  * @param {Boolean} collapsed
  * @returns {Object}
  */
-Exhibit.FacetUtilities.constructFacetFrame = function(forFacet, div, facetLabel, onClearAllSelections, uiContext, collapsible, collapsed) {
+FacetUtilities.constructFacetFrame = function(forFacet, div, facetLabel, onClearAllSelections, uiContext, collapsible, collapsed) {
     var dom, resizableDivWidget;
 
     $(div).attr("class", "exhibit-facet");
     dom = $.simileDOM("string", div,
             '<div class="exhibit-facet-header">' +
-            '<div class="exhibit-facet-header-filterControl" id="clearSelectionsDiv" title="' + Exhibit._("%facets.clearSelectionsTooltip") + '">' +
+            '<div class="exhibit-facet-header-filterControl" id="clearSelectionsDiv" title="' + _("%facets.clearSelectionsTooltip") + '">' +
             '<span id="filterCountSpan"></span>' +
             '<img id="checkImage" />' +
             '</div>' +
@@ -37,9 +47,9 @@ Exhibit.FacetUtilities.constructFacetFrame = function(forFacet, div, facetLabel,
             '<span class="exhibit-facet-header-title">' + facetLabel + '</span>' +
         '</div>' +
         '<div class="exhibit-facet-body-frame" id="frameDiv"></div>',
-        { checkImage: Exhibit.UI.createTranslucentImage("images/black-check.png") }
+        { checkImage: UIUtilities.createTranslucentImage("images/black-check.png") }
     );
-    resizableDivWidget = Exhibit.ResizableDivWidget.create({}, dom.frameDiv, uiContext);
+    resizableDivWidget = ResizableDivWidget.create({}, dom.frameDiv, uiContext);
     
     dom.valuesContainer = resizableDivWidget.getContentDiv();
     $(dom.valuesContainer).attr("class", "exhibit-facet-body");
@@ -52,11 +62,11 @@ Exhibit.FacetUtilities.constructFacetFrame = function(forFacet, div, facetLabel,
     
     if (collapsible) {
         $(dom.collapseImg).bind("click", function(evt) {
-            Exhibit.FacetUtilities.toggleCollapse(dom, forFacet);
+            FacetUtilities.toggleCollapse(dom, forFacet);
         });
         
         if (collapsed) {
-            Exhibit.FacetUtilities.toggleCollapse(dom, forFacet);
+            FacetUtilities.toggleCollapse(dom, forFacet);
         }
     }
     
@@ -68,7 +78,7 @@ Exhibit.FacetUtilities.constructFacetFrame = function(forFacet, div, facetLabel,
  * @param {Object} dom
  * @param {Exhibit.Facet} facet
  */
-Exhibit.FacetUtilities.toggleCollapse = function(dom, facet) {
+FacetUtilities.toggleCollapse = function(dom, facet) {
     var el = dom.frameDiv;
     if ($(el).is(":visible")) {
         $(el).hide();
@@ -88,7 +98,7 @@ Exhibit.FacetUtilities.toggleCollapse = function(dom, facet) {
  * @param {Exhibit.Facet} facet
  * @returns {Boolean}
  */
-Exhibit.FacetUtilities.isCollapsed = function(facet) {
+FacetUtilities.isCollapsed = function(facet) {
     var el = facet._dom.frameDiv;
     return !$(el).is(":visible");
 };
@@ -105,7 +115,7 @@ Exhibit.FacetUtilities.isCollapsed = function(facet) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Element}
  */
-Exhibit.FacetUtilities.constructFacetItem = function(
+FacetUtilities.constructFacetItem = function(
     label, 
     count, 
     color,
@@ -116,7 +126,7 @@ Exhibit.FacetUtilities.constructFacetItem = function(
     uiContext
 ) {
     if (Exhibit.params.safe) {
-        label = Exhibit.Formatter.encodeAngleBrackets(label);
+        label = Util.encodeAngleBrackets(label);
     }
     
     var dom = $.simileDOM("string",
@@ -124,7 +134,7 @@ Exhibit.FacetUtilities.constructFacetItem = function(
         '<div class="exhibit-facet-value-count">' + count + "</div>" +
         '<div class="exhibit-facet-value-inner" id="inner">' + 
             (   '<div class="exhibit-facet-value-checkbox">&#160;' +
-                    Exhibit.UI.createTranslucentImageHTML(
+                    UIUtilities.createTranslucentImageHTML(
                         facetHasSelection ?
                             (selected ? "images/black-check.png" : "images/no-check.png") :
                             "images/no-check-no-border.png"
@@ -167,7 +177,7 @@ Exhibit.FacetUtilities.constructFacetItem = function(
  * @param {Boolean} collapsed
  * @returns {Object}
  */
-Exhibit.FacetUtilities.constructFlowingFacetFrame = function(forFacet, div, facetLabel, onClearAllSelections, uiContext, collapsible, collapsed) {
+FacetUtilities.constructFlowingFacetFrame = function(forFacet, div, facetLabel, onClearAllSelections, uiContext, collapsible, collapsed) {
     $(div).attr("class", "exhibit-flowingFacet");
     var dom = $.simileDOM("string",
         div,
@@ -186,11 +196,11 @@ Exhibit.FacetUtilities.constructFlowingFacetFrame = function(forFacet, div, face
 
     if (collapsible) {
         $(dom.collapseImg).bind("click", function(evt) {
-            Exhibit.FacetUtilities.toggleCollapse(dom, forFacet);
+            FacetUtilities.toggleCollapse(dom, forFacet);
         });
         
         if (collapsed) {
-            Exhibit.FacetUtilities.toggleCollapse(dom, forFacet);
+            FacetUtilities.toggleCollapse(dom, forFacet);
         }
     }
     
@@ -209,7 +219,7 @@ Exhibit.FacetUtilities.constructFlowingFacetFrame = function(forFacet, div, face
  * @param {Exhibit.UIContext} uiContext
  * @returns {Element}
  */
-Exhibit.FacetUtilities.constructFlowingFacetItem = function(
+FacetUtilities.constructFlowingFacetItem = function(
     label, 
     count, 
     color,
@@ -220,7 +230,7 @@ Exhibit.FacetUtilities.constructFlowingFacetItem = function(
     uiContext
 ) {
     if (Exhibit.params.safe) {
-        label = Exhibit.Formatter.encodeAngleBrackets(label);
+        label = Util.encodeAngleBrackets(label);
     }
     
     var dom = $.simileDOM("string",
@@ -275,7 +285,7 @@ Exhibit.FacetUtilities.constructFlowingFacetItem = function(
  * @param {Exhibit.UIContext} uiContext
  * @returns {Object}
  */
-Exhibit.FacetUtilities.constructHierarchicalFacetItem = function(
+FacetUtilities.constructHierarchicalFacetItem = function(
     label, 
     count, 
     color,
@@ -289,7 +299,7 @@ Exhibit.FacetUtilities.constructHierarchicalFacetItem = function(
     uiContext
 ) {
     if (Exhibit.params.safe) {
-        label = Exhibit.Formatter.encodeAngleBrackets(label);
+        label = Util.encodeAngleBrackets(label);
     }
     
     var dom = $.simileDOM("string",
@@ -366,7 +376,7 @@ Exhibit.FacetUtilities.constructHierarchicalFacetItem = function(
  * @param {Exhibit.UIContext} uiContext
  * @returns {Object}
  */
-Exhibit.FacetUtilities.constructFlowingHierarchicalFacetItem = function(
+FacetUtilities.constructFlowingHierarchicalFacetItem = function(
     label, 
     count, 
     color,
@@ -380,7 +390,7 @@ Exhibit.FacetUtilities.constructFlowingHierarchicalFacetItem = function(
     uiContext
 ) {
     if (Exhibit.params.safe) {
-        label = Exhibit.Formatter.encodeAngleBrackets(label);
+        label = Util.encodeAngleBrackets(label);
     }
     
     var dom = $.simileDOM("string",
@@ -455,7 +465,7 @@ Exhibit.FacetUtilities.constructFlowingHierarchicalFacetItem = function(
  * @param {Exhibit.Collection} collection
  * @param {Exhibit.Expression} expression
  */
-Exhibit.FacetUtilities.Cache = function(database, collection, expression) {
+FacetUtilities.Cache = function(database, collection, expression) {
     var self = this;
     
     this._database = database;
@@ -483,7 +493,7 @@ Exhibit.FacetUtilities.Cache = function(database, collection, expression) {
 /**
  *
  */
-Exhibit.FacetUtilities.Cache.prototype.dispose = function() {
+FacetUtilities.Cache.prototype.dispose = function() {
     $(this._collection.getElement()).unbind(
         "onRootItemsChanged.exhibit",
         this._onRootItemsChanged
@@ -501,7 +511,7 @@ Exhibit.FacetUtilities.Cache.prototype.dispose = function() {
  * @param {Exhibit.Set} filter
  * @returns {Exhibit.Set}
  */
-Exhibit.FacetUtilities.Cache.prototype.getItemsFromValues = function(values, filter) {
+FacetUtilities.Cache.prototype.getItemsFromValues = function(values, filter) {
     var set, valueToItem;
     if (this._expression.isPath()) {
         set = this._expression.getPath().walkBackward(
@@ -513,7 +523,7 @@ Exhibit.FacetUtilities.Cache.prototype.getItemsFromValues = function(values, fil
     } else {
         this._buildMaps();
         
-        set = new Exhibit.Set();
+        set = new Set();
         
         valueToItem = this._valueToItem;
         values.visit(function(value) {
@@ -537,10 +547,10 @@ Exhibit.FacetUtilities.Cache.prototype.getItemsFromValues = function(values, fil
  * @param {Exhibit.Set} results
  * @returns {Exhibit.Set}
  */
-Exhibit.FacetUtilities.Cache.prototype.getItemsMissingValue = function(filter, results) {
+FacetUtilities.Cache.prototype.getItemsMissingValue = function(filter, results) {
     this._buildMaps();
     
-    results = results || new Exhibit.Set();
+    results = results || new Set();
         
     var missingItems = this._missingItems;
     filter.visit(function(item) {
@@ -555,7 +565,7 @@ Exhibit.FacetUtilities.Cache.prototype.getItemsMissingValue = function(filter, r
  * @param {Exhibit.Set} items
  * @returns {Exhibit.Set}
  */
-Exhibit.FacetUtilities.Cache.prototype.getValueCountsFromItems = function(items) {
+FacetUtilities.Cache.prototype.getValueCountsFromItems = function(items) {
     var entries, database, valueType, path, facetValueResult, value, itemA, count, i;
     entries = [];
     database = this._database;
@@ -599,7 +609,7 @@ Exhibit.FacetUtilities.Cache.prototype.getValueCountsFromItems = function(items)
  * @param {Exhibit.Set} items
  * @returns {Exhibit.Set}
  */
-Exhibit.FacetUtilities.Cache.prototype.getValuesFromItems = function(items) {
+FacetUtilities.Cache.prototype.getValuesFromItems = function(items) {
     var set, itemToValue;
 
     if (this._expression.isPath()) {
@@ -607,7 +617,7 @@ Exhibit.FacetUtilities.Cache.prototype.getValuesFromItems = function(items) {
     } else {
         this._buildMaps();
         
-        set = new Exhibit.Set();
+        set = new Set();
         itemToValue = this._itemToValue;
         items.visit(function(item) {
             var a, i;
@@ -627,7 +637,7 @@ Exhibit.FacetUtilities.Cache.prototype.getValuesFromItems = function(items) {
  * @param {Exhibit.Set} items
  * @returns {Number}
  */
-Exhibit.FacetUtilities.Cache.prototype.countItemsMissingValue = function(items) {
+FacetUtilities.Cache.prototype.countItemsMissingValue = function(items) {
     var count, item;
 
     this._buildMaps();
@@ -646,7 +656,7 @@ Exhibit.FacetUtilities.Cache.prototype.countItemsMissingValue = function(items) 
 /**
  *
  */
-Exhibit.FacetUtilities.Cache.prototype._buildMaps = function() {
+FacetUtilities.Cache.prototype._buildMaps = function() {
     var itemToValue, valueToItem, missingItems, valueType, insert, expression, database;
 
     if (typeof this._itemToValue === "undefined") {
@@ -687,5 +697,5 @@ Exhibit.FacetUtilities.Cache.prototype._buildMaps = function() {
 };
 
     // end define
-    return Exhibit;
+    return FacetUtilities;
 });

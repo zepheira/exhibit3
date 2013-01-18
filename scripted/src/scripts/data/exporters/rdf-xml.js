@@ -4,11 +4,16 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "exhibit", "data/exporter"], function($, Exhibit) {
+define([
+    "lib/jquery",
+    "util/localizer",
+    "util/persistence",
+    "data/exporter"
+], function($, _, Persistence, Exporter) {
 /**
  * @namespace
  */
-Exhibit.Exporter.RDFXML = {
+var RDFXML = {
     _mimeType: "application/rdf+xml",
     exporter: null
 };
@@ -18,7 +23,7 @@ Exhibit.Exporter.RDFXML = {
  * @param {Object} prefixToBase
  * @returns {String}
  */
-Exhibit.Exporter.RDFXML.wrap = function(s, prefixToBase) {
+RDFXML.wrap = function(s, prefixToBase) {
     var s2, prefix;
 
     s2 = "<?xml version=\"1.0\"?>\n" +
@@ -40,7 +45,7 @@ Exhibit.Exporter.RDFXML.wrap = function(s, prefixToBase) {
  * @param {String} s
  * @returns {String}
  */
-Exhibit.Exporter.RDFXML.wrapOne = function(s, first, last) {
+RDFXML.wrapOne = function(s, first, last) {
     return s + "\n";
 };
 
@@ -52,7 +57,7 @@ Exhibit.Exporter.RDFXML.wrapOne = function(s, first, last) {
  * @param {Object} prefixToBase
  * @returns {String}
  */
-Exhibit.Exporter.RDFXML.exportOne = function(itemID, o, properties, propertyIDToQualifiedName, prefixToBase) {
+RDFXML.exportOne = function(itemID, o, properties, propertyIDToQualifiedName, prefixToBase) {
     var s = "", uri, i, propertyID, valueType, propertyString, j, values;
     uri = o["uri"];
     s += "<rdf:Description rdf:about=\"" + uri + "\">\n";
@@ -81,13 +86,13 @@ Exhibit.Exporter.RDFXML.exportOne = function(itemID, o, properties, propertyIDTo
         }
     }
          
-    s += "\t<exhibit:origin>" + Exhibit.Persistence.getItemLink(itemID) + "</exhibit:origin>\n";
+    s += "\t<exhibit:origin>" + Persistence.getItemLink(itemID) + "</exhibit:origin>\n";
     s += "</rdf:Description>";
 
     return s;
 };
 
-Exhibit.Exporter.RDFXML.exportMany = function(set, database) {
+RDFXML.exportMany = function(set, database) {
     var propertyIDToQualifiedName, prefixToBase, s, self, properties, ps, i, p;
     propertyIDToQualifiedName = {};
     prefixToBase = {};
@@ -117,22 +122,22 @@ Exhibit.Exporter.RDFXML.exportMany = function(set, database) {
 /**
  * @private
  */
-Exhibit.Exporter.RDFXML._register = function() {
-    Exhibit.Exporter.RDFXML.exporter = new Exhibit.Exporter(
-        Exhibit.Exporter.RDFXML._mimeType,
-        Exhibit._("%export.rdfXmlExporterLabel"),
-        Exhibit.Exporter.RDFXML.wrap,
-        Exhibit.Exporter.RDFXML.wrapOne,
-        Exhibit.Exporter.RDFXML.exportOne,
-        Exhibit.Exporter.RDFXML.exportMany
+RDFXML._register = function() {
+    RDFXML.exporter = new Exporter(
+        RDFXML._mimeType,
+        _("%export.rdfXmlExporterLabel"),
+        RDFXML.wrap,
+        RDFXML.wrapOne,
+        RDFXML.exportOne,
+        RDFXML.exportMany
     );
 };
 
 $(document).one(
     "registerExporters.exhibit",
-    Exhibit.Exporter.RDFXML._register
+    RDFXML._register
 );
 
     // end define
-    return Exhibit;
+    return RDFXML;
 });

@@ -4,13 +4,13 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["exhibit"], function(Exhibit) {
+define(["ui/ui-context"], function(UIContext) {
 /**
  * @constructor
  * @class
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.Coordinator = function(uiContext) {
+var Coordinator = function(uiContext) {
     this._uiContext = uiContext;
     this._listeners = [];
 };
@@ -21,8 +21,8 @@ Exhibit.Coordinator = function(uiContext) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.Coordinator}
  */
-Exhibit.Coordinator.create = function(configuration, uiContext) {
-    return new Exhibit.Coordinator(uiContext);
+Coordinator.create = function(configuration, uiContext) {
+    return new Coordinator(uiContext);
 };
 
 /**
@@ -31,14 +31,14 @@ Exhibit.Coordinator.create = function(configuration, uiContext) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.Coordinator}
  */
-Exhibit.Coordinator.createFromDOM = function(div, uiContext) {
-    return new Exhibit.Coordinator(Exhibit.UIContext.createFromDOM(div, uiContext, false));
+Coordinator.createFromDOM = function(div, uiContext) {
+    return new Coordinator(UIContext.createFromDOM(div, uiContext, false));
 };
 
 /**
  *
  */
-Exhibit.Coordinator.prototype.dispose = function() {
+Coordinator.prototype.dispose = function() {
     this._uiContext.dispose();
     this._uiContext = null;
 };
@@ -47,8 +47,8 @@ Exhibit.Coordinator.prototype.dispose = function() {
  * @param {Function} callback
  * @returns {Exhibit.Coordinator._Listener}
  */
-Exhibit.Coordinator.prototype.addListener = function(callback) {
-    var listener = new Exhibit.Coordinator._Listener(this, callback);
+Coordinator.prototype.addListener = function(callback) {
+    var listener = new Coordinator._Listener(this, callback);
     this._listeners.push(listener);
     
     return listener;
@@ -57,7 +57,7 @@ Exhibit.Coordinator.prototype.addListener = function(callback) {
 /**
  * @param {Exhibit.Coordinator._Listener} listener
  */
-Exhibit.Coordinator.prototype._removeListener = function(listener) {
+Coordinator.prototype._removeListener = function(listener) {
     var i;
     for (i = 0; i < this._listeners.length; i++) {
         if (this._listeners[i] === listener) {
@@ -71,7 +71,7 @@ Exhibit.Coordinator.prototype._removeListener = function(listener) {
  * @param {Exhibit.Coordinator._Listener} listener
  * @param {Object} o
  */
-Exhibit.Coordinator.prototype._fire = function(listener, o) {
+Coordinator.prototype._fire = function(listener, o) {
     var i, listener2;
     for (i = 0; i < this._listeners.length; i++) {
         listener2 = this._listeners[i];
@@ -87,24 +87,24 @@ Exhibit.Coordinator.prototype._fire = function(listener, o) {
  * @param {Exhibit.Coordinator} coordinator
  * @param {Function} callback
  */
-Exhibit.Coordinator._Listener = function(coordinator, callback) {
+Coordinator._Listener = function(coordinator, callback) {
     this._coordinator = coordinator;
     this._callback = callback;
 };
 
 /**
  */
-Exhibit.Coordinator._Listener.prototype.dispose = function() {
+Coordinator._Listener.prototype.dispose = function() {
     this._coordinator._removeListener(this);
 };
 
 /**
  * @param {Object} o
  */
-Exhibit.Coordinator._Listener.prototype.fire = function(o) {
+Coordinator._Listener.prototype.fire = function(o) {
     this._coordinator._fire(this, o);
 };
 
     // end define
-    return Exhibit;
+    return Coordinator;
 });

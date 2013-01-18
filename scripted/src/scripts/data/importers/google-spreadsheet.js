@@ -4,12 +4,19 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "exhibit", "data/importer", "data/importers/jsonp"],
-       function($, Exhibit) {
+define([
+    "lib/jquery",
+    "exhibit",
+    "util/date-time",
+    "data/importer",
+    "data/importers/jsonp"
+], function($, Exhibit, DateTime, Importer, JSONP) {
+    var GoogleSpreadsheet;
+
 /**
  * @namespace
  */
-Exhibit.Importer.JSONP.GoogleSpreadsheet = {
+GoogleSpreadsheet = {
     _type: "googleSpreadsheets",
     _dateRegex: /^\d{1,2}\/\d{1,2}\/\d{4}$/
 };
@@ -20,14 +27,14 @@ Exhibit.Importer.JSONP.GoogleSpreadsheet = {
  * @param {jQuery.Event} evt
  * @param {Exhibit.Registry} reg
  */
-Exhibit.Importer.JSONP.GoogleSpreadsheet._register = function(evt, reg) {
+GoogleSpreadsheet._register = function(evt, reg) {
     if (!reg.isRegistered(
-        Exhibit.Importer.JSONP._registryKey,
-        Exhibit.Importer.JSONP.GoogleSpreadsheet._type)) {
+        JSONP._registryKey,
+        GoogleSpreadsheet._type)) {
         reg.register(
-            Exhibit.Importer.JSONP._registryKey,
-            Exhibit.Importer.JSONP.GoogleSpreadsheet._type,
-            Exhibit.Importer.JSONP.GoogleSpreadsheet
+            JSONP._registryKey,
+            GoogleSpreadsheet._type,
+            GoogleSpreadsheet
         );
     }
 };
@@ -39,7 +46,7 @@ Exhibit.Importer.JSONP.GoogleSpreadsheet._register = function(evt, reg) {
  * @param {String|Element} link
  * @returns {Object}
  */
-Exhibit.Importer.JSONP.GoogleSpreadsheet.transformJSON = function(json, url, link) {
+GoogleSpreadsheet.transformJSON = function(json, url, link) {
     var separator, s, items, properties, types, valueTypes, entries, i, entry, id, c, r, cellIndex, getNextRow, propertyRow, propertiesByColumn, cell, fieldSpec, fieldName, fieldDetails, property, d, detail, row, fieldValues, v;
     separator = ";";
 
@@ -130,8 +137,8 @@ Exhibit.Importer.JSONP.GoogleSpreadsheet.transformJSON = function(json, url, lin
                 fieldName = propertiesByColumn[cell.col];
                 if (typeof fieldName === "string") {
                     // ensure round-trip iso8601 date strings through google docs
-                    if (Exhibit.Importer.JSONP.GoogleSpreadsheet._dateRegex.exec(cell.val)) {
-                        cell.val = Exhibit.DateTime.toISODateString(new Date(cell.val));
+                    if (GoogleSpreadsheet._dateRegex.exec(cell.val)) {
+                        cell.val = DateTime.toISODateString(new Date(cell.val));
                     }
 
                     item[fieldName] = cell.val;
@@ -164,15 +171,15 @@ Exhibit.Importer.JSONP.GoogleSpreadsheet.transformJSON = function(json, url, lin
  * @param {String} url
  * @returns {String}
  */
-Exhibit.Importer.JSONP.GoogleSpreadsheet.preprocessURL = function(url) {
+GoogleSpreadsheet.preprocessURL = function(url) {
     return url.replace(/\/list\//g, "/cells/");
 };
 
 $(document).one(
     "registerJSONPImporters.exhibit",
-    Exhibit.Importer.JSONP.GoogleSpreadsheet._register
+    GoogleSpreadsheet._register
 );
 
     // end define
-    return Exhibit;
+    return GoogleSpreadsheet;
 });

@@ -4,23 +4,37 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(
-    ["lib/jquery", "exhibit", "lib/jquery.simile.dom"],
-    function($, Exhibit) {
+define([
+    "lib/jquery",
+    "exhibit",
+    "util/date-time",
+    "util/settings",
+    "util/views",
+    "util/history",
+    "util/ui",
+    "data/expression-parser",
+    "ui/ui-context",
+    "ui/lens",
+    "ui/format-parser",
+    "ui/views/view",
+    "ui/views/ordered-view-frame",
+    "ui/widgets/collection-summary-widget",
+    "lib/jquery.simile.dom"
+], function($, Exhibit, DateTime, SettingsUtilities, ViewUtilities, EHistory, UIUtilities, ExpressionParser, UIContext, Lens, FormatParser, View, OrderedViewFrame, CollectionSummaryWidget) {
 /**
  * @constructor
  * @class
  * @param {Element} containerElmt
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.TabularView = function(containerElmt, uiContext) {
+var TabularView = function(containerElmt, uiContext) {
     var view = this;
-    $.extend(this, new Exhibit.View(
+    $.extend(this, new View(
         "tabular",
         containerElmt,
         uiContext
     ));
-    this.addSettingSpecs(Exhibit.TabularView._settingSpecs);
+    this.addSettingSpecs(TabularView._settingSpecs);
     $.extend(this._settings, { rowStyler: null, tableStyler: null, indexMap: {} });
 
     this._columns = [];
@@ -43,7 +57,7 @@ Exhibit.TabularView = function(containerElmt, uiContext) {
 /**
  * @constant
  */
-Exhibit.TabularView._settingSpecs = {
+TabularView._settingSpecs = {
     "sortAscending":        { type: "boolean", defaultValue: true },
     "sortColumn":           { type: "int",     defaultValue: 0 },
     "showSummary":          { type: "boolean", defaultValue: true },
@@ -64,12 +78,12 @@ Exhibit.TabularView._settingSpecs = {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.TabularView}
  */
-Exhibit.TabularView.create = function(configuration, containerElmt, uiContext) {
-    var view = new Exhibit.TabularView(
+TabularView.create = function(configuration, containerElmt, uiContext) {
+    var view = new TabularView(
         containerElmt,
-        Exhibit.UIContext.create(configuration, uiContext)
+        UIContext.create(configuration, uiContext)
     );
-    Exhibit.TabularView._configure(view, configuration);
+    TabularView._configure(view, configuration);
     
     view._internalValidate();
 
@@ -83,19 +97,19 @@ Exhibit.TabularView.create = function(configuration, containerElmt, uiContext) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.TabularView}
  */
-Exhibit.TabularView.createFromDOM = function(configElmt, containerElmt, uiContext) {
+TabularView.createFromDOM = function(configElmt, containerElmt, uiContext) {
     var configuration, view, expressions, labels, s, i, expression, formats, index, startPosition, column, o, tables, f;
     configuration = Exhibit.getConfigurationFromDOM(configElmt);
     
-    uiContext = Exhibit.UIContext.createFromDOM(configElmt, uiContext);
+    uiContext = UIContext.createFromDOM(configElmt, uiContext);
     
-    view = new Exhibit.TabularView(
+    view = new TabularView(
         (typeof containerElmt !== "undefined" && containerElmt !== null) ?
             containerElmt : configElmt, 
         uiContext
     );
     
-    Exhibit.SettingsUtilities.collectSettingsFromDOM(configElmt, view.getSettingSpecs(), view._settings);
+    SettingsUtilities.collectSettingsFromDOM(configElmt, view.getSettingSpecs(), view._settings);
     
     try {
         expressions = [];
@@ -103,14 +117,14 @@ Exhibit.TabularView.createFromDOM = function(configElmt, containerElmt, uiContex
         
         s = Exhibit.getAttribute(configElmt, "columns");
         if (typeof s !== "undefined" && s !== null && s.length > 0) {
-            expressions = Exhibit.ExpressionParser.parseSeveral(s);
+            expressions = ExpressionParser.parseSeveral(s);
         }
         
         for (i = 0; i < expressions.length; i++) {
             expression = expressions[i];
             view._columns.push({
                 expression: expression,
-                uiContext:  Exhibit.UIContext.create({}, view.getUIContext(), true),
+                uiContext:  UIContext.create({}, view.getUIContext(), true),
                 styler:     null,
                 label:      i < labels.length ? labels[i] : null,
                 format:     "list"
@@ -125,7 +139,7 @@ Exhibit.TabularView.createFromDOM = function(configElmt, containerElmt, uiContex
                 column = view._columns[index];
                 o = {};
                 
-                column.format = Exhibit.FormatParser.parseSeveral(column.uiContext, formats, startPosition, o);
+                column.format = FormatParser.parseSeveral(column.uiContext, formats, startPosition, o);
                 
                 startPosition = o.index;
                 while (startPosition < formats.length && " \t\r\n".indexOf(formats.charAt(startPosition)) >= 0) {
@@ -141,10 +155,10 @@ Exhibit.TabularView.createFromDOM = function(configElmt, containerElmt, uiContex
         
         tables = $("table", configElmt);
         if (tables.length > 0 && $("table:eq(0) tr", configElmt).length > 0) {
-            view._rowTemplate = Exhibit.Lens.compileTemplate($("table:eq(0) tr:eq(0)", configElmt).get(0), false, uiContext);
+            view._rowTemplate = Lens.compileTemplate($("table:eq(0) tr:eq(0)", configElmt).get(0), false, uiContext);
         }
     } catch (e) {
-        Exhibit.Debug.exception(e, Exhibit._("%TabularView.error.configuration"));
+        Debug.exception(e, _("%TabularView.error.configuration"));
     }
     
     s = Exhibit.getAttribute(configElmt, "rowStyler");
@@ -162,7 +176,7 @@ Exhibit.TabularView.createFromDOM = function(configElmt, containerElmt, uiContex
         }
     }
         
-    Exhibit.TabularView._configure(view, configuration);
+    TabularView._configure(view, configuration);
     view._internalValidate();
 
     view._initializeUI();
@@ -173,9 +187,9 @@ Exhibit.TabularView.createFromDOM = function(configElmt, containerElmt, uiContex
  * @param {Exhibit.TabularView} view
  * @param {Object} configuration
  */
-Exhibit.TabularView._configure = function(view, configuration) {
+TabularView._configure = function(view, configuration) {
     var columns, i, column, expr, styler, label, format, expression, path;
-    Exhibit.SettingsUtilities.collectSettings(configuration, Exhibit.TabularView._settingSpecs, view._settings);
+    SettingsUtilities.collectSettings(configuration, TabularView._settingSpecs, view._settings);
     
     if (typeof configuration.columns !== "undefined") {
         columns = configuration.columns;
@@ -194,11 +208,11 @@ Exhibit.TabularView._configure = function(view, configuration) {
                 format = column.format;
             }
             
-            expression = Exhibit.ExpressionParser.parse(expr);
+            expression = ExpressionParser.parse(expr);
             if (expression.isPath()) {
                 path = expression.getPath();
                 if (typeof format !== "undefined" && format !== null && format.length > 0) {
-                    format = Exhibit.FormatParser.parse(view.getUIContext(), format, 0);
+                    format = FormatParser.parse(view.getUIContext(), format, 0);
                 } else {
                     format = "list";
                 }
@@ -225,7 +239,7 @@ Exhibit.TabularView._configure = function(view, configuration) {
 /**
  *
  */
-Exhibit.TabularView.prototype._internalValidate = function() {
+TabularView.prototype._internalValidate = function() {
     var database, propertyIDs, i, propertyID;
     if (this._columns.length === 0) {
         database = this.getUIContext().getDatabase();
@@ -234,7 +248,7 @@ Exhibit.TabularView.prototype._internalValidate = function() {
             propertyID = propertyIDs[i];
             if (propertyID !== "uri") {
                 this._columns.push(
-                    {   expression: Exhibit.ExpressionParser.parse("." + propertyID),
+                    {   expression: ExpressionParser.parse("." + propertyID),
                         styler:     null,
                         label:      database.getProperty(propertyID).getLabel(),
                         format:     "list"
@@ -251,7 +265,7 @@ Exhibit.TabularView.prototype._internalValidate = function() {
 /**
  *
  */
-Exhibit.TabularView.prototype.dispose = function() {
+TabularView.prototype.dispose = function() {
     $(this.getUIContext().getCollection().getElement()).unbind(
         "onItemsChanged.exhibit",
         this._onItemsChanged
@@ -267,7 +281,7 @@ Exhibit.TabularView.prototype.dispose = function() {
 /**
  *
  */
-Exhibit.TabularView.prototype._initializeUI = function() {
+TabularView.prototype._initializeUI = function() {
     var self = this;
     
     $(this.getContainer()).empty();
@@ -275,8 +289,8 @@ Exhibit.TabularView.prototype._initializeUI = function() {
         return $(self._dom.bodyDiv).html();
     });
 
-    this._dom = Exhibit.TabularView.createDom(this.getContainer());
-    this._collectionSummaryWidget = Exhibit.CollectionSummaryWidget.create(
+    this._dom = TabularView.createDom(this.getContainer());
+    this._collectionSummaryWidget = CollectionSummaryWidget.create(
         {}, 
         this._dom.collectionSummaryDiv, 
         this.getUIContext()
@@ -286,7 +300,7 @@ Exhibit.TabularView.prototype._initializeUI = function() {
         $(this._dom.collectionSummaryDiv).hide();
     }
     
-    Exhibit.View.addViewState(
+    View.addViewState(
         this.getID(),
         this.exportState()
     );
@@ -297,7 +311,7 @@ Exhibit.TabularView.prototype._initializeUI = function() {
 /**
  *
  */
-Exhibit.TabularView.prototype._reconstruct = function() {
+TabularView.prototype._reconstruct = function() {
     var self, collection, database, bodyDiv, items, originalSize, currentSet, sortColumn, sorter, table, tr, createColumnHeader, i, renderItem, start, end, generatePagingControls;
     self = this;
     collection = this.getUIContext().getCollection();
@@ -365,7 +379,7 @@ Exhibit.TabularView.prototype._reconstruct = function() {
             }
 
             td = $("<th>");
-            Exhibit.TabularView.createColumnHeader(
+            TabularView.createColumnHeader(
                 exhibit, td.get(0), column.label, i === self._settings.sortColumn, self._settings.sortAscending,
                 function(evt) {
                     self._doSort(i);
@@ -386,7 +400,7 @@ Exhibit.TabularView.prototype._reconstruct = function() {
             renderItem = function(i) {
                 var item, tr;
                 item = items[i];
-                tr = Exhibit.Lens.constructFromLensTemplate(item.id, self._rowTemplate, table, self.getUIContext());
+                tr = Lens.constructFromLensTemplate(item.id, self._rowTemplate, table, self.getUIContext());
                 
                 if (self._settings.rowStyler !== null) {
                     self._settings.rowStyler(item.id, database, tr, i);
@@ -471,12 +485,12 @@ Exhibit.TabularView.prototype._reconstruct = function() {
  * @param {Number} itemCount
  * @param {Number} page
  */
-Exhibit.TabularView.prototype._renderPagingDiv = function(parentElmt, itemCount, page) {
+TabularView.prototype._renderPagingDiv = function(parentElmt, itemCount, page) {
     var pageCount, self;
     pageCount = Math.ceil(itemCount / this._settings.pageSize);
     self = this;
     
-    Exhibit.OrderedViewFrame.renderPageLinks(
+    OrderedViewFrame.renderPageLinks(
         parentElmt, 
         page,
         pageCount,
@@ -491,7 +505,7 @@ Exhibit.TabularView.prototype._renderPagingDiv = function(parentElmt, itemCount,
  * @param {Exhibit.Expression} expression
  * @returns {String}
  */
-Exhibit.TabularView.prototype._getColumnLabel = function(expression) {
+TabularView.prototype._getColumnLabel = function(expression) {
     var database, path, segment, propertyID, property;
     database = this.getUIContext().getDatabase();
     path = expression.getPath();
@@ -519,7 +533,7 @@ Exhibit.TabularView.prototype._getColumnLabel = function(expression) {
  * @param {Object} indexMap
  * @returns {Function}
  */
-Exhibit.TabularView.prototype._stabilize = function(f, indexMap)  {
+TabularView.prototype._stabilize = function(f, indexMap)  {
     var stable;
     stable = function(item1, item2) {
         var i1, i2, cmp = f(item1, item2);
@@ -545,7 +559,7 @@ Exhibit.TabularView.prototype._stabilize = function(f, indexMap)  {
  * @param {Boolean} ascending
  * @returns {Function}
  */
-Exhibit.TabularView.prototype._createSortFunction = function(items, expression, ascending) {
+TabularView.prototype._createSortFunction = function(items, expression, ascending) {
     var database, multiply, numericFunction, textFunction, valueTypes, valueTypeMap, makeSetter, i, item, r, coercedValueType, coersion, sortingFunction;
     database = this.getUIContext().getDatabase();
     multiply = ascending ? 1 : -1;
@@ -613,7 +627,7 @@ Exhibit.TabularView.prototype._createSortFunction = function(items, expression, 
                 return v.getTime();
             } else {
                 try {
-                    return Exhibit.DateTime.parseIso8601DateTime(v).getTime();
+                    return DateTime.parseIso8601DateTime(v).getTime();
                 } catch (e) {
                     return Number.MAX_VALUE;
                 }
@@ -634,7 +648,7 @@ Exhibit.TabularView.prototype._createSortFunction = function(items, expression, 
         sortingFunction = textFunction;
         coersion = function(v) {
             if (typeof v === "undefined" || v === null) {
-                return Exhibit._("%general.missingSortKey");
+                return _("%general.missingSortKey");
             } else {
                 var label = database.getObject(v, "label");
                 return (typeof label === "undefined" || label === null) ? v : label;
@@ -644,7 +658,7 @@ Exhibit.TabularView.prototype._createSortFunction = function(items, expression, 
         sortingFunction = textFunction;
         coersion = function(v) {
             if (typeof v === "undefined" || v === null) {
-                return Exhibit._("%general.missingSortKey");
+                return _("%general.missingSortKey");
             } else {
                 return v.toString();
             }
@@ -662,7 +676,7 @@ Exhibit.TabularView.prototype._createSortFunction = function(items, expression, 
 /**
  * @param {Number} columnIndex
  */
-Exhibit.TabularView.prototype._doSort = function(columnIndex) {
+TabularView.prototype._doSort = function(columnIndex) {
     var oldSortColumn, oldSortAscending;
     oldSortColumn = this._settings.sortColumn;
     oldSortAscending = this._settings.sortAscending;
@@ -670,11 +684,11 @@ Exhibit.TabularView.prototype._doSort = function(columnIndex) {
     this._settings.sortAscending = oldSortColumn === columnIndex ? !oldSortAscending : true;
     this._settings.page = 0;
     
-    Exhibit.History.pushComponentState(
+    EHistory.pushComponentState(
         this,
-        Exhibit.View._registryKey,
+        View._registryKey,
         this.exportState(),
-        Exhibit._(this._settings.sortAscending ? "%TabularView.sortColumnAscending" : "%TabularView.sortColumnDescending", this._columns[columnIndex].label),
+        _(this._settings.sortAscending ? "%TabularView.sortColumnAscending" : "%TabularView.sortColumnDescending", this._columns[columnIndex].label),
         true
     );
 };
@@ -682,14 +696,14 @@ Exhibit.TabularView.prototype._doSort = function(columnIndex) {
 /**
  * @param {Number} page
  */
-Exhibit.TabularView.prototype._gotoPage = function(page) {
+TabularView.prototype._gotoPage = function(page) {
     this._settings.page = page;
 
-    Exhibit.History.pushComponentState(
+    EHistory.pushComponentState(
         this,
-        Exhibit.View._registryKey,
+        View._registryKey,
         this.exportState(),
-        Exhibit.ViewUtilities.makePagingActionTitle(page),
+        ViewUtilities.makePagingActionTitle(page),
         true
     );
 };
@@ -697,7 +711,7 @@ Exhibit.TabularView.prototype._gotoPage = function(page) {
 /**
  * @returns {Object}
  */
-Exhibit.TabularView.prototype.exportState = function() {
+TabularView.prototype.exportState = function() {
     return {
         "page": this._settings.page,
         "sortColumn": this._settings.sortColumn,
@@ -708,7 +722,7 @@ Exhibit.TabularView.prototype.exportState = function() {
 /**
  * @param {Object} state
  */
-Exhibit.TabularView.prototype.importState = function(state) {
+TabularView.prototype.importState = function(state) {
     if (this.getUIContext() !== null) {
         this._settings.page = state.page;
         this._settings.sortColumn = state.sortColumn;
@@ -724,7 +738,7 @@ Exhibit.TabularView.prototype.importState = function(state) {
  * @param {Element} parentElmt
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.TabularView._constructDefaultValueList = function(values, valueType, parentElmt, uiContext) {
+TabularView._constructDefaultValueList = function(values, valueType, parentElmt, uiContext) {
     uiContext.formatList(values, values.size(), valueType, function(elmt) {
         parentElmt.appendChild(elmt);
     });
@@ -734,7 +748,7 @@ Exhibit.TabularView._constructDefaultValueList = function(values, valueType, par
  * @param {Element} div
  * @returns {Element}
  */
-Exhibit.TabularView.createDom = function(div) {
+TabularView.createDom = function(div) {
     var headerTemplate;
     headerTemplate = {
         elmt:       div,
@@ -768,7 +782,7 @@ Exhibit.TabularView.createDom = function(div) {
  * @param {Function} sortFunction
  * @returns {Element}
  */
-Exhibit.TabularView.createColumnHeader = function(
+TabularView.createColumnHeader = function(
     exhibit, 
     th,
     label,
@@ -782,12 +796,12 @@ Exhibit.TabularView.createColumnHeader = function(
         "class":  sort ? 
                     "exhibit-tabularView-columnHeader-sorted" : 
                     "exhibit-tabularView-columnHeader",
-        "title": Exhibit._(sort ? "%TabularView.columnHeaderReSortTooltip" : "%TabularView.columnHeaderSortTooltip"),
+        "title": _(sort ? "%TabularView.columnHeaderReSortTooltip" : "%TabularView.columnHeaderSortTooltip"),
         "children": [ label ]
     };
     if (sort) {
         template.children.push({
-            elmt: Exhibit.UI.createTranslucentImage(
+            elmt: UIUtilities.createTranslucentImage(
                 sortAscending ? "images/up-arrow.png" : "images/down-arrow.png")
         });
     }
@@ -798,5 +812,5 @@ Exhibit.TabularView.createColumnHeader = function(
 };
 
     // end define
-    return Exhibit;
+    return TabularView;
 });

@@ -4,26 +4,26 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["exhibit", "data/expression"], function(Exhibit) {
+define(["util/set"], function(Set) {
 /**
  * @class
  * @constructor
  * @param {Array|Exhibit.Set} values
  * @param {String} valueType
  */
-Exhibit.Expression._Collection = function(values, valueType) {
+var ExpressionCollection = function(values, valueType) {
     this._values = values;
     this.valueType = valueType;
     
     if (values instanceof Array) {
-        this.forEachValue = Exhibit.Expression._Collection._forEachValueInArray;
-        this.getSet = Exhibit.Expression._Collection._getSetFromArray;
-        this.contains = Exhibit.Expression._Collection._containsInArray;
+        this.forEachValue = ExpressionCollection._forEachValueInArray;
+        this.getSet = ExpressionCollection._getSetFromArray;
+        this.contains = ExpressionCollection._containsInArray;
         this.size = values.length;
     } else {
-        this.forEachValue = Exhibit.Expression._Collection._forEachValueInSet;
-        this.getSet = Exhibit.Expression._Collection._getSetFromSet;
-        this.contains = Exhibit.Expression._Collection._containsInSet;
+        this.forEachValue = ExpressionCollection._forEachValueInSet;
+        this.getSet = ExpressionCollection._getSetFromSet;
+        this.contains = ExpressionCollection._containsInSet;
         this.size = values.size();
     }
 };
@@ -31,14 +31,14 @@ Exhibit.Expression._Collection = function(values, valueType) {
 /**
  * @param {Function} f
  */
-Exhibit.Expression._Collection._forEachValueInSet = function(f) {
+ExpressionCollection._forEachValueInSet = function(f) {
     this._values.visit(f);
 };
 
 /**
  * @param {Function} f
  */
-Exhibit.Expression._Collection._forEachValueInArray = function(f) {
+ExpressionCollection._forEachValueInArray = function(f) {
     var a, i;
     a = this._values;
     for (i = 0; i < a.length; i++) {
@@ -51,22 +51,22 @@ Exhibit.Expression._Collection._forEachValueInArray = function(f) {
 /**
  * @returns {Exhibit.Set}
  */
-Exhibit.Expression._Collection._getSetFromSet = function() {
+ExpressionCollection._getSetFromSet = function() {
     return this._values;
 };
 
 /**
  * @returns {Exhibit.Set}
  */
-Exhibit.Expression._Collection._getSetFromArray = function() {
-    return new Exhibit.Set(this._values);
+ExpressionCollection._getSetFromArray = function() {
+    return new Set(this._values);
 };
 
 /**
  * @param {String|Number} v
  * @returns {Boolean}
  */
-Exhibit.Expression._Collection._containsInSet = function(v) {
+ExpressionCollection._containsInSet = function(v) {
     return this._values.contains(v);
 };
 
@@ -74,7 +74,7 @@ Exhibit.Expression._Collection._containsInSet = function(v) {
  * @param {String|Number} v
  * @returns {Boolean}
  */
-Exhibit.Expression._Collection._containsInArray = function(v) {
+ExpressionCollection._containsInArray = function(v) {
     var a, i;
     a = this._values;
     for (i = 0; i < a.length; i++) {
@@ -86,5 +86,5 @@ Exhibit.Expression._Collection._containsInArray = function(v) {
 };
 
     // end define
-    return Exhibit;
+    return ExpressionCollection;
 });

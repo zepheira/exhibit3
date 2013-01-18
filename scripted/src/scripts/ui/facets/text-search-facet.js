@@ -4,17 +4,28 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "exhibit"], function($, Exhibit) {
+define([
+    "lib/jquery",
+    "exhibit",
+    "util/localizer",
+    "util/debug",
+    "util/set",
+    "util/settings",
+    "util/history",
+    "data/expression-parser",
+    "ui/ui-context",
+    "ui/facets/facet"
+], function($, Exhibit, _, Debug, Set, SettingsUtilities, EHistory, ExpressionParser, UIContext, Facet) {
 /**
  * @constructor
  * @class
  * @param {Element} containerElmt
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.TextSearchFacet = function(containerElmt, uiContext) {
+var TextSearchFacet = function(containerElmt, uiContext) {
     var self = this;
-    $.extend(this, new Exhibit.Facet("text", containerElmt, uiContext));
-    this.addSettingSpecs(Exhibit.TextSearchFacet._settingSpecs);
+    $.extend(this, new Facet("text", containerElmt, uiContext));
+    this.addSettingSpecs(TextSearchFacet._settingSpecs);
 
     this._text = null;
     this._dom = null;
@@ -35,7 +46,7 @@ Exhibit.TextSearchFacet = function(containerElmt, uiContext) {
  * @private
  * @constant
  */ 
-Exhibit.TextSearchFacet._settingSpecs = {
+TextSearchFacet._settingSpecs = {
     "queryParamName":   { "type": "text" },
     "requiresEnter":    { "type": "boolean", "defaultValue": false}
 };
@@ -46,11 +57,11 @@ Exhibit.TextSearchFacet._settingSpecs = {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.TextSearchFacet}
  */
-Exhibit.TextSearchFacet.create = function(configuration, containerElmt, uiContext) {
-    var uiContext = Exhibit.UIContext.create(configuration, uiContext);
-    var facet = new Exhibit.TextSearchFacet(containerElmt, uiContext);
+TextSearchFacet.create = function(configuration, containerElmt, uiContext) {
+    var uiContext = UIContext.create(configuration, uiContext);
+    var facet = new TextSearchFacet(containerElmt, uiContext);
     
-    Exhibit.TextSearchFacet._configure(facet, configuration);
+    TextSearchFacet._configure(facet, configuration);
     
     facet._initializeUI();
     uiContext.getCollection().addFacet(facet);
@@ -65,21 +76,21 @@ Exhibit.TextSearchFacet.create = function(configuration, containerElmt, uiContex
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.TextSearchFacet}
  */
-Exhibit.TextSearchFacet.createFromDOM = function(configElmt, containerElmt, uiContext) {
+TextSearchFacet.createFromDOM = function(configElmt, containerElmt, uiContext) {
     var configuration = Exhibit.getConfigurationFromDOM(configElmt);
-    var uiContext = Exhibit.UIContext.createFromDOM(configElmt, uiContext);
-    var facet = new Exhibit.TextSearchFacet(
+    var uiContext = UIContext.createFromDOM(configElmt, uiContext);
+    var facet = new TextSearchFacet(
         (typeof containerElmt !== "undefined" && containerElmt !== null) ? containerElmt : configElmt, 
         uiContext
     );
     
-    Exhibit.SettingsUtilities.collectSettingsFromDOM(configElmt, facet.getSettingSpecs(), facet._settings);
+    SettingsUtilities.collectSettingsFromDOM(configElmt, facet.getSettingSpecs(), facet._settings);
     
     try {
         var s = Exhibit.getAttribute(configElmt, "expressions");
         if (typeof s !== "undefined" && s !== null && s.length > 0) {
             facet.setExpressionString(s);
-            facet.setExpression(Exhibit.ExpressionParser.parseSeveral(s));
+            facet.setExpression(ExpressionParser.parseSeveral(s));
         }
         
         var query = Exhibit.getAttribute(configElmt, "query");
@@ -87,9 +98,9 @@ Exhibit.TextSearchFacet.createFromDOM = function(configElmt, containerElmt, uiCo
             facet._text = query;
         }
     } catch (e) {
-        Exhibit.Debug.exception(e, Exhibit._("%facets.error.configuration", "TextSearchFacet"));
+        Debug.exception(e, _("%facets.error.configuration", "TextSearchFacet"));
     }
-    Exhibit.TextSearchFacet._configure(facet, configuration);
+    TextSearchFacet._configure(facet, configuration);
     
     facet._initializeUI();
     uiContext.getCollection().addFacet(facet);
@@ -102,16 +113,16 @@ Exhibit.TextSearchFacet.createFromDOM = function(configElmt, containerElmt, uiCo
  * @param {Exhibit.TextSearchFacet} facet
  * @param {Object} configuration
  */
-Exhibit.TextSearchFacet._configure = function(facet, configuration) {
+TextSearchFacet._configure = function(facet, configuration) {
     var expressions, expressionsStrings;
-    Exhibit.SettingsUtilities.collectSettings(configuration, facet.getSettingSpecs(), facet._settings);
+    SettingsUtilities.collectSettings(configuration, facet.getSettingSpecs(), facet._settings);
     
     if (typeof configuration.expressions !== "undefined") {
         expressions = [];
         expressionsStrings = [];
         for (var i = 0; i < configuration.expressions.length; i++) {
             expressionsStrings.push(configuration.expressions[i]);
-            expressions.push(Exhibit.ExpressionParser.parse(configuration.expressions[i]));
+            expressions.push(ExpressionParser.parse(configuration.expressions[i]));
         }
         facet.setExpressionString(expressionStrings.join(",").replace(/ /g, ""));
         facet.setExpression(expressions);
@@ -136,7 +147,7 @@ Exhibit.TextSearchFacet._configure = function(facet, configuration) {
 /**
  *
  */
-Exhibit.TextSearchFacet.prototype._dispose = function() {
+TextSearchFacet.prototype._dispose = function() {
     $(this.getUIContext().getCollection().getElement()).unbind(
         "onRootItemsChanged.exhibit",
         this._onRootItemsChanged
@@ -151,14 +162,14 @@ Exhibit.TextSearchFacet.prototype._dispose = function() {
 /**
  * @returns {Boolean}
  */
-Exhibit.TextSearchFacet.prototype.hasRestrictions = function() {
+TextSearchFacet.prototype.hasRestrictions = function() {
     return this._text !== null;
 };
 
 /**
  *
  */
-Exhibit.TextSearchFacet.prototype.clearAllRestrictions = function() {
+TextSearchFacet.prototype.clearAllRestrictions = function() {
     $(this.getContainer()).trigger("onBeforeFacetReset.exhibit");
     var restrictions = this._text;
     if (this._text !== null) {
@@ -172,14 +183,14 @@ Exhibit.TextSearchFacet.prototype.clearAllRestrictions = function() {
  * @param {Object} restrictions
  * @param {String} restrictions.text
  */
-Exhibit.TextSearchFacet.prototype.applyRestrictions = function(restrictions) {
+TextSearchFacet.prototype.applyRestrictions = function(restrictions) {
     this.setText(restrictions.text);
 };
 
 /**
  * @param {String} text
  */
-Exhibit.TextSearchFacet.prototype.setText = function(text) {
+TextSearchFacet.prototype.setText = function(text) {
     if (typeof text !== "undefined" && text !== null) {
         text = text.trim();
         $(this._dom.input).val(text);
@@ -199,7 +210,7 @@ Exhibit.TextSearchFacet.prototype.setText = function(text) {
  * @param {Exhibit.Set} items
  * @returns {Exhibit.Set}
  */
-Exhibit.TextSearchFacet.prototype.restrict = function(items) {
+TextSearchFacet.prototype.restrict = function(items) {
     var set, itemToValue, text;
     if (this._text === null) {
         return items;
@@ -210,7 +221,7 @@ Exhibit.TextSearchFacet.prototype.restrict = function(items) {
         );
         this._buildMaps();
         
-        set = new Exhibit.Set();
+        set = new Set();
         itemToValue = this._itemToValue;
         text = this._text.toLowerCase();
         
@@ -233,23 +244,23 @@ Exhibit.TextSearchFacet.prototype.restrict = function(items) {
 /**
  * @param {Exhibit.Set} items
  */
-Exhibit.TextSearchFacet.prototype.update = function(items) {
+TextSearchFacet.prototype.update = function(items) {
     // nothing to do
 };
 
 /**
  *
  */
-Exhibit.TextSearchFacet.prototype._notifyCollection = function() {
+TextSearchFacet.prototype._notifyCollection = function() {
     this.getUIContext().getCollection().onFacetUpdated(this);
 };
 
 /**
  *
  */
-Exhibit.TextSearchFacet.prototype._initializeUI = function() {
+TextSearchFacet.prototype._initializeUI = function() {
     var self = this;
-    this._dom = Exhibit.TextSearchFacet.constructFacetFrame(this.getContainer(), this._settings.facetLabel);
+    this._dom = TextSearchFacet.constructFacetFrame(this.getContainer(), this._settings.facetLabel);
 
     if (this._text !== null) {
         $(this._dom.input).val(this._text);
@@ -264,7 +275,7 @@ Exhibit.TextSearchFacet.prototype._initializeUI = function() {
  * @param {Element} div
  * @param {String} facetLabel
  */
-Exhibit.TextSearchFacet.constructFacetFrame = function(div, facetLabel) {
+TextSearchFacet.constructFacetFrame = function(div, facetLabel) {
     if (typeof facetLabel !== "undefined"
         && facetLabel !== null
         && facetLabel !== "") {
@@ -287,7 +298,7 @@ Exhibit.TextSearchFacet.constructFacetFrame = function(div, facetLabel) {
 /**
  * @param {jQuery.Event} evt
  */
-Exhibit.TextSearchFacet.prototype._onTextInputKeyUp = function(evt) {
+TextSearchFacet.prototype._onTextInputKeyUp = function(evt) {
     var self, newText;
     if (this._timerID !== null) {
         window.clearTimeout(this._timerID);
@@ -310,7 +321,7 @@ Exhibit.TextSearchFacet.prototype._onTextInputKeyUp = function(evt) {
 /**
  *
  */
-Exhibit.TextSearchFacet.prototype._onTimeout = function() {
+TextSearchFacet.prototype._onTimeout = function() {
     var newText, self, oldText;
 
     this._timerID = null;
@@ -324,13 +335,13 @@ Exhibit.TextSearchFacet.prototype._onTimeout = function() {
         self = this;
         oldText = this._text;
         
-        Exhibit.History.pushComponentState(
+        EHistory.pushComponentState(
             this,
-            Exhibit.Facet._registryKey,
+            Facet._registryKey,
             { "text": newText },
             newText !== null ?
-                Exhibit._("%facets.facetTextSearchActionTitle", newText) :
-                Exhibit._("%facets.facetClearTextSearchActionTitle"),
+                _("%facets.facetTextSearchActionTitle", newText) :
+                _("%facets.facetClearTextSearchActionTitle"),
             true
         );
     }
@@ -339,7 +350,7 @@ Exhibit.TextSearchFacet.prototype._onTimeout = function() {
 /**
  *
  */
-Exhibit.TextSearchFacet.prototype._buildMaps = function() {
+TextSearchFacet.prototype._buildMaps = function() {
     var itemToValue, allItems, database, expressions, propertyIDs;
     if (typeof this._itemToValue === "undefined") {
         itemToValue = {};
@@ -376,14 +387,14 @@ Exhibit.TextSearchFacet.prototype._buildMaps = function() {
 /**
  * @returns {Object}
  */
-Exhibit.TextSearchFacet.prototype.exportState = function() {
+TextSearchFacet.prototype.exportState = function() {
     return this._exportState(false);
 };
 
 /**
  * @returns {Object}
  */
-Exhibit.TextSearchFacet.prototype.exportEmptyState = function() {
+TextSearchFacet.prototype.exportEmptyState = function() {
     return this._exportState(true);
 };
 
@@ -392,7 +403,7 @@ Exhibit.TextSearchFacet.prototype.exportEmptyState = function() {
  * @param {Boolean} empty
  @ returns {Object}
  */
-Exhibit.TextSearchFacet.prototype._exportState = function(empty) {
+TextSearchFacet.prototype._exportState = function(empty) {
     return {
         "text": empty ? null : this._text
     };
@@ -402,10 +413,10 @@ Exhibit.TextSearchFacet.prototype._exportState = function(empty) {
  * @param {Object} state
  * @param {String} state.text
  */
-Exhibit.TextSearchFacet.prototype.importState = function(state) {
+TextSearchFacet.prototype.importState = function(state) {
     this.applyRestrictions(state);
 };
 
     // end define
-    return Exhibit;
+    return TextSearchFacet;
 });

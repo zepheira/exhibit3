@@ -4,7 +4,10 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["exhibit", "data/database"], function(Exhibit) {
+define([
+    "util/date-time",
+    "data/database/range-index"
+], function(DateTime, RangeIndex) {
 /**
  * Represents a property within a database.
  *
@@ -14,7 +17,7 @@ define(["exhibit", "data/database"], function(Exhibit) {
  * @param {String} id Property identifier.
  * @param {Exhibit.Database} database Database the property is grounded in.
  */
-Exhibit.Database.Property = function(id, database) {
+var Property = function(id, database) {
     this._id = id;
     this._database = database;
     this._rangeIndex = null;
@@ -25,7 +28,7 @@ Exhibit.Database.Property = function(id, database) {
  *
  * @returns {String} The property database identifier.
  */
-Exhibit.Database.Property.prototype.getID = function() {
+Property.prototype.getID = function() {
     return this._id;
 };
 
@@ -34,7 +37,7 @@ Exhibit.Database.Property.prototype.getID = function() {
  *
  * @returns {String} The property URI.
  */
-Exhibit.Database.Property.prototype.getURI = function() {
+Property.prototype.getURI = function() {
     return this._uri;
 };
 
@@ -43,7 +46,7 @@ Exhibit.Database.Property.prototype.getURI = function() {
  *
  * @returns {String} The property value data type.
  */
-Exhibit.Database.Property.prototype.getValueType = function() {
+Property.prototype.getValueType = function() {
     return this._valueType;
 };
 
@@ -52,7 +55,7 @@ Exhibit.Database.Property.prototype.getValueType = function() {
  *
  * @returns {String} The property label.
  */
-Exhibit.Database.Property.prototype.getLabel = function() {
+Property.prototype.getLabel = function() {
     return this._label;
 };
 
@@ -61,7 +64,7 @@ Exhibit.Database.Property.prototype.getLabel = function() {
  *
  * @returns {String} The plural property label.
  */
-Exhibit.Database.Property.prototype.getPluralLabel = function() {
+Property.prototype.getPluralLabel = function() {
     return this._pluralLabel;
 };
 
@@ -71,7 +74,7 @@ Exhibit.Database.Property.prototype.getPluralLabel = function() {
  *
  * @returns {String} The reverse property label.
  */
-Exhibit.Database.Property.prototype.getReverseLabel = function() {
+Property.prototype.getReverseLabel = function() {
     return this._reverseLabel;
 };
 
@@ -81,7 +84,7 @@ Exhibit.Database.Property.prototype.getReverseLabel = function() {
  *
  * @returns {String} The plural reverse property label.
  */
-Exhibit.Database.Property.prototype.getReversePluralLabel = function() {
+Property.prototype.getReversePluralLabel = function() {
     return this._reversePluralLabel;
 };
 
@@ -90,7 +93,7 @@ Exhibit.Database.Property.prototype.getReversePluralLabel = function() {
  *
  * @returns {String} The property grouping label.
  */
-Exhibit.Database.Property.prototype.getGroupingLabel = function() {
+Property.prototype.getGroupingLabel = function() {
     return this._groupingLabel;
 };
 
@@ -100,7 +103,7 @@ Exhibit.Database.Property.prototype.getGroupingLabel = function() {
  *
  * @returns {String} The property reverse grouping label. 
  */
-Exhibit.Database.Property.prototype.getReverseGroupingLabel = function() {
+Property.prototype.getReverseGroupingLabel = function() {
     return this._reverseGroupingLabel;
 };
 
@@ -109,7 +112,7 @@ Exhibit.Database.Property.prototype.getReverseGroupingLabel = function() {
  *
  * @returns {String} The property origin.
  */
-Exhibit.Database.Property.prototype.getOrigin = function() {
+Property.prototype.getOrigin = function() {
     return this._origin;
 };
 
@@ -119,7 +122,7 @@ Exhibit.Database.Property.prototype.getOrigin = function() {
  * @returns {Exhibit.Database.RangeIndex} An index for the range of
  *     property values.
  */
-Exhibit.Database.Property.prototype.getRangeIndex = function() {
+Property.prototype.getRangeIndex = function() {
     if (this._rangeIndex === null) {
         this._buildRangeIndex();
     }
@@ -132,7 +135,7 @@ Exhibit.Database.Property.prototype.getRangeIndex = function() {
  *
  * @private
  */
-Exhibit.Database.Property.prototype._onNewData = function() {
+Property.prototype._onNewData = function() {
     this._rangeIndex = null;
 };
 
@@ -141,7 +144,7 @@ Exhibit.Database.Property.prototype._onNewData = function() {
  *
  * @private
  */
-Exhibit.Database.Property.prototype._buildRangeIndex = function() {
+Property.prototype._buildRangeIndex = function() {
     var getter, database, p;
     database = this._database;
     p = this._id;
@@ -164,7 +167,7 @@ Exhibit.Database.Property.prototype._buildRangeIndex = function() {
         getter = function(item, f) {
             database.getObjects(item, p, null, null).visit(function(value) {
                 if (typeof value !== "undefined" && value !== null && !(value instanceof Date)) {
-                    value = Exhibit.DateTime.parseIso8601DateTime(value);
+                    value = DateTime.parseIso8601DateTime(value);
                 }
                 if (value instanceof Date) {
                     f(value.getTime());
@@ -176,12 +179,12 @@ Exhibit.Database.Property.prototype._buildRangeIndex = function() {
         getter = function(item, f) {};
     }
     
-    this._rangeIndex = new Exhibit.Database.RangeIndex(
+    this._rangeIndex = new RangeIndex(
         database.getAllItems(),
         getter
     );
 };
 
     // end define
-    return Exhibit;
+    return Property;
 });

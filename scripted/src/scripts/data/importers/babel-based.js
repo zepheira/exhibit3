@@ -4,11 +4,16 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "exhibit", "data/importer"], function($, Exhibit) {
+define([
+    "lib/jquery",
+    "exhibit",
+    "data/importer"
+], function($, Exhibit, Importer) {
+    var BabelBased;
 /**
  * @namespace
  */
-Exhibit.Importer.BabelBased = {
+BabelBased = {
     _importer: null,
 
     _mimeTypeToReader: {
@@ -36,7 +41,7 @@ Exhibit.Importer.BabelBased = {
  * @param {Object} s
  * @param {Function} callback
  */
-Exhibit.Importer.BabelBased.parse = function(url, s, callback) {
+BabelBased.parse = function(url, s, callback) {
     if (typeof callback === "function") {
         callback(s);
     }
@@ -47,24 +52,24 @@ Exhibit.Importer.BabelBased.parse = function(url, s, callback) {
  * @param {String} mimeType
  * @returns {String}
  */
-Exhibit.Importer.BabelBased.makeURL = function(url, mimeType) {
-    if (typeof Exhibit.Importer.BabelBased._translatorPrefix === "undefined") {
+BabelBased.makeURL = function(url, mimeType) {
+    if (typeof BabelBased._translatorPrefix === "undefined") {
         return null;
     }
 
     var reader, writer;
-    reader = Exhibit.Importer.BabelBased._defaultReader;
-    writer = Exhibit.Importer.BabelBased._defaultWriter;
+    reader = BabelBased._defaultReader;
+    writer = BabelBased._defaultWriter;
 
-    if (typeof Exhibit.Importer.BabelBased._mimeTypeToReader[mimeType] !== "undefined") {
-        reader = Exhibit.Importer.BabelBased._mimeTypeToReader[mimeType];
+    if (typeof BabelBased._mimeTypeToReader[mimeType] !== "undefined") {
+        reader = BabelBased._mimeTypeToReader[mimeType];
     }
 
     if (reader === "bibtex") {
         writer = "bibtex-exhibit-jsonp";
     }
 
-    return Exhibit.Importer.BabelBased._translatorPrefix + [
+    return BabelBased._translatorPrefix + [
         "reader=" + reader,
         "writer=" + writer,
         "url=" + encodeURIComponent(url)
@@ -77,31 +82,31 @@ Exhibit.Importer.BabelBased.makeURL = function(url, mimeType) {
  * @param {jQuery.Event} evt
  * @param {Exhibit.Registry} reg
  */
-Exhibit.Importer.BabelBased._register = function(evt, reg) {
-    if (typeof Exhibit.Importer.BabelBased._translatorPrefix === "undefined") {
+BabelBased._register = function(evt, reg) {
+    if (typeof BabelBased._translatorPrefix === "undefined") {
         return;
     }
 
     var types, type;
     types = [];
-    for (type in Exhibit.Importer.BabelBased._mimeTypeToReader) {
-        if (Exhibit.Importer.BabelBased._mimeTypeToReader.hasOwnProperty(type)) {
+    for (type in BabelBased._mimeTypeToReader) {
+        if (BabelBased._mimeTypeToReader.hasOwnProperty(type)) {
             types.push(type);
         }
     }
     
-    Exhibit.Importer.BabelBased._importer = new Exhibit.Importer(
+    BabelBased._importer = new Importer(
         types,
         "babel",
-        Exhibit.Importer.BabelBased.parse
+        BabelBased.parse
     );
 };
 
 $(document).one(
     "registerImporters.exhibit",
-    Exhibit.Importer.BabelBased._register
+    BabelBased._register
 );
 
     // end define
-    return Exhibit;
+    return BabelBased;
 });

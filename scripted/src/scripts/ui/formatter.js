@@ -4,21 +4,20 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "exhibit"], function($, Exhibit) {
+define([
+    "lib/jquery",
+    "exhibit",
+    "util/util",
+    "util/localizer",
+    "util/persistence",
+    "util/date-time",
+    "util/ui"
+], function($, Exhibit, Util, _, Persistence, DateTime, UIUtilities) {
 /**
  * @namespace
  */
-Exhibit.Formatter = {
-    /**
-     * @constant
-     */
-    "_lessThanRegex": /</g,
-    /**
-     * @constant
-     */
-    "_greaterThanRegex": />/g
+var Formatter = {
 };
-
 
 /**
  * @static
@@ -27,20 +26,20 @@ Exhibit.Formatter = {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Function}
  */
-Exhibit.Formatter.createListDelimiter = function(parentElmt, count, uiContext) {
+Formatter.createListDelimiter = function(parentElmt, count, uiContext) {
     var separator, lastSeparator, pairSeparator, f;
     separator = uiContext.getSetting("format/list/separator");
     lastSeparator = uiContext.getSetting("format/list/last-separator");
     pairSeparator = uiContext.getSetting("format/list/pair-separator");
     
     if (typeof separator !== "string") {
-        separator = Exhibit._("%formatter.listSeparator");
+        separator = _("%formatter.listSeparator");
     }
     if (typeof lastSeparator !== "string") {
-        lastSeparator = Exhibit._("%formatter.listLastSeparator");
+        lastSeparator = _("%formatter.listLastSeparator");
     }
     if (typeof pairSeparator !== "string") {
-        pairSeparator = Exhibit._("%formatter.listPairSeparator");
+        pairSeparator = _("%formatter.listPairSeparator");
     }
 
     f = function() {
@@ -60,21 +59,12 @@ Exhibit.Formatter.createListDelimiter = function(parentElmt, count, uiContext) {
 };
 
 /**
- * @param {String} s
- * @returns {String}
- */
-Exhibit.Formatter.encodeAngleBrackets = function(s) {
-    return s.replace(Exhibit.Formatter._lessThanRegex, "&lt;").
-        replace(Exhibit.Formatter._greaterThanRegex, "&gt;");
-};
-
-/**
  * @class
  * @constructor
  * @public
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.Formatter._ListFormatter = function(uiContext) {
+Formatter._ListFormatter = function(uiContext) {
     this._uiContext = uiContext;
     this._separator = uiContext.getSetting("format/list/separator");
     this._lastSeparator = uiContext.getSetting("format/list/last-separator");
@@ -82,13 +72,13 @@ Exhibit.Formatter._ListFormatter = function(uiContext) {
     this._emptyText = uiContext.getSetting("format/list/empty-text");
     
     if (typeof this._separator !== "string") {
-        this._separator = Exhibit._("%formatter.listSeparator");
+        this._separator = _("%formatter.listSeparator");
     }
     if (typeof this._lastSeparator !== "string") {
-        this._lastSeparator = Exhibit._("%formatter.listLastSeparator");
+        this._lastSeparator = _("%formatter.listLastSeparator");
     }
     if (typeof this._pairSeparator !== "string") {
-        this._pairSeparator = Exhibit._("%formatter.listPairSeparator");
+        this._pairSeparator = _("%formatter.listPairSeparator");
     }
 };
 
@@ -98,7 +88,7 @@ Exhibit.Formatter._ListFormatter = function(uiContext) {
  * @param {String} valueType
  * @param {Function} appender
  */
-Exhibit.Formatter._ListFormatter.prototype.formatList = function(values, count, valueType, appender) {
+Formatter._ListFormatter.prototype.formatList = function(values, count, valueType, appender) {
     var uiContext, self, index;
     uiContext = this._uiContext;
     self = this;
@@ -141,7 +131,7 @@ Exhibit.Formatter._ListFormatter.prototype.formatList = function(values, count, 
  * @public
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.Formatter._TextFormatter = function(uiContext) {
+Formatter._TextFormatter = function(uiContext) {
     this._maxLength = uiContext.getSetting("format/text/max-length");
     
     if (typeof this._maxLength === "number") {
@@ -155,7 +145,7 @@ Exhibit.Formatter._TextFormatter = function(uiContext) {
  * @param {String} value
  * @param {Function} appender
  */
-Exhibit.Formatter._TextFormatter.prototype.format = function(value, appender) {
+Formatter._TextFormatter.prototype.format = function(value, appender) {
     var span = $("<span>").html(this.formatText(value));
     appender(span);
 };
@@ -164,15 +154,15 @@ Exhibit.Formatter._TextFormatter.prototype.format = function(value, appender) {
  * @param {String} value
  * @returns {String}
  */
-Exhibit.Formatter._TextFormatter.prototype.formatText = function(value) {
+Formatter._TextFormatter.prototype.formatText = function(value) {
     if (Exhibit.params.safe) {
-        value = Exhibit.Formatter.encodeAngleBrackets(value);
+        value = Util.encodeAngleBrackets(value);
     }
     
     if (this._maxLength === 0 || value.length <= this._maxLength) {
         return value;
     } else {
-        return Exhibit._("%formatter.textEllipsis", value.substr(0, this._maxLength));
+        return _("%formatter.textEllipsis", value.substr(0, this._maxLength));
     }
 };
 
@@ -182,14 +172,14 @@ Exhibit.Formatter._TextFormatter.prototype.formatText = function(value) {
  * @public
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.Formatter._BooleanFormatter = function(uiContext) {
+Formatter._BooleanFormatter = function(uiContext) {
 };
 
 /**
  * @param {String|Boolean} value
  * @param {Function} appender
  */
-Exhibit.Formatter._BooleanFormatter.prototype.format = function(value, appender) {
+Formatter._BooleanFormatter.prototype.format = function(value, appender) {
     var span = $("<span>").html(this.formatText(value));
     appender(span);
 };
@@ -198,9 +188,9 @@ Exhibit.Formatter._BooleanFormatter.prototype.format = function(value, appender)
  * @param {String|Boolean} value
  * @returns {String}
  */
-Exhibit.Formatter._BooleanFormatter.prototype.formatText = function(value) {
+Formatter._BooleanFormatter.prototype.formatText = function(value) {
     return (typeof value === "boolean" ? value : (typeof value === "string" ? (value === "true") : false)) ? 
-        Exhibit._("%formatter.booleanTrue") : Exhibit._("%formatter.booleanFalse");
+        _("%formatter.booleanTrue") : _("%formatter.booleanFalse");
 };
 
 /**
@@ -209,7 +199,7 @@ Exhibit.Formatter._BooleanFormatter.prototype.formatText = function(value) {
  * @public
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.Formatter._NumberFormatter = function(uiContext) {
+Formatter._NumberFormatter = function(uiContext) {
     this._decimalDigits = uiContext.getSetting("format/number/decimal-digits");
     
     if (typeof this._decimalDigits === "number") {
@@ -223,7 +213,7 @@ Exhibit.Formatter._NumberFormatter = function(uiContext) {
  * @param {Number} value
  * @param {Function} appender
  */
-Exhibit.Formatter._NumberFormatter.prototype.format = function(value, appender) {
+Formatter._NumberFormatter.prototype.format = function(value, appender) {
     appender(document.createTextNode(this.formatText(value)));
 };
 
@@ -231,7 +221,7 @@ Exhibit.Formatter._NumberFormatter.prototype.format = function(value, appender) 
  * @param {Number} value
  * @returns {String}
  */
-Exhibit.Formatter._NumberFormatter.prototype.formatText = function(value) {
+Formatter._NumberFormatter.prototype.formatText = function(value) {
     if (this._decimalDigits === -1) {
         return value.toString();
     } else {
@@ -245,7 +235,7 @@ Exhibit.Formatter._NumberFormatter.prototype.formatText = function(value) {
  * @public
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.Formatter._ImageFormatter = function(uiContext) {
+Formatter._ImageFormatter = function(uiContext) {
     this._uiContext = uiContext;
     
     this._maxWidth = uiContext.getSetting("format/image/max-width");
@@ -269,7 +259,7 @@ Exhibit.Formatter._ImageFormatter = function(uiContext) {
  * @param {String} value
  * @param {Function} appender
  */
-Exhibit.Formatter._ImageFormatter.prototype.format = function(value, appender) {
+Formatter._ImageFormatter.prototype.format = function(value, appender) {
     if (Exhibit.params.safe) {
         value = value.trim().startsWith("javascript:") ? "" : value;
     }
@@ -294,7 +284,7 @@ Exhibit.Formatter._ImageFormatter.prototype.format = function(value, appender) {
  * @param {String} value
  * @returns {String}
  */
-Exhibit.Formatter._ImageFormatter.prototype.formatText = function(value) {
+Formatter._ImageFormatter.prototype.formatText = function(value) {
     return value;
 };
 
@@ -304,7 +294,7 @@ Exhibit.Formatter._ImageFormatter.prototype.formatText = function(value) {
  * @public
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.Formatter._URLFormatter = function(uiContext) {
+Formatter._URLFormatter = function(uiContext) {
     this._target = uiContext.getSetting("format/url/target");
     this._externalIcon = uiContext.getSetting("format/url/external-icon");
 };
@@ -313,7 +303,7 @@ Exhibit.Formatter._URLFormatter = function(uiContext) {
  * @param {String} value
  * @param {Function} appender
  */
-Exhibit.Formatter._URLFormatter.prototype.format = function(value, appender) {
+Formatter._URLFormatter.prototype.format = function(value, appender) {
     var a = $("a").attr("href", value).html(value);
     
     if (this._target !== null) {
@@ -330,7 +320,7 @@ Exhibit.Formatter._URLFormatter.prototype.format = function(value, appender) {
  * @param {String} value
  * @returns {String}
  */
-Exhibit.Formatter._URLFormatter.prototype.formatText = function(value) {
+Formatter._URLFormatter.prototype.formatText = function(value) {
     if (Exhibit.params.safe) {
         value = value.trim().startsWith("javascript:") ? "" : value;
     }
@@ -343,7 +333,7 @@ Exhibit.Formatter._URLFormatter.prototype.formatText = function(value) {
  * @public
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.Formatter._CurrencyFormatter = function(uiContext) {
+Formatter._CurrencyFormatter = function(uiContext) {
     this._decimalDigits = uiContext.getSetting("format/currency/decimal-digits");
     if (typeof this._decimalDigits === "number") {
         this._decimalDigits = Math.max(-1, Math.round(this._decimalDigits)); // -1 means no limit
@@ -353,18 +343,18 @@ Exhibit.Formatter._CurrencyFormatter = function(uiContext) {
     
     this._symbol = uiContext.getSetting("format/currency/symbol");
     if (typeof this._symbol === "undefined" || this._symbol === null) {
-        this._symbol = Exhibit._("%formatter.currencySymbol");
+        this._symbol = _("%formatter.currencySymbol");
     }
     
     this._symbolPlacement = uiContext.getSetting("format/currency/symbol-placement");
     if (typeof this._symbolPlacement === "undefined" || this._symbolPlacement === null) {
-        this._symbol = Exhibit._("%formatter.currencySymbolPlacement");
+        this._symbol = _("%formatter.currencySymbolPlacement");
     }
     
     this._negativeFormat = {
-        signed :      uiContext.getBooleanSetting("format/currency/negative-format/signed", Exhibit._("%formatter.currencyShowSign")),
-        red :         uiContext.getBooleanSetting("format/currency/negative-format/red", Exhibit._("%formatter.currencyShowRed")),
-        parentheses : uiContext.getBooleanSetting("format/currency/negative-format/parentheses", Exhibit._("%formatter.currencyShowParentheses"))
+        signed :      uiContext.getBooleanSetting("format/currency/negative-format/signed", _("%formatter.currencyShowSign")),
+        red :         uiContext.getBooleanSetting("format/currency/negative-format/red", _("%formatter.currencyShowRed")),
+        parentheses : uiContext.getBooleanSetting("format/currency/negative-format/parentheses", _("%formatter.currencyShowParentheses"))
     };
 };
 
@@ -372,7 +362,7 @@ Exhibit.Formatter._CurrencyFormatter = function(uiContext) {
  * @param {Number} value
  * @param {Function} appender
  */
-Exhibit.Formatter._CurrencyFormatter.prototype.format = function(value, appender) {
+Formatter._CurrencyFormatter.prototype.format = function(value, appender) {
     var text, span;
     text = this.formatText(value);
     if (value < 0 && this._negativeFormat.red) {
@@ -387,7 +377,7 @@ Exhibit.Formatter._CurrencyFormatter.prototype.format = function(value, appender
  * @param {Number} value
  * @returns {String}
  */
-Exhibit.Formatter._CurrencyFormatter.prototype.formatText = function(value) {
+Formatter._CurrencyFormatter.prototype.formatText = function(value) {
     var negative, text, sign;
     negative = value < 0;
     if (this._decimalDigits === -1) {
@@ -415,7 +405,7 @@ Exhibit.Formatter._CurrencyFormatter.prototype.formatText = function(value) {
  * @public
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.Formatter._ItemFormatter = function(uiContext) {
+Formatter._ItemFormatter = function(uiContext) {
     this._uiContext = uiContext;
     this._title = uiContext.getSetting("format/item/title");
 };
@@ -424,15 +414,15 @@ Exhibit.Formatter._ItemFormatter = function(uiContext) {
  * @param {String} value
  * @param {Function} appender
  */
-Exhibit.Formatter._ItemFormatter.prototype.format = function(value, appender) {
+Formatter._ItemFormatter.prototype.format = function(value, appender) {
     var self, title, a, handler;
     self = this;
     title = this.formatText(value);
     
-    a = $("<a href=\"" + Exhibit.Persistence.getItemLink(value) + "\" class=\"exhibit-item\">" + title + "</a>");
+    a = $("<a href=\"" + Persistence.getItemLink(value) + "\" class=\"exhibit-item\">" + title + "</a>");
 
     handler = function(evt) {
-        Exhibit.UI.showItemInPopup(value, a.get(0), self._uiContext);
+        UIUtilities.showItemInPopup(value, a.get(0), self._uiContext);
         evt.preventDefault();
         evt.stopPropagation();
     };
@@ -446,7 +436,7 @@ Exhibit.Formatter._ItemFormatter.prototype.format = function(value, appender) {
  * @param {String} value
  * @returns {String}
  */
-Exhibit.Formatter._ItemFormatter.prototype.formatText = function(value) {
+Formatter._ItemFormatter.prototype.formatText = function(value) {
     var database, title;
     database = this._uiContext.getDatabase();
     title = null;
@@ -470,7 +460,7 @@ Exhibit.Formatter._ItemFormatter.prototype.formatText = function(value) {
  * @public
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.Formatter._DateFormatter = function(uiContext) {
+Formatter._DateFormatter = function(uiContext) {
     var mode, show, template, segments, placeholders, startIndex, p, placeholder, index, retriever;
 
     this._timeZone = uiContext.getSetting("format/date/time-zone");
@@ -486,34 +476,34 @@ Exhibit.Formatter._DateFormatter = function(uiContext) {
     switch (mode) {
     case "short":
         template = 
-            show === "date" ?  Exhibit._("%formatter.dateShortFormat") :
-            (show === "time" ? Exhibit._("%formatter.timeShortFormat") : 
-                              Exhibit._("%formatter.dateTimeShortFormat"));
+            show === "date" ?  _("%formatter.dateShortFormat") :
+            (show === "time" ? _("%formatter.timeShortFormat") : 
+                              _("%formatter.dateTimeShortFormat"));
         break;
     case "medium":
         template = 
-            show === "date" ?  Exhibit._("%formatter.dateMediumFormat") :
-            (show === "time" ? Exhibit._("%formatter.timeMediumFormat") : 
-                              Exhibit._("%formatter.dateTimeMediumFormat"));
+            show === "date" ?  _("%formatter.dateMediumFormat") :
+            (show === "time" ? _("%formatter.timeMediumFormat") : 
+                              _("%formatter.dateTimeMediumFormat"));
         break;
     case "long":
         template = 
-            show === "date" ?  Exhibit._("%formatter.dateLongFormat") :
-            (show === "time" ? Exhibit._("%formatter.timeLongFormat") : 
-                              Exhibit._("%formatter.dateTimeLongFormat"));
+            show === "date" ?  _("%formatter.dateLongFormat") :
+            (show === "time" ? _("%formatter.timeLongFormat") : 
+                              _("%formatter.dateTimeLongFormat"));
         break;
     case "full":
         template = 
-            show === "date" ?  Exhibit._("%formatter.dateFullFormat") :
-            (show === "time" ? Exhibit._("%formatter.timeFullFormat") : 
-                              Exhibit._("%formatter.dateTimeFullFormat"));
+            show === "date" ?  _("%formatter.dateFullFormat") :
+            (show === "time" ? _("%formatter.timeFullFormat") : 
+                              _("%formatter.dateTimeFullFormat"));
         break;
     default:
         template = uiContext.getSetting("format/date/template");
     }
     
     if (typeof template !== "string") {
-        template = Exhibit._("%formatter.dateTimeDefaultFormat");
+        template = _("%formatter.dateTimeDefaultFormat");
     }
     
     segments = [];
@@ -527,7 +517,7 @@ Exhibit.Formatter._DateFormatter = function(uiContext) {
             segments.push(template.substring(startIndex, index));
         }
         
-        retriever = Exhibit.Formatter._DateFormatter._retrievers[placeholder];
+        retriever = Formatter._DateFormatter._retrievers[placeholder];
         if (typeof retriever === "function") {
             segments.push(retriever);
         } else {
@@ -548,7 +538,7 @@ Exhibit.Formatter._DateFormatter = function(uiContext) {
  * @param {Date|String} value
  * @param {Function} appender
  */
-Exhibit.Formatter._DateFormatter.prototype.format = function(value, appender) {
+Formatter._DateFormatter.prototype.format = function(value, appender) {
     appender(document.createTextNode(this.formatText(value)));
 };
 
@@ -556,9 +546,9 @@ Exhibit.Formatter._DateFormatter.prototype.format = function(value, appender) {
  * @param {Date|String} value
  * @returns {String}
  */
-Exhibit.Formatter._DateFormatter.prototype.formatText = function(value) {
+Formatter._DateFormatter.prototype.formatText = function(value) {
     var date, text, segments, i, segment;
-    date = (value instanceof Date) ? value : Exhibit.DateTime.parseIso8601DateTime(value);
+    date = (value instanceof Date) ? value : DateTime.parseIso8601DateTime(value);
     if (typeof date === "undefined" || date === null) {
         return value;
     }
@@ -582,7 +572,7 @@ Exhibit.Formatter._DateFormatter.prototype.formatText = function(value) {
  * @param {Number} n
  * @returns {String}
  */
-Exhibit.Formatter._DateFormatter._pad = function(n) {
+Formatter._DateFormatter._pad = function(n) {
     return n < 10 ? ("0" + n) : n.toString();
 };
 
@@ -590,11 +580,11 @@ Exhibit.Formatter._DateFormatter._pad = function(n) {
  * @param {Number} n
  * @returns {String}
  */
-Exhibit.Formatter._DateFormatter._pad3 = function(n) {
+Formatter._DateFormatter._pad3 = function(n) {
     return n < 10 ? ("00" + n) : (n < 100 ? ("0" + n) : n.toString());
 };
 
-Exhibit.Formatter._DateFormatter._retrievers = {
+Formatter._DateFormatter._retrievers = {
     // day of month
     /**
      * @param {Date} date
@@ -608,7 +598,7 @@ Exhibit.Formatter._DateFormatter._retrievers = {
      * @returns {String}
      */
     "dd": function(date) {
-        return Exhibit.Formatter._DateFormatter._pad(date.getUTCDate());
+        return Formatter._DateFormatter._pad(date.getUTCDate());
     },
     
     // day of week
@@ -617,14 +607,14 @@ Exhibit.Formatter._DateFormatter._retrievers = {
      * @returns {String}
      */
     "EEE": function(date) {
-        return Exhibit._("%formatter.shortDaysOfWeek")[date.getUTCDay()];
+        return _("%formatter.shortDaysOfWeek")[date.getUTCDay()];
     },
     /**
      * @param {Date} date
      * @returns {String}
      */
     "EEEE": function(date) {
-        return Exhibit._("%formatter.daysOfWeek")[date.getUTCDay()];
+        return _("%formatter.daysOfWeek")[date.getUTCDay()];
     },
     
     // month
@@ -633,21 +623,21 @@ Exhibit.Formatter._DateFormatter._retrievers = {
      * @returns {String}
      */
     "MM": function(date) {
-        return Exhibit.Formatter._DateFormatter._pad(date.getUTCMonth() + 1);
+        return Formatter._DateFormatter._pad(date.getUTCMonth() + 1);
     },
     /**
      * @param {Date} date
      * @returns {String}
      */
     "MMM": function(date) {
-        return Exhibit._("%formatter.shortMonths")[date.getUTCMonth()];
+        return _("%formatter.shortMonths")[date.getUTCMonth()];
     },
     /**
      * @param {Date} date
      * @returns {String}
      */
     "MMMM": function(date) {
-        return Exhibit._("%formatter.months")[date.getUTCMonth()];
+        return _("%formatter.months")[date.getUTCMonth()];
     },
     
     // year
@@ -656,7 +646,7 @@ Exhibit.Formatter._DateFormatter._retrievers = {
      * @returns {String}
      */
     "yy": function(date) {
-        return Exhibit.Formatter._DateFormatter._pad(date.getUTCFullYear() % 100);
+        return Formatter._DateFormatter._pad(date.getUTCFullYear() % 100);
     },
     /**
      * @param {Date} date
@@ -674,7 +664,7 @@ Exhibit.Formatter._DateFormatter._retrievers = {
      */
     "G": function(date) {
         var y = date.getUTCYear();
-        return y > 0 ? Exhibit._("%formatter.commonEra") : Exhibit._("%formatter.beforeCommonEra");
+        return y > 0 ? _("%formatter.commonEra") : _("%formatter.beforeCommonEra");
     },
     
     // hours of day
@@ -683,7 +673,7 @@ Exhibit.Formatter._DateFormatter._retrievers = {
      * @returns {String}
      */
     "HH": function(date) {
-        return Exhibit.Formatter._DateFormatter._pad(date.getUTCHours());
+        return Formatter._DateFormatter._pad(date.getUTCHours());
     },
     /**
      * @param {Date} date
@@ -691,7 +681,7 @@ Exhibit.Formatter._DateFormatter._retrievers = {
      */
     "hh": function(date) {
         var h = date.getUTCHours();
-        return Exhibit.Formatter._DateFormatter._pad(h === 0 ? 12 : (h > 12 ? h - 12 : h));
+        return Formatter._DateFormatter._pad(h === 0 ? 12 : (h > 12 ? h - 12 : h));
     },
     /**
      * @param {Date} date
@@ -708,14 +698,14 @@ Exhibit.Formatter._DateFormatter._retrievers = {
      * @returns {String}
      */
     "a": function(date) {
-        return date.getUTCHours() < 12 ? Exhibit._("%formatter.beforeNoon") : Exhibit._("%formatter.afterNoon");
+        return date.getUTCHours() < 12 ? _("%formatter.beforeNoon") : _("%formatter.afterNoon");
     },
     /**
      * @param {Date} date
      * @returns {String}
      */
     "A": function(date) {
-        return date.getUTCHours() < 12 ? Exhibit._("%formatter.BeforeNoon") : Exhibit._("%formatter.AfterNoon");
+        return date.getUTCHours() < 12 ? _("%formatter.BeforeNoon") : _("%formatter.AfterNoon");
     },
     
     // minutes of hour
@@ -724,7 +714,7 @@ Exhibit.Formatter._DateFormatter._retrievers = {
      * @returns {String}
      */
     "mm": function(date) {
-        return Exhibit.Formatter._DateFormatter._pad(date.getUTCMinutes());
+        return Formatter._DateFormatter._pad(date.getUTCMinutes());
     },
     
     // seconds of minute
@@ -733,7 +723,7 @@ Exhibit.Formatter._DateFormatter._retrievers = {
      * @returns {String}
      */
     "ss": function(date) {
-        return Exhibit.Formatter._DateFormatter._pad(date.getUTCSeconds());
+        return Formatter._DateFormatter._pad(date.getUTCSeconds());
     },
     
     // milliseconds of minute
@@ -742,7 +732,7 @@ Exhibit.Formatter._DateFormatter._retrievers = {
      * @returns {String}
      */
     "S": function(date) {
-        return Exhibit.Formatter._DateFormatter._pad3(date.getUTCMilliseconds());
+        return Formatter._DateFormatter._pad3(date.getUTCMilliseconds());
     }
     
 };
@@ -750,17 +740,17 @@ Exhibit.Formatter._DateFormatter._retrievers = {
 /**
  * @constant
  */
-Exhibit.Formatter._constructors = {
-    "number" : Exhibit.Formatter._NumberFormatter,
-    "date" : Exhibit.Formatter._DateFormatter,
-    "text" : Exhibit.Formatter._TextFormatter,
-    "boolean" : Exhibit.Formatter._BooleanFormatter,
-    "image" : Exhibit.Formatter._ImageFormatter,
-    "url" : Exhibit.Formatter._URLFormatter,
-    "item" : Exhibit.Formatter._ItemFormatter,
-    "currency" : Exhibit.Formatter._CurrencyFormatter
+Formatter._constructors = {
+    "number" : Formatter._NumberFormatter,
+    "date" : Formatter._DateFormatter,
+    "text" : Formatter._TextFormatter,
+    "boolean" : Formatter._BooleanFormatter,
+    "image" : Formatter._ImageFormatter,
+    "url" : Formatter._URLFormatter,
+    "item" : Formatter._ItemFormatter,
+    "currency" : Formatter._CurrencyFormatter
 };
 
     // end define
-    return Exhibit;
+    return Formatter;
 });

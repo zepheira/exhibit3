@@ -1,4 +1,5 @@
-Exhibit.MapExtension.Painter = {};
+define(["map/base"], function(MapExtension) {
+var Painter = {};
 
 /**
  * @param {Numeric} width
@@ -9,7 +10,7 @@ Exhibit.MapExtension.Painter = {};
  * @param {Numeric} iconSize
  * @param {Object} settings
  */
-Exhibit.MapExtension.Painter.makeIcon = function(width, height, color, label, iconURL, iconSize, settings) {
+Painter.makeIcon = function(width, height, color, label, iconURL, iconSize, settings) {
     var imageParameters, shadowParameters, pinParameters, pinHeight, pinHalfWidth;
 
     if (iconSize > 0) {
@@ -61,7 +62,11 @@ Exhibit.MapExtension.Painter.makeIcon = function(width, height, color, label, ic
     }
 
     return {
-	    "iconURL": Exhibit.MapExtension.markerUrlPrefix + imageParameters.concat(pinParameters).join("&") + "&.png",
-	    "shadowURL": Exhibit.MapExtension.markerUrlPrefix + shadowParameters.concat(pinParameters).join("&") + "&.png" 
+	    "iconURL": MapExtension.markerUrlPrefix + imageParameters.concat(pinParameters).join("&") + "&.png",
+	    "shadowURL": MapExtension.markerUrlPrefix + shadowParameters.concat(pinParameters).join("&") + "&.png" 
     };
 };
+
+    // end define
+    return Painter;
+});

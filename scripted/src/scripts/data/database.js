@@ -5,27 +5,12 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["exhibit"], function(Exhibit) {
+define(function() {
 /**
  * @namespace Database layer of Exhibit.
  */
-Exhibit.Database = {
+var Database = {
     defaultIgnoredProperties: [ "uri", "modified" ]
-};
-
-/**
- * Instantiate an Exhibit database object.
- *
- * @static
- * @returns {Object}
- */
-Exhibit.Database.create = function(type) {
-    if (typeof Exhibit.Database[type] !== "undefined") {
-        return new Exhibit.Database[type]();
-    } else {
-        // warn?
-        return new Exhibit.Database._LocalImpl();
-    }
 };
 
 /**
@@ -39,7 +24,7 @@ Exhibit.Database.create = function(type) {
  * @param {String} y Second tier entry key in a subhash of the base hash.
  * @param {String} z Value to put into an array in the subhash key.
  */
-Exhibit.Database._indexPut = function(index, x, y, z) {
+Database._indexPut = function(index, x, y, z) {
     var hash, array, i;
 
     hash = index[x];
@@ -75,7 +60,7 @@ Exhibit.Database._indexPut = function(index, x, y, z) {
  * @param {String} y Second tier entry key in a subhash of the base hash.
  * @param {Array} list List of values to add or assign to the subhash key.
  */
-Exhibit.Database._indexPutList = function(index, x, y, list) {
+Database._indexPutList = function(index, x, y, list) {
     var hash, array;
 
     hash = index[x];
@@ -105,7 +90,7 @@ Exhibit.Database._indexPutList = function(index, x, y, list) {
  * @param {String} z Value to remove from an array in the subhash key.
  * @returns {Boolean} True if value removed, false if not.
  */
-Exhibit.Database._indexRemove = function(index, x, y, z) {
+Database._indexRemove = function(index, x, y, z) {
     var hash, array, i, prop, empty;
 
     hash = index[x];
@@ -152,7 +137,7 @@ Exhibit.Database._indexRemove = function(index, x, y, z) {
  * @param {String} y Second tier entry key in a subhash of the base hash.
  * @returns {Array} The removed array, or null if nothing was removed.
  */
-Exhibit.Database._indexRemoveList = function(index, x, y) {
+Database._indexRemoveList = function(index, x, y) {
     var hash, array, prop, empty;
 
     hash = index[x];
@@ -182,5 +167,5 @@ Exhibit.Database._indexRemoveList = function(index, x, y) {
 };
 
     // end define
-    return Exhibit;
+    return Database;
 });

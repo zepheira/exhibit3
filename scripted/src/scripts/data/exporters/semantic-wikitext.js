@@ -4,11 +4,16 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "exhibit", "data/exporter"], function($, Exhibit) {
+define([
+    "lib/jquery",
+    "util/localizer",
+    "util/persistence",
+    "data/exporter"
+], function($, _, Persistence, Exporter) {
 /**
  * @namespace
  */
-Exhibit.Exporter.SemanticWikiText = {
+var SemanticWikiText = {
     _type: "semantic-mediawiki",
     exporter: null
 };
@@ -18,7 +23,7 @@ Exhibit.Exporter.SemanticWikiText = {
  * @param {Exhibit.Database} database
  * @returns {String}
  */
-Exhibit.Exporter.SemanticWikiText.wrap = function(s, database) {
+SemanticWikiText.wrap = function(s, database) {
     return s;
 };
 
@@ -26,7 +31,7 @@ Exhibit.Exporter.SemanticWikiText.wrap = function(s, database) {
  * @param {String} s
  * @returns {String}
  */
-Exhibit.Exporter.SemanticWikiText.wrapOne = function(s, first, last) {
+SemanticWikiText.wrapOne = function(s, first, last) {
     return s + "\n";
 };
 
@@ -36,7 +41,7 @@ Exhibit.Exporter.SemanticWikiText.wrapOne = function(s, first, last) {
  * @param {Object} properties
  * @returns {String}
  */
-Exhibit.Exporter.SemanticWikiText.exportOne = function(itemID, o, properties) {
+SemanticWikiText.exportOne = function(itemID, o, properties) {
     var uri, prop, valueType, values, i, s = "";
 
     uri = o.uri;
@@ -58,7 +63,7 @@ Exhibit.Exporter.SemanticWikiText.exportOne = function(itemID, o, properties) {
         }
     }
 
-    s += "[[origin:=" + Exhibit.Persistence.getItemLink(itemID) + "]]\n\n";
+    s += "[[origin:=" + Persistence.getItemLink(itemID) + "]]\n\n";
 
     return s;
 };
@@ -66,21 +71,21 @@ Exhibit.Exporter.SemanticWikiText.exportOne = function(itemID, o, properties) {
 /**
  * @private
  */
-Exhibit.Exporter.SemanticWikiText._register = function() {
-    Exhibit.Exporter.SemanticWikiText.exporter = new Exhibit.Exporter(
-        Exhibit.Exporter.SemanticWikiText._type,
-        Exhibit._("%export.smwExporterLabel"),
-        Exhibit.Exporter.SemanticWikiText.wrap,
-        Exhibit.Exporter.SemanticWikiText.wrapOne,
-        Exhibit.Exporter.SemanticWikiText.exportOne
+SemanticWikiText._register = function() {
+    SemanticWikiText.exporter = new Exporter(
+        SemanticWikiText._type,
+        _("%export.smwExporterLabel"),
+        SemanticWikiText.wrap,
+        SemanticWikiText.wrapOne,
+        SemanticWikiText.exportOne
     );
 };
 
 $(document).one(
     "registerExporters.exhibit",
-    Exhibit.Exporter.SemanticWikiText._register
+    SemanticWikiText._register
 );
 
     // end define
-    return Exhibit;
+    return SemanticWikiText;
 });

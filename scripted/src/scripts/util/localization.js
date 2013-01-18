@@ -4,8 +4,8 @@
  */
 
 define(
-    ["lib/jquery", "exhibit", "lib/sprintf"],
-    function($, Exhibit, vsprintf) {
+    ["lib/jquery", "exhibit"],
+    function($, Exhibit) {
 /**
  * @class
  * @constructor
@@ -29,33 +29,6 @@ Exhibit.Locale.prototype.getURL = function() {
  * @namespace All localization keys and strings fit under this namespace.
  */
 Exhibit.l10n = {};
-
-/**
- * Localizing function; take an identifying key and return the most specific
- * localization possible for it.  May return undefined if no match can be
- * found.
- * @see http://purl.eligrey.com/l10n.js
- * @requires sprintf.js
- * @param {String} s The key of the localized string to use.
- * @param [arguments] Any number of optional arguments that may be used in
- *     displaying the message, like numbers for count-dependent messages.
- * @returns Usually returns a string but may return arrays, booleans, etc.
- *     depending on what was localized.  Ideally this would not return a
- *     data structure.
- */
-Exhibit._ = function() {
-    var key, s, args;
-    args = [].slice.apply(arguments);
-    if (args.length > 0) {
-        key = args.shift();
-        s = Exhibit.Localization.lookup(key);
-        if (typeof s !== "undefined" &&  typeof s !== "object") {
-            return vsprintf(s, args);
-        } else {
-            return s;
-        }
-    }
-};
 
 /**
  * @namespace

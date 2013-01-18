@@ -4,13 +4,13 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "exhibit"], function($, Exhibit) {
+define(["lib/jquery", "util/ui"], function($, UIUtilities) {
 /**
  * @param {Object} configuration
  * @param {Element} elmt
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.ResizableDivWidget = function(configuration, elmt, uiContext) {
+var ResizableDivWidget = function(configuration, elmt, uiContext) {
     this._div = elmt;
     this._configuration = configuration;
     if (typeof configuration.minHeight === "undefined") {
@@ -30,14 +30,14 @@ Exhibit.ResizableDivWidget = function(configuration, elmt, uiContext) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.ResizableDivWidget}
  */
-Exhibit.ResizableDivWidget.create = function(configuration, elmt, uiContext) {
-    return new Exhibit.ResizableDivWidget(configuration, elmt, uiContext);
+ResizableDivWidget.create = function(configuration, elmt, uiContext) {
+    return new ResizableDivWidget(configuration, elmt, uiContext);
 };
 
 /**
  *
  */
-Exhibit.ResizableDivWidget.prototype.dispose = function() {
+ResizableDivWidget.prototype.dispose = function() {
     $(this._div).empty();
     this._contentDiv = null;
     this._resizerDiv = null;
@@ -47,20 +47,20 @@ Exhibit.ResizableDivWidget.prototype.dispose = function() {
 /**
  * @returns {Element}
  */
-Exhibit.ResizableDivWidget.prototype.getContentDiv = function() {
+ResizableDivWidget.prototype.getContentDiv = function() {
     return this._contentDiv;
 };
 
 /**
  *
  */
-Exhibit.ResizableDivWidget.prototype._initializeUI = function() {
+ResizableDivWidget.prototype._initializeUI = function() {
     var self = this;
     
     $(this._div).html(
         "<div></div>" +
         '<div class="exhibit-resizableDivWidget-resizer">' +
-            Exhibit.UI.createTranslucentImageHTML("images/down-arrow.png") +
+            UIUtilities.createTranslucentImageHTML("images/down-arrow.png") +
             "</div>");
         
     this._contentDiv = $(this._div).children().get(0);
@@ -94,5 +94,5 @@ Exhibit.ResizableDivWidget.prototype._initializeUI = function() {
 };
 
     // end define
-    return Exhibit;
+    return ResizableDivWidget;
 });

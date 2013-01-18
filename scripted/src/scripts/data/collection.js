@@ -4,7 +4,15 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "exhibit"], function($, Exhibit) {
+define([
+    "lib/jquery",
+    "exhibit",
+    "util/set",
+    "util/facets",
+    "util/history",
+    "data/expression-parser",
+    "ui/facets/facet"
+], function($, Exhibit, Set, FacetUtilities, EHistory, ExpressionParser, Facet) {
 /**
  * Creates a new object with an identifier and the database it draws from. 
  * 
@@ -13,7 +21,7 @@ define(["lib/jquery", "exhibit"], function($, Exhibit) {
  * @param {String} id Collection identifier.
  * @param {Exhibit.Database} database Database associated with the collection.
  */
-Exhibit.Collection = function(id, database) {
+var Collection = function(id, database) {
     this._id = id;
     this._database = database;
     this._elmt = null;
@@ -33,11 +41,11 @@ Exhibit.Collection = function(id, database) {
  * @param {Exhibit.Database} database Database associated with the collection.
  * @returns {Exhibit.Collection} Newly created collection.
  */
-Exhibit.Collection.createAllItemsCollection = function(id, database) {
-    var collection = new Exhibit.Collection(id, database);
-    collection._update = Exhibit.Collection._allItemsCollection_update;
+Collection.createAllItemsCollection = function(id, database) {
+    var collection = new Collection(id, database);
+    collection._update = Collection._allItemsCollection_update;
     
-    Exhibit.Collection._initializeBasicCollection(collection, database);
+    Collection._initializeBasicCollection(collection, database);
     collection._setElement();
     
     return collection;
@@ -53,18 +61,18 @@ Exhibit.Collection.createAllItemsCollection = function(id, database) {
  * @param {Exhibit.Database} database Database associated with the collection.
  * @returns {Exhibit.Collection} Newly created collection.
  */
-Exhibit.Collection.create = function(id, configuration, database) {
-    var collection = new Exhibit.Collection(id, database);
+Collection.create = function(id, configuration, database) {
+    var collection = new Collection(id, database);
     collection._setElement();
    
     if (typeof configuration["itemTypes"] !== "undefined") {
         collection._itemTypes = configuration.itemTypes;
-        collection._update = Exhibit.Collection._typeBasedCollection_update;
+        collection._update = Collection._typeBasedCollection_update;
     } else {
-        collection._update = Exhibit.Collection._allItemsCollection_update;
+        collection._update = Collection._allItemsCollection_update;
     }
     
-    Exhibit.Collection._initializeBasicCollection(collection, database);
+    Collection._initializeBasicCollection(collection, database);
     
     return collection;
 };
@@ -77,21 +85,21 @@ Exhibit.Collection.create = function(id, configuration, database) {
  * @param {Exhibit.Database} database Database associated with the collection.
  * @returns {Exhibit.Collection} Newly created collection.
  */
-Exhibit.Collection.createFromDOM = function(id, elmt, database) {
+Collection.createFromDOM = function(id, elmt, database) {
     var collection, itemTypes;
 
-    collection = new Exhibit.Collection(id, database);
+    collection = new Collection(id, database);
     collection._setElement(elmt);
 
     itemTypes = Exhibit.getAttribute(elmt, "itemTypes", ",");
     if (typeof itemTypes !== "undefined" && itemTypes !== null && itemTypes.length > 0) {
         collection._itemTypes = itemTypes;
-        collection._update = Exhibit.Collection._typeBasedCollection_update;
+        collection._update = Collection._typeBasedCollection_update;
     } else {
-        collection._update = Exhibit.Collection._allItemsCollection_update;
+        collection._update = Collection._allItemsCollection_update;
     }
     
-    Exhibit.Collection._initializeBasicCollection(collection, database);
+    Collection._initializeBasicCollection(collection, database);
     
     return collection;
 };
@@ -105,16 +113,16 @@ Exhibit.Collection.createFromDOM = function(id, elmt, database) {
  * @param {Exhibit.UIContext} uiContext UI context for the collection.
  * @returns {Exhibit.Collection} Newly created collection.
  */
-Exhibit.Collection.create2 = function(id, configuration, uiContext) {
+Collection.create2 = function(id, configuration, uiContext) {
     var database, collection;
 
     database = uiContext.getDatabase();
     
     if (typeof configuration["expression"] !== "undefined") {
-        collection = new Exhibit.Collection(id, database);
+        collection = new Collection(id, database);
         collection._setElement();
         
-        collection._expression = Exhibit.ExpressionParser.parse(configuration.expression);
+        collection._expression = ExpressionParser.parse(configuration.expression);
         collection._baseCollection = (typeof configuration["baseCollectionID"] !== "undefined") ? 
             uiContext.getMain().getCollection(configuration.baseCollectionID) : 
             uiContext.getCollection();
@@ -123,14 +131,14 @@ Exhibit.Collection.create2 = function(id, configuration, uiContext) {
             configuration.restrictBaseCollection : false;
             
         if (collection._restrictBaseCollection) {
-            Exhibit.Collection._initializeRestrictingBasedCollection(collection);
+            Collection._initializeRestrictingBasedCollection(collection);
         } else {
-            Exhibit.Collection._initializeBasedCollection(collection);
+            Collection._initializeBasedCollection(collection);
         }
         
         return collection;
     } else {
-        return Exhibit.Collection.create(id, configuration, database);
+        return Collection.create(id, configuration, database);
     }
 };
 
@@ -143,17 +151,17 @@ Exhibit.Collection.create2 = function(id, configuration, uiContext) {
  * @param {Exhibit.UIContext} uiContext UI context for the collection.
  * @returns {Exhibit.Collection} Newly created collection.
  */
-Exhibit.Collection.createFromDOM2 = function(id, elmt, uiContext) {
+Collection.createFromDOM2 = function(id, elmt, uiContext) {
     var database, collection, expressionString, baseCollectionID;
 
     database = uiContext.getDatabase();
 
     expressionString = Exhibit.getAttribute(elmt, "expression");
     if (typeof expressionString !== "undefined" && expressionString !== null && expressionString.length > 0) {
-        collection = new Exhibit.Collection(id, database);
+        collection = new Collection(id, database);
         collection._setElement(elmt);
     
-        collection._expression = Exhibit.ExpressionParser.parse(expressionString);
+        collection._expression = ExpressionParser.parse(expressionString);
         
         baseCollectionID = Exhibit.getAttribute(elmt, "baseCollectionID");
         collection._baseCollection = (typeof baseCollectionID !== "undefined" && baseCollectionID !== null && baseCollectionID.length > 0) ? 
@@ -162,12 +170,12 @@ Exhibit.Collection.createFromDOM2 = function(id, elmt, uiContext) {
             
         collection._restrictBaseCollection = Exhibit.getAttribute(elmt, "restrictBaseCollection") === "true";
         if (collection._restrictBaseCollection) {
-            Exhibit.Collection._initializeRestrictingBasedCollection(collection, database);
+            Collection._initializeRestrictingBasedCollection(collection, database);
         } else {
-            Exhibit.Collection._initializeBasedCollection(collection);
+            Collection._initializeBasedCollection(collection);
         }
     } else {
-        collection = Exhibit.Collection.createFromDOM(id, elmt, database);
+        collection = Collection.createFromDOM(id, elmt, database);
     }
     return collection;
 };
@@ -181,7 +189,7 @@ Exhibit.Collection.createFromDOM2 = function(id, elmt, uiContext) {
  * @param {Exhibit.Collection} collection Collection to initialize.
  * @param {Exhibit.Database} database Source of data.
  */
-Exhibit.Collection._initializeBasicCollection = function(collection, database) {
+Collection._initializeBasicCollection = function(collection, database) {
     var update = function() { collection._update(); };
 
     $(document).bind('onAfterLoadingItems.exhibit', update);
@@ -198,8 +206,8 @@ Exhibit.Collection._initializeBasicCollection = function(collection, database) {
  * @private
  * @param {Exhibit.Collection} collection Collection to initialize.
  */
-Exhibit.Collection._initializeBasedCollection = function(collection) {
-    collection._update = Exhibit.Collection._basedCollection_update;
+Collection._initializeBasedCollection = function(collection) {
+    collection._update = Collection._basedCollection_update;
     
     $(this._elmt).bind('onItemsChanged.exhibit', function(evt) {
         collection._update();
@@ -218,18 +226,18 @@ Exhibit.Collection._initializeBasedCollection = function(collection) {
  * @param {Exhibit.Collection} collection Collection to initialize.
  * @param {Exhibit.Database} database Source of data.
  */
-Exhibit.Collection._initializeRestrictingBasedCollection = function(collection, database) {
-    collection._cache = new Exhibit.FacetUtilities.Cache(
+Collection._initializeRestrictingBasedCollection = function(collection, database) {
+    collection._cache = new FacetUtilities.Cache(
         database,
         collection._baseCollection,
         collection._expression
     );
     collection._isUpdatingBaseCollection = false;
     
-    collection.onFacetUpdated = Exhibit.Collection._restrictingBasedCollection_onFacetUpdated;
-    collection.restrict = Exhibit.Collection._restrictingBasedCollection_restrict;
-    collection.update = Exhibit.Collection._restrictingBasedCollection_update;
-    collection.hasRestrictions = Exhibit.Collection._restrictingBasedCollection_hasRestrictions;
+    collection.onFacetUpdated = Collection._restrictingBasedCollection_onFacetUpdated;
+    collection.restrict = Collection._restrictingBasedCollection_restrict;
+    collection.update = Collection._restrictingBasedCollection_update;
+    collection.hasRestrictions = Collection._restrictingBasedCollection_hasRestrictions;
     
     collection._baseCollection.addFacet(collection);
 };
@@ -238,7 +246,7 @@ Exhibit.Collection._initializeRestrictingBasedCollection = function(collection, 
  * Assigned as a collection's update method when the collection is based
  * on all items in the database.  Not a static method.
  */
-Exhibit.Collection._allItemsCollection_update = function() {
+Collection._allItemsCollection_update = function() {
     this.setItems(this._database.getAllItems());
     this._onRootItemsChanged();
 };
@@ -247,8 +255,8 @@ Exhibit.Collection._allItemsCollection_update = function() {
  * Assigned as a collection's update method when the collection is based
  * on a set of item types.  Not a static method.
  */
-Exhibit.Collection._typeBasedCollection_update = function() {
-    var i, newItems = new Exhibit.Set();
+Collection._typeBasedCollection_update = function() {
+    var i, newItems = new Set();
     for (i = 0; i < this._itemTypes.length; i++) {
         this._database.getSubjects(this._itemTypes[i], "type", newItems);
     }
@@ -261,7 +269,7 @@ Exhibit.Collection._typeBasedCollection_update = function() {
  * Assigned as a collection's update method when the collection is based
  * on another collection.  Not a static method.
  */
-Exhibit.Collection._basedCollection_update = function() {
+Collection._basedCollection_update = function() {
     this.setItems(this._expression.evaluate(
         { "value" : this._baseCollection.getRestrictedItems() }, 
         { "value" : "item" }, 
@@ -276,12 +284,12 @@ Exhibit.Collection._basedCollection_update = function() {
  * Substitutes for the common implementation of onFacetUpdated to deal with
  * the base collection.  Not a static method.
  */
-Exhibit.Collection._restrictingBasedCollection_onFacetUpdated = function() {
+Collection._restrictingBasedCollection_onFacetUpdated = function() {
     if (!this._updating) {
         /*
          *  This is called when one of our own facets is changed.
          */
-        Exhibit.Collection.prototype.onFacetUpdated.call(this);
+        Collection.prototype.onFacetUpdated.call(this);
         
         /*
          *  We need to restrict the base collection.
@@ -299,7 +307,7 @@ Exhibit.Collection._restrictingBasedCollection_onFacetUpdated = function() {
  * @param {Exhibit.Set} items Viable items.
  * @returns {Exhibit.Set} Possibly further constrained set of items.
  */
-Exhibit.Collection._restrictingBasedCollection_restrict = function(items) {
+Collection._restrictingBasedCollection_restrict = function(items) {
     if (this._restrictedItems.size() === this._items.size()) {
         return items;
     }
@@ -313,7 +321,7 @@ Exhibit.Collection._restrictingBasedCollection_restrict = function(items) {
  *
  * @param {Exhibit.Set} items Used to locate new items for the collection.
  */
-Exhibit.Collection._restrictingBasedCollection_update = function(items) {
+Collection._restrictingBasedCollection_update = function(items) {
     if (!this._isUpdatingBaseCollection) {
         this.setItems(this._cache.getValuesFromItems(items));
         this._onRootItemsChanged();
@@ -326,7 +334,7 @@ Exhibit.Collection._restrictingBasedCollection_update = function(items) {
  *
  * @returns {Boolean} True if this collection has restrictions.
  */
-Exhibit.Collection._restrictingBasedCollection_hasRestrictions = function() {
+Collection._restrictingBasedCollection_hasRestrictions = function() {
     return (this._items !== null) && (this._restrictedItems !== null) && 
         (this._restrictedItems.size() !== this._items.size());
 };
@@ -336,7 +344,7 @@ Exhibit.Collection._restrictingBasedCollection_hasRestrictions = function() {
  *
  * @returns {String} Collection identifier.
  */
-Exhibit.Collection.prototype.getID = function() {
+Collection.prototype.getID = function() {
     return this._id;
 };
 
@@ -346,7 +354,7 @@ Exhibit.Collection.prototype.getID = function() {
  *
  * @param {Element} el
  */
-Exhibit.Collection.prototype._setElement = function(el) {
+Collection.prototype._setElement = function(el) {
     if (typeof el === "undefined" || el === null) {
         if (this.getID() !== "default") {
             this._elmt = $("<div>")
@@ -369,7 +377,7 @@ Exhibit.Collection.prototype._setElement = function(el) {
  * 
  * @returns {Element}
  */
-Exhibit.Collection.prototype.getElement = function() {
+Collection.prototype.getElement = function() {
     return this._elmt;
 };
 
@@ -378,7 +386,7 @@ Exhibit.Collection.prototype.getElement = function() {
  *
  * @param {Exhibit.Set} items The collection's items.
  */ 
-Exhibit.Collection.prototype.setItems = function(items) {
+Collection.prototype.setItems = function(items) {
     this._items = items;
 };
 
@@ -388,14 +396,14 @@ Exhibit.Collection.prototype.setItems = function(items) {
  * @param {Exhibit.Collection} collection
  * @returns {Boolean} True if collection is equal to this one.
  */
-Exhibit.Collection.prototype.equals = function(collection) {
+Collection.prototype.equals = function(collection) {
     return (this.getID() === collection.getID());
 };
 
 /**
  * Handle removing the collection from the local context.
  */
-Exhibit.Collection.prototype.dispose = function() {
+Collection.prototype.dispose = function() {
     if (typeof this["_baseCollection"] !== "undefined") {
         this._baseCollection = null;
         this._expression = null;
@@ -412,7 +420,7 @@ Exhibit.Collection.prototype.dispose = function() {
  * 
  * @param {Exhibit.Facet} facet The new facet.
  */
-Exhibit.Collection.prototype.addFacet = function(facet) {
+Collection.prototype.addFacet = function(facet) {
     this._facets.push(facet);
     
     if (facet.hasRestrictions()) {
@@ -430,7 +438,7 @@ Exhibit.Collection.prototype.addFacet = function(facet) {
  *
  * @param {Exhibit.Facet} facet The facet to be removed.
  */
-Exhibit.Collection.prototype.removeFacet = function(facet) {
+Collection.prototype.removeFacet = function(facet) {
     var i;
     for (i = 0; i < this._facets.length; i++) {
         if (facet === this._facets[i]) {
@@ -450,16 +458,16 @@ Exhibit.Collection.prototype.removeFacet = function(facet) {
  * 
  * @returns {Array} A list of objects returned by clearing restrictions.
  */
-Exhibit.Collection.prototype.clearAllRestrictions = function() {
+Collection.prototype.clearAllRestrictions = function() {
     var i, state;
-    state = Exhibit.History.getState();
+    state = EHistory.getState();
     
     this._updating = true;
     for (i = 0; i < this._facets.length; i++) {
-        Exhibit.History.setComponentState(
+        EHistory.setComponentState(
             state,
             this._facets[i],
-            Exhibit.Facet._registryKey,
+            Facet._registryKey,
             this._facets[i].exportEmptyState(),
             true
         );
@@ -477,7 +485,7 @@ Exhibit.Collection.prototype.clearAllRestrictions = function() {
  *
  * @param {Array} restrictions List of objects used for applying restrictions.
  */
-Exhibit.Collection.prototype.applyRestrictions = function(restrictions) {
+Collection.prototype.applyRestrictions = function(restrictions) {
     var i;
     this._updating = true;
     for (i = 0; i < this._facets.length; i++) {
@@ -493,8 +501,8 @@ Exhibit.Collection.prototype.applyRestrictions = function(restrictions) {
  *
  * @returns {Exhibit.Set} All collection items.
  */
-Exhibit.Collection.prototype.getAllItems = function() {
-    return new Exhibit.Set(this._items);
+Collection.prototype.getAllItems = function() {
+    return new Set(this._items);
 };
 
 /**
@@ -502,7 +510,7 @@ Exhibit.Collection.prototype.getAllItems = function() {
  *
  * @returns {Number} The count of all collection items.
  */
-Exhibit.Collection.prototype.countAllItems = function() {
+Collection.prototype.countAllItems = function() {
     return this._items.size();
 };
 
@@ -511,8 +519,8 @@ Exhibit.Collection.prototype.countAllItems = function() {
  *
  * @returns {Exhibit.Set} Restricted items.
  */
-Exhibit.Collection.prototype.getRestrictedItems = function() {
-    return new Exhibit.Set(this._restrictedItems);
+Collection.prototype.getRestrictedItems = function() {
+    return new Set(this._restrictedItems);
 };
 
 
@@ -521,7 +529,7 @@ Exhibit.Collection.prototype.getRestrictedItems = function() {
  *
  * @returns {Number} The count of restricted items.
  */
-Exhibit.Collection.prototype.countRestrictedItems = function() {
+Collection.prototype.countRestrictedItems = function() {
     return this._restrictedItems.size();
 };
 
@@ -529,7 +537,7 @@ Exhibit.Collection.prototype.countRestrictedItems = function() {
  * Modifies the set of items matching the restriction based on changes
  * to a facet, sending the signal onItemsChanged when finished.
  */
-Exhibit.Collection.prototype.onFacetUpdated = function() {
+Collection.prototype.onFacetUpdated = function() {
     if (!this._updating) {
         this._computeRestrictedItems();
         this._updateFacets();
@@ -544,7 +552,7 @@ Exhibit.Collection.prototype.onFacetUpdated = function() {
  *
  * @private
  */
-Exhibit.Collection.prototype._onRootItemsChanged = function() {
+Collection.prototype._onRootItemsChanged = function() {
     $(this._elmt).trigger("onRootItemsChanged.exhibit");
     
     this._computeRestrictedItems();
@@ -559,7 +567,7 @@ Exhibit.Collection.prototype._onRootItemsChanged = function() {
  *
  * @private
  */ 
-Exhibit.Collection.prototype._updateFacets = function() {
+Collection.prototype._updateFacets = function() {
     var restrictedFacetCount, i, facet, items, j;
     restrictedFacetCount = 0;
     for (i = 0; i < this._facets.length; i++) {
@@ -594,7 +602,7 @@ Exhibit.Collection.prototype._updateFacets = function() {
  * 
  * @private
  */
-Exhibit.Collection.prototype._computeRestrictedItems = function() {
+Collection.prototype._computeRestrictedItems = function() {
     var i, facet;
     this._restrictedItems = this._items;
     for (i = 0; i < this._facets.length; i++) {
@@ -606,5 +614,5 @@ Exhibit.Collection.prototype._computeRestrictedItems = function() {
 };
 
     // end define
-    return Exhibit;
+    return Collection;
 });

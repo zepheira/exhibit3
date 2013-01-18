@@ -5,12 +5,12 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["exhibit"], function(Exhibit) {
+define(function() {
 /**
  * @namespace Contains support methods for generating persistent URLs for
  *            items in an Exhibit database.
  */
-Exhibit.Persistence = {
+var Persistence = {
     /**
      * Cached URL without query portion.
      */
@@ -30,14 +30,14 @@ Exhibit.Persistence = {
  * @param {String} url Starting URL to derive a base URL from.
  * @returns {String} The base URL.
  */
-Exhibit.Persistence.getBaseURL = function(url) {
+Persistence.getBaseURL = function(url) {
     // HACK: for some unknown reason Safari keeps throwing
     //      TypeError: no default value
     // when this function is called from the RDFa importer. So I put a try catch here.
     var url2, i;
     try {
         if (url.indexOf("://") < 0) {
-            url2 = Exhibit.Persistence.getBaseURL(document.location.href);
+            url2 = Persistence.getBaseURL(document.location.href);
             if (url.substr(0, 1) === "/") {
                 url = url2.substr(0, url2.indexOf("/", url2.indexOf("://") + 3)) + url;
             } else {
@@ -66,7 +66,7 @@ Exhibit.Persistence.getBaseURL = function(url) {
  * @param {String} url The orignal URL to resolve.
  * @returns {String} The resolved URL.
  */
-Exhibit.Persistence.resolveURL = function (url) {
+Persistence.resolveURL = function (url) {
     var url2, hash;
     if (url.indexOf('#') === 0) {  //resolving a fragment identifier
         hash = document.location.href.indexOf('#');
@@ -76,7 +76,7 @@ Exhibit.Persistence.resolveURL = function (url) {
             url = document.location.href.substring(0, hash) + url;
         }
     } else if (url.indexOf("://") < 0) {
-        url2 = Exhibit.Persistence.getBaseURL(document.location.href);
+        url2 = Persistence.getBaseURL(document.location.href);
         if (url.substr(0, 1) === "/") {
             url = url2.substr(0, url2.indexOf("/", url2.indexOf("://") + 3)) + url;
         } else {
@@ -92,9 +92,9 @@ Exhibit.Persistence.resolveURL = function (url) {
  *
  * @returns {String} The document's location without query and hash portions.
  */
-Exhibit.Persistence.getURLWithoutQueryAndHash = function() {
+Persistence.getURLWithoutQueryAndHash = function() {
     var url, hash, question;
-    if (Exhibit.Persistence._urlWithoutQueryAndHash === null) {
+    if (Persistence._urlWithoutQueryAndHash === null) {
         url = document.location.href;
         
         hash = url.indexOf("#");
@@ -105,9 +105,9 @@ Exhibit.Persistence.getURLWithoutQueryAndHash = function() {
             url = url.substr(0, hash);
         }
         
-        Exhibit.Persistence._urlWithoutQueryAndHash = url;
+        Persistence._urlWithoutQueryAndHash = url;
     }
-    return Exhibit.Persistence._urlWithoutQueryAndHash;
+    return Persistence._urlWithoutQueryAndHash;
 };
 
 /**
@@ -116,9 +116,9 @@ Exhibit.Persistence.getURLWithoutQueryAndHash = function() {
  *
  * @returns {String} The document's location without a query portion.
  */
-Exhibit.Persistence.getURLWithoutQuery = function() {
+Persistence.getURLWithoutQuery = function() {
     var url, question;
-    if (Exhibit.Persistence._urlWithoutQuery === null) {
+    if (Persistence._urlWithoutQuery === null) {
         url = document.location.href;
         
         question = url.indexOf("?");
@@ -126,9 +126,9 @@ Exhibit.Persistence.getURLWithoutQuery = function() {
             url = url.substr(0, question);
         }
         
-        Exhibit.Persistence._urlWithoutQuery = url;
+        Persistence._urlWithoutQuery = url;
     }
-    return Exhibit.Persistence._urlWithoutQuery;
+    return Persistence._urlWithoutQuery;
 };
 
 /**
@@ -138,10 +138,10 @@ Exhibit.Persistence.getURLWithoutQuery = function() {
  * @param {String} itemID The item's database identifier.
  * @returns {String} A URL to Exhibit highlighting the item.
  */
-Exhibit.Persistence.getItemLink = function(itemID) {
-    return Exhibit.Persistence.getURLWithoutQueryAndHash() + "#" + encodeURIComponent(itemID);
+Persistence.getItemLink = function(itemID) {
+    return Persistence.getURLWithoutQueryAndHash() + "#" + encodeURIComponent(itemID);
 };
 
     // end define
-    return Exhibit;
+    return Persistence;
 });

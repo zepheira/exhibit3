@@ -7,19 +7,24 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["exhibit"], function(Exhibit) {
+define([
+    "lib/jquery",
+    "exhibit",
+    "util/localizer",
+    "util/coders"
+], function($, Exhibit, _, Coders) {
 /**
  * @class
  * @constructor
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.DefaultColorCoder = function(uiContext) {
+var DefaultColorCoder = function(uiContext) {
 };
 
 /**
  * @constant
  */
-Exhibit.DefaultColorCoder.colors = [
+DefaultColorCoder.colors = [
     "#FF9000",
     "#5D7CBA",
     "#A97838",
@@ -33,12 +38,12 @@ Exhibit.DefaultColorCoder.colors = [
 /**
  * @private
  */
-Exhibit.DefaultColorCoder._map = {};
+DefaultColorCoder._map = {};
 
 /**
  * @private
  */
-Exhibit.DefaultColorCoder._nextColor = 0;
+DefaultColorCoder._nextColor = 0;
 
 /**
  * @param {String} key
@@ -48,24 +53,24 @@ Exhibit.DefaultColorCoder._nextColor = 0;
  * @returns {String}
  * @depends Exhibit.Coders
  */
-Exhibit.DefaultColorCoder.prototype.translate = function(key, flags) {
+DefaultColorCoder.prototype.translate = function(key, flags) {
     if (typeof key === "undefined" || key === null) {
         if (typeof flags !== "undefined" && flags !== null) {
             flags.missing = true;
         }
-        return Exhibit.Coders.missingCaseColor;
+        return Coders.missingCaseColor;
     } else {
         if (typeof flags !== "undefined" && flags !== null) {
             flags.keys.add(key);
         }
-        if (typeof Exhibit.DefaultColorCoder._map[key] !== "undefined") {
-            return Exhibit.DefaultColorCoder._map[key];
+        if (typeof DefaultColorCoder._map[key] !== "undefined") {
+            return DefaultColorCoder._map[key];
         } else {
-            var color = Exhibit.DefaultColorCoder.colors[Exhibit.DefaultColorCoder._nextColor];
-            Exhibit.DefaultColorCoder._nextColor = 
-                (Exhibit.DefaultColorCoder._nextColor + 1) % Exhibit.DefaultColorCoder.colors.length;
+            var color = DefaultColorCoder.colors[DefaultColorCoder._nextColor];
+            DefaultColorCoder._nextColor = 
+                (DefaultColorCoder._nextColor + 1) % DefaultColorCoder.colors.length;
                 
-            Exhibit.DefaultColorCoder._map[key] = color;
+            DefaultColorCoder._map[key] = color;
             return color;
         }
     }
@@ -78,7 +83,7 @@ Exhibit.DefaultColorCoder.prototype.translate = function(key, flags) {
  * @param {Boolean} flags.mixed
  * @returns {String}
  */
-Exhibit.DefaultColorCoder.prototype.translateSet = function(keys, flags) {
+DefaultColorCoder.prototype.translateSet = function(keys, flags) {
     var color, self;
     color = null;
     self = this;
@@ -87,7 +92,7 @@ Exhibit.DefaultColorCoder.prototype.translateSet = function(keys, flags) {
         if (color === null) {
             color = color2;
         } else if (color !== color2) {
-            color = Exhibit.Coders.mixedCaseColor;
+            color = Coders.mixedCaseColor;
             flags.mixed = true;
             return true; // exit visitation
         }
@@ -98,52 +103,52 @@ Exhibit.DefaultColorCoder.prototype.translateSet = function(keys, flags) {
         return color;
     } else {
         flags.missing = true;
-        return Exhibit.Coders.missingCaseColor;
+        return Coders.missingCaseColor;
     }
 };
 
 /**
  * @returns {String}
  */
-Exhibit.DefaultColorCoder.prototype.getOthersLabel = function() {
-    return Exhibit._("%coders.othersCaseLabel");
+DefaultColorCoder.prototype.getOthersLabel = function() {
+    return _("%coders.othersCaseLabel");
 };
 
 /**
  * @returns {String}
  */
-Exhibit.DefaultColorCoder.prototype.getOthersColor = function() {
-    return Exhibit.Coders.othersCaseColor;
+DefaultColorCoder.prototype.getOthersColor = function() {
+    return Coders.othersCaseColor;
 };
 
 /**
  * @returns {String}
  */
-Exhibit.DefaultColorCoder.prototype.getMissingLabel = function() {
-    return Exhibit._("%coders.missingCaseLabel");
+DefaultColorCoder.prototype.getMissingLabel = function() {
+    return _("%coders.missingCaseLabel");
 };
 
 /**
  * @returns {String}
  */
-Exhibit.DefaultColorCoder.prototype.getMissingColor = function() {
-    return Exhibit.Coders.missingCaseColor;
+DefaultColorCoder.prototype.getMissingColor = function() {
+    return Coders.missingCaseColor;
 };
 
 /**
  * @returns {String}
  */
-Exhibit.DefaultColorCoder.prototype.getMixedLabel = function() {
-    return Exhibit._("%coders.mixedCaseLabel");
+DefaultColorCoder.prototype.getMixedLabel = function() {
+    return _("%coders.mixedCaseLabel");
 };
 
 /**
  * @returns {String}
  */
-Exhibit.DefaultColorCoder.prototype.getMixedColor = function() {
-    return Exhibit.Coders.mixedCaseColor;
+DefaultColorCoder.prototype.getMixedColor = function() {
+    return Coders.mixedCaseColor;
 };
 
     // end define
-    return Exhibit;
+    return DefaultColorCoder;
 });

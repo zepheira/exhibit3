@@ -5,23 +5,30 @@
  * @author <a href="mailto:axel@pike.org">Axel Hecht</a>
  */
 
-define(
-    ["lib/jquery", "exhibit", "lib/jquery.simile.dom"],
-    function($, Exhibit) {
+define([
+    "lib/jquery",
+    "exhibit",
+    "util/settings",
+    "util/history",
+    "ui/ui-context",
+    "ui/views/view",
+    "ui/views/ordered-view-frame",
+    "lib/jquery.simile.dom"
+], function($, Exhibit, SettingsUtilities, EHistory, UIContext, View, OrderedViewFrame) {
 /**
  * @constructor
  * @class
  * @param {Element} containerElement
  * @param {Exhibit.UIContext} uiContext
  */ 
-Exhibit.ThumbnailView = function(containerElmt, uiContext) {
+var ThumbnailView = function(containerElmt, uiContext) {
     var view = this;
-    $.extend(this, new Exhibit.View(
+    $.extend(this, new View(
         "thumbnail",
         containerElmt,
         uiContext
     ));
-    this.addSettingSpecs(Exhibit.ThumbnailView._settingSpecs);
+    this.addSettingSpecs(ThumbnailView._settingSpecs);
 
     this._onItemsChanged = function() {
         // @@@this will ignore the stored state, which is odd
@@ -36,14 +43,14 @@ Exhibit.ThumbnailView = function(containerElmt, uiContext) {
         view._onItemsChanged
     );
 
-    this._orderedViewFrame = new Exhibit.OrderedViewFrame(uiContext);
+    this._orderedViewFrame = new OrderedViewFrame(uiContext);
     this._orderedViewFrame.parentReconstruct = function() {
         view._reconstruct();
     };
     this._orderedViewFrame.parentHistoryAction = function(child, state, title) {
-        Exhibit.History.pushComponentState(
+        EHistory.pushComponentState(
             view,
-            Exhibit.View.getRegistryKey(),
+            View.getRegistryKey(),
             view.exportState(view.makeStateWithSub(child, state)),
             title,
             true
@@ -56,7 +63,7 @@ Exhibit.ThumbnailView = function(containerElmt, uiContext) {
 /**
  * @constant
  */
-Exhibit.ThumbnailView._settingSpecs = {
+ThumbnailView._settingSpecs = {
     "columnCount":          { type: "int", defaultValue: -1 }
 };
 
@@ -64,7 +71,7 @@ Exhibit.ThumbnailView._settingSpecs = {
  * Constant leftover from a now unnecessary IE hack.
  * @constant
  */
-Exhibit.ThumbnailView._itemContainerClass = "exhibit-thumbnailView-itemContainer";
+ThumbnailView._itemContainerClass = "exhibit-thumbnailView-itemContainer";
 
 /**
  * @param {Object} configuration
@@ -72,18 +79,18 @@ Exhibit.ThumbnailView._itemContainerClass = "exhibit-thumbnailView-itemContainer
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.ThumbnailView}
  */
-Exhibit.ThumbnailView.create = function(configuration, containerElmt, uiContext) {
-    var view = new Exhibit.ThumbnailView(
+ThumbnailView.create = function(configuration, containerElmt, uiContext) {
+    var view = new ThumbnailView(
         containerElmt,
-        Exhibit.UIContext.create(configuration, uiContext, true)
+        UIContext.create(configuration, uiContext, true)
     );
 
-    view._lensRegistry = Exhibit.UIContext.createLensRegistry(
+    view._lensRegistry = UIContext.createLensRegistry(
         configuration,
         uiContext.getLensRegistry()
     );
 
-    Exhibit.SettingsUtilities.collectSettings(
+    SettingsUtilities.collectSettings(
         configuration,
         view.getSettingSpecs(),
         view._settings
@@ -101,28 +108,28 @@ Exhibit.ThumbnailView.create = function(configuration, containerElmt, uiContext)
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.ThumbnailView}
  */
-Exhibit.ThumbnailView.createFromDOM = function(configElmt, containerElmt, uiContext) {
+ThumbnailView.createFromDOM = function(configElmt, containerElmt, uiContext) {
     var configuration, view;
     configuration = Exhibit.getConfigurationFromDOM(configElmt);
-    view = new Exhibit.ThumbnailView(
+    view = new ThumbnailView(
         typeof containerElmt !== "undefined" && containerElmt !== null ?
             containerElmt :
             configElmt,
-        Exhibit.UIContext.createFromDOM(configElmt, uiContext, true)
+        UIContext.createFromDOM(configElmt, uiContext, true)
     );
 
-    view._lensRegistry = Exhibit.UIContext.createLensRegistryFromDOM(
+    view._lensRegistry = UIContext.createLensRegistryFromDOM(
         configElmt,
         configuration,
         uiContext.getLensRegistry()
     );
 
-    Exhibit.SettingsUtilities.collectSettingsFromDOM(
+    SettingsUtilities.collectSettingsFromDOM(
         configElmt,
         view.getSettingSpecs(),
         view._settings
     );
-    Exhibit.SettingsUtilities.collectSettings(
+    SettingsUtilities.collectSettings(
         configuration,
         view.getSettingSpecs(),
         view._settings
@@ -138,7 +145,7 @@ Exhibit.ThumbnailView.createFromDOM = function(configElmt, containerElmt, uiCont
 /**
  *
  */
-Exhibit.ThumbnailView.prototype.dispose = function() {
+ThumbnailView.prototype.dispose = function() {
     var view = this;
     $(this.getUIContext().getCollection().getElement()).unbind(
         "onItemsChanged.exhibit",
@@ -157,7 +164,7 @@ Exhibit.ThumbnailView.prototype.dispose = function() {
 /**
  *
  */
-Exhibit.ThumbnailView.prototype._initializeUI = function() {
+ThumbnailView.prototype._initializeUI = function() {
     var self, template;
 
     self = this;
@@ -193,7 +200,7 @@ Exhibit.ThumbnailView.prototype._initializeUI = function() {
 
     this._orderedViewFrame.initializeUI();
 
-    Exhibit.View.addViewState(
+    View.addViewState(
         this.getID(),
         this.exportState()
     );
@@ -204,7 +211,7 @@ Exhibit.ThumbnailView.prototype._initializeUI = function() {
 /**
  *
  */
-Exhibit.ThumbnailView.prototype._reconstruct = function() {
+ThumbnailView.prototype._reconstruct = function() {
     if (this._settings.columnCount < 2) {
         this._reconstructWithFloats();
     } else {
@@ -212,7 +219,7 @@ Exhibit.ThumbnailView.prototype._reconstruct = function() {
     }
 };
 
-Exhibit.ThumbnailView.prototype._reconstructWithFloats = function() {
+ThumbnailView.prototype._reconstructWithFloats = function() {
     var view, state, closeGroups, i;
     view = this;
     state = {
@@ -240,7 +247,7 @@ Exhibit.ThumbnailView.prototype._reconstructWithFloats = function() {
     this._orderedViewFrame.onNewGroup = function(groupSortKey, keyType, groupLevel) {
         closeGroups(groupLevel);
 
-        var groupDom = Exhibit.ThumbnailView.constructGroup(
+        var groupDom = ThumbnailView.constructGroup(
             groupLevel,
             groupSortKey
         );
@@ -257,7 +264,7 @@ Exhibit.ThumbnailView.prototype._reconstructWithFloats = function() {
 
         var i, itemLensItem, itemLens;
         if (typeof state.itemContainer === "undefined" || state.itemContainer === null) {
-            state.itemContainer = Exhibit.ThumbnailView.constructItemContainer();
+            state.itemContainer = ThumbnailView.constructItemContainer();
             $(state.div).append(state.itemContainer);
         }
 
@@ -266,7 +273,7 @@ Exhibit.ThumbnailView.prototype._reconstructWithFloats = function() {
         }
 
         itemLensDiv = $("<div>");
-        itemLensDiv.attr("class", Exhibit.ThumbnailView._itemContainerClass);
+        itemLensDiv.attr("class", ThumbnailView._itemContainerClass);
 
         itemLens = view._lensRegistry.createLens(itemID, itemLensDiv, view.getUIContext());
         state.itemContainer.append(itemLensDiv);
@@ -281,7 +288,7 @@ Exhibit.ThumbnailView.prototype._reconstructWithFloats = function() {
     $(this.getContainer()).show();
 };
 
-Exhibit.ThumbnailView.prototype._reconstructWithTable = function() {
+ThumbnailView.prototype._reconstructWithTable = function() {
     var view, state, closeGroups;
     view = this;
     state = {
@@ -313,7 +320,7 @@ Exhibit.ThumbnailView.prototype._reconstructWithTable = function() {
     this._orderedViewFrame.onNewGroup = function(groupSortKey, keyType, groupLevel) {
         closeGroups(groupLevel);
 
-        var groupDom = Exhibit.ThumbnailView.constructGroup(
+        var groupDom = ThumbnailView.constructGroup(
             groupLevel,
             groupSortKey
         );
@@ -334,7 +341,7 @@ Exhibit.ThumbnailView.prototype._reconstructWithTable = function() {
         }
 
         if (typeof state.table === "undefined" || state.table === null) {
-            state.table = Exhibit.ThumbnailView.constructTableItemContainer();
+            state.table = ThumbnailView.constructTableItemContainer();
             $(state.div).append(state.table);
         }
 
@@ -350,7 +357,7 @@ Exhibit.ThumbnailView.prototype._reconstructWithTable = function() {
         }
 
         itemLensDiv = $("<div>");
-        itemLensDiv.attr("class", Exhibit.ThumbnailView._itemContainerClass);
+        itemLensDiv.attr("class", ThumbnailView._itemContainerClass);
 
         itemLens = view._lensRegistry.createLens(itemID, itemLensDiv, view.getUIContext());
         $(td).append(itemLensDiv);
@@ -369,7 +376,7 @@ Exhibit.ThumbnailView.prototype._reconstructWithTable = function() {
 /**
  * @returns {Object}
  */
-Exhibit.ThumbnailView.prototype.makeState = function() {
+ThumbnailView.prototype.makeState = function() {
     return {};
 };
 
@@ -378,7 +385,7 @@ Exhibit.ThumbnailView.prototype.makeState = function() {
  * @param {Object} state
  * @returns {Object}
  */
-Exhibit.ThumbnailView.prototype.makeStateWithSub = function(sub, state) {
+ThumbnailView.prototype.makeStateWithSub = function(sub, state) {
     var original;
     original = this.makeState();
     original[sub] = state;
@@ -389,7 +396,7 @@ Exhibit.ThumbnailView.prototype.makeStateWithSub = function(sub, state) {
  * @param {Object} state
  * @returns {Object}
  */
-Exhibit.ThumbnailView.prototype.exportState = function(state) {
+ThumbnailView.prototype.exportState = function(state) {
     if (typeof state === "undefined" || state === null) {
         return this.makeStateWithSub(this._orderedViewFrame._historyKey,
                                      this._orderedViewFrame.exportState());
@@ -402,7 +409,7 @@ Exhibit.ThumbnailView.prototype.exportState = function(state) {
  * @param {Object} state
  * @param {Object} state.orderedViewFrame
  */
-Exhibit.ThumbnailView.prototype.importState = function(state) {
+ThumbnailView.prototype.importState = function(state) {
     if (this._orderedViewFrame !== null && this.stateDiffers(state)) {
         this._orderedViewFrame.importState(state.orderedViewFrame);
     }
@@ -413,7 +420,7 @@ Exhibit.ThumbnailView.prototype.importState = function(state) {
  * @param {Object} state.orderedViewFrame
  * @returns {Boolean}
  */
-Exhibit.ThumbnailView.prototype.stateDiffers = function(state) {
+ThumbnailView.prototype.stateDiffers = function(state) {
     if (typeof state.orderedViewFrame !== "undefined") {
         return this._orderedViewFrame.stateDiffers(state.orderedViewFrame);
     } else {
@@ -427,7 +434,7 @@ Exhibit.ThumbnailView.prototype.stateDiffers = function(state) {
  * @param {String} label
  * @returns {Element}
  */
-Exhibit.ThumbnailView.constructGroup = function(groupLevel, label) {
+ThumbnailView.constructGroup = function(groupLevel, label) {
     var template = {
         "tag": "div",
         "class": "exhibit-thumbnailView-group",
@@ -460,7 +467,7 @@ Exhibit.ThumbnailView.constructGroup = function(groupLevel, label) {
 /**
  * @returns {jQuery}
  */
-Exhibit.ThumbnailView.constructItemContainer = function() {
+ThumbnailView.constructItemContainer = function() {
     var div = $("<div>");
     div.addClass("exhibit-thumbnailView-body");
     return div;
@@ -469,12 +476,12 @@ Exhibit.ThumbnailView.constructItemContainer = function() {
 /**
  * @returns table element
  */
-Exhibit.ThumbnailView.constructTableItemContainer = function() {
+ThumbnailView.constructTableItemContainer = function() {
     var table = $("<table>");
     table.addClass("exhibit-thumbnailView-body");
     return table.get(0);
 };
 
     // end define
-    return Exhibit;
+    return ThumbnailView;
 });

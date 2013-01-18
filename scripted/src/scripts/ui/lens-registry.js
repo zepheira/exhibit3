@@ -4,13 +4,17 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["exhibit"], function(Exhibit) {
+define([
+    "util/localizer",
+    "util/debug",
+    "ui/lens"
+], function(_, Debug, Lens) {
 /**
  * @constructor
  * @class
  * @param {Exhibit.LensRegistry} parentRegistry
  */
-Exhibit.LensRegistry = function(parentRegistry) {
+var LensRegistry = function(parentRegistry) {
     this._parentRegistry = parentRegistry;
     this._defaultLens = null;
     this._typeToLens = {};
@@ -22,7 +26,7 @@ Exhibit.LensRegistry = function(parentRegistry) {
 /**
  * @param {Element|String} elmtOrURL
  */
-Exhibit.LensRegistry.prototype.registerDefaultLens = function(elmtOrURL) {
+LensRegistry.prototype.registerDefaultLens = function(elmtOrURL) {
     this._defaultLens = (typeof elmtOrURL === "string") ? elmtOrURL : elmtOrURL.cloneNode(true);
 };
 
@@ -30,7 +34,7 @@ Exhibit.LensRegistry.prototype.registerDefaultLens = function(elmtOrURL) {
  * @param {Element|String} elmtOrURL
  * @param {String} type
  */
-Exhibit.LensRegistry.prototype.registerLensForType = function(elmtOrURL, type) { 
+LensRegistry.prototype.registerLensForType = function(elmtOrURL, type) { 
     if (typeof elmtOrURL === "string") {
         this._typeToLens[type] = elmtOrURL;
     } 
@@ -41,14 +45,14 @@ Exhibit.LensRegistry.prototype.registerLensForType = function(elmtOrURL, type) {
     } else if (role === "edit-lens") {
         this._editLensTemplates[type] = elmtOrURL.cloneNode(true);
     } else {
-        Exhibit.Debug.warn(Exhibit._("%lens.error.unknownLensType", elmtOrURL));
+        Debug.warn(_("%lens.error.unknownLensType", elmtOrURL));
     }
 };
 
 /**
  * @param {Function} lensSelector
  */
-Exhibit.LensRegistry.prototype.addLensSelector = function(lensSelector) {
+LensRegistry.prototype.addLensSelector = function(lensSelector) {
     this._lensSelectors.unshift(lensSelector);
 };
 
@@ -57,7 +61,7 @@ Exhibit.LensRegistry.prototype.addLensSelector = function(lensSelector) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.Lens}
  */
-Exhibit.LensRegistry.prototype.getLens = function(itemID, uiContext) {
+LensRegistry.prototype.getLens = function(itemID, uiContext) {
     return uiContext.isBeingEdited(itemID)
         ? this.getEditLens(itemID, uiContext)
         : this.getNormalLens(itemID, uiContext);
@@ -68,7 +72,7 @@ Exhibit.LensRegistry.prototype.getLens = function(itemID, uiContext) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.Lens}
  */
-Exhibit.LensRegistry.prototype.getNormalLens = function(itemID, uiContext) {
+LensRegistry.prototype.getNormalLens = function(itemID, uiContext) {
     var db, i, lens, type;
 
     db = uiContext.getDatabase();
@@ -100,7 +104,7 @@ Exhibit.LensRegistry.prototype.getNormalLens = function(itemID, uiContext) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.Lens}
  */
-Exhibit.LensRegistry.prototype.getEditLens = function(itemID, uiContext) {
+LensRegistry.prototype.getEditLens = function(itemID, uiContext) {
     var type = uiContext.getDatabase().getObject(itemID, "type");
     
     if (typeof this._editLensTemplates[type] !== "undefined") {
@@ -118,9 +122,9 @@ Exhibit.LensRegistry.prototype.getEditLens = function(itemID, uiContext) {
  * @param {Exhibit.Lens} opts.lensTemplate
  * @returns {Exhibit.Lens}
  */
-Exhibit.LensRegistry.prototype.createLens = function(itemID, div, uiContext, opts) {
+LensRegistry.prototype.createLens = function(itemID, div, uiContext, opts) {
     var lens, lensTemplate;
-    lens = new Exhibit.Lens();
+    lens = new Lens();
     
     opts = opts || {};
     lensTemplate = opts.lensTemplate || this.getLens(itemID, uiContext);
@@ -143,7 +147,7 @@ Exhibit.LensRegistry.prototype.createLens = function(itemID, div, uiContext, opt
  * @param {Exhibit.Lens} opts.lensTemplate
  * @returns {Exhibit.Lens}
  */
-Exhibit.LensRegistry.prototype.createEditLens = function(itemID, div, uiContext, opts) {
+LensRegistry.prototype.createEditLens = function(itemID, div, uiContext, opts) {
     opts = opts || {};
     opts.lensTemplate = this.getEditLens(itemID, uiContext);
     return this.createLens(itemID, div, uiContext, opts);
@@ -157,12 +161,12 @@ Exhibit.LensRegistry.prototype.createEditLens = function(itemID, div, uiContext,
  * @param {Exhibit.Lens} opts.lensTemplate
  * @returns {Exhibit.Lens}
  */
-Exhibit.LensRegistry.prototype.createNormalLens = function(itemID, div, uiContext, opts) {
+LensRegistry.prototype.createNormalLens = function(itemID, div, uiContext, opts) {
     opts = opts || {};
     opts.lensTemplate = this.getNormalLens(itemID, uiContext);
     return this.createLens(itemID, div, uiContext, opts);
 };
 
     // end define
-    return Exhibit;
+    return LensRegistry;
 });

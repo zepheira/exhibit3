@@ -4,16 +4,22 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(
-    ["lib/jquery", "exhibit", "lib/jquery.simile.dom"],
-    function($, Exhibit) {
+define([
+    "lib/jquery",
+    "exhibit",
+    "util/localizer",
+    "util/history",
+    "util/ui",
+    "ui/ui-context",
+    "lib/jquery.simile.dom"
+], function($, Exhibit, _, EHistory, UIUtilities, UIContext) {
 /**
  * @constructor
  * @class
  * @param {Element} containerElmt
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.CollectionSummaryWidget = function(containerElmt, uiContext) {
+var CollectionSummaryWidget = function(containerElmt, uiContext) {
     this._exhibit = uiContext.getMain();
     this._collection = uiContext.getCollection();
     this._uiContext = uiContext;
@@ -35,10 +41,10 @@ Exhibit.CollectionSummaryWidget = function(containerElmt, uiContext) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.CollectionSummaryWidget}
  */
-Exhibit.CollectionSummaryWidget.create = function(configuration, containerElmt, uiContext) {
-    var widget = new Exhibit.CollectionSummaryWidget(
+CollectionSummaryWidget.create = function(configuration, containerElmt, uiContext) {
+    var widget = new CollectionSummaryWidget(
         containerElmt,
-        Exhibit.UIContext.create(configuration, uiContext)
+        UIContext.create(configuration, uiContext)
     );
     widget._initializeUI();
     return widget;
@@ -50,11 +56,11 @@ Exhibit.CollectionSummaryWidget.create = function(configuration, containerElmt, 
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.CollectionSummaryWidget}
  */
-Exhibit.CollectionSummaryWidget.createFromDOM = function(configElmt, containerElmt, uiContext) {
-    var widget = new Exhibit.CollectionSummaryWidget(
+CollectionSummaryWidget.createFromDOM = function(configElmt, containerElmt, uiContext) {
+    var widget = new CollectionSummaryWidget(
         (typeof containerElmt !== "undefined" && containerElmt !== null) ?
             containerElmt : configElmt, 
-        Exhibit.UIContext.createFromDOM(configElmt, uiContext)
+        UIContext.createFromDOM(configElmt, uiContext)
     );
     widget._initializeUI();
     return widget;
@@ -63,7 +69,7 @@ Exhibit.CollectionSummaryWidget.createFromDOM = function(configElmt, containerEl
 /**
  *
  */
-Exhibit.CollectionSummaryWidget.prototype.dispose = function() {
+CollectionSummaryWidget.prototype.dispose = function() {
     $(this._uiContext.getCollection().getElement()).unbind(
         "onItemsChanged.exhibit",
         this._onItemsChanged
@@ -81,7 +87,7 @@ Exhibit.CollectionSummaryWidget.prototype.dispose = function() {
 /**
  *
  */
-Exhibit.CollectionSummaryWidget.prototype._initializeUI = function() {
+CollectionSummaryWidget.prototype._initializeUI = function() {
     var self, onClearFilters;
     self = this;
     
@@ -95,20 +101,20 @@ Exhibit.CollectionSummaryWidget.prototype._initializeUI = function() {
     this._allResultsDom = $.simileDOM(
         "string",
         "span",
-        Exhibit._("%widget.collectionSummary.allResultsTemplate", "exhibit-collectionSummaryWidget-results")
+        _("%widget.collectionSummary.allResultsTemplate", "exhibit-collectionSummaryWidget-results")
     );
     this._filteredResultsDom = $.simileDOM(
         "string", 
         "span",
-        Exhibit._("%widget.collectionSummary.filteredResultsTemplate", "exhibit-collectionSummaryWidget-results"),
-        {   resetActionLink: Exhibit.UI.makeActionLink(Exhibit._("%widget.collectionSummary.resetFiltersLabel"), onClearFilters)
+        _("%widget.collectionSummary.filteredResultsTemplate", "exhibit-collectionSummaryWidget-results"),
+        {   resetActionLink: UIUtilities.makeActionLink(_("%widget.collectionSummary.resetFiltersLabel"), onClearFilters)
         }
     );
     this._noResultsDom = $.simileDOM(
         "string",
         "span",
-        Exhibit._("%widget.collectionSummary.noResultsTemplate", "exhibit-collectionSummaryWidget-results", "exhibit-collectionSummaryWidget-count"),
-        {   resetActionLink: Exhibit.UI.makeActionLink(Exhibit._("%widget.collectionSummary.resetFiltersLabel"), onClearFilters)
+        _("%widget.collectionSummary.noResultsTemplate", "exhibit-collectionSummaryWidget-results", "exhibit-collectionSummaryWidget-count"),
+        {   resetActionLink: UIUtilities.makeActionLink(_("%widget.collectionSummary.resetFiltersLabel"), onClearFilters)
         }
     );
     $(this._div).append(this._allResultsDom.elmt);
@@ -120,7 +126,7 @@ Exhibit.CollectionSummaryWidget.prototype._initializeUI = function() {
 /**
  *
  */
-Exhibit.CollectionSummaryWidget.prototype._reconstruct = function() {
+CollectionSummaryWidget.prototype._reconstruct = function() {
     var originalSize, currentSize, database, dom, typeIDs, typeID, description;
     originalSize = this._collection.countAllItems();
     currentSize = this._collection.countRestrictedItems();
@@ -161,19 +167,19 @@ Exhibit.CollectionSummaryWidget.prototype._reconstruct = function() {
 /**
  *
  */
-Exhibit.CollectionSummaryWidget.prototype._resetCollection = function() {
+CollectionSummaryWidget.prototype._resetCollection = function() {
     var state, collection;
     collection = this._collection;
 
     $(this._collection.getElement()).trigger("onResetAllFilters.exhibit");
     state = this._collection.clearAllRestrictions();
 
-    Exhibit.History.pushState(
+    EHistory.pushState(
         state.data,
-        Exhibit._("%widget.collectionSummary.resetActionTitle")
+        _("%widget.collectionSummary.resetActionTitle")
     );
 };
 
     // end define
-    return Exhibit;
+    return CollectionSummaryWidget;
 });

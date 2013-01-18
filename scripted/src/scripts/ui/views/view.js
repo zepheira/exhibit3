@@ -3,7 +3,11 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "exhibit"], function($, Exhibit) {
+define([
+    "lib/jquery",
+    "util/history",
+    "ui/widgets/toolbox-widget"
+], function($, EHistory, ToolboxWidget) {
 /**
  * @class
  * @constructor
@@ -11,7 +15,7 @@ define(["lib/jquery", "exhibit"], function($, Exhibit) {
  * @param {Element|jQuery} div
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.View = function(key, div, uiContext) {
+var View = function(key, div, uiContext) {
     var self, _id, _instanceKey, _toolbox, _label, _viewPanel, _div, _uiContext, _registered, _setIdentifier;
 
     /**
@@ -171,7 +175,7 @@ Exhibit.View = function(key, div, uiContext) {
      */
     this.register = function() {
         this.getUIContext().getMain().getRegistry().register(
-            Exhibit.View.getRegistryKey(),
+            View.getRegistryKey(),
             this.getID(),
             this
         );
@@ -183,7 +187,7 @@ Exhibit.View = function(key, div, uiContext) {
      */
     this.unregister = function() {
         self.getUIContext().getMain().getRegistry().unregister(
-            Exhibit.View.getRegistryKey(),
+            View.getRegistryKey(),
             self.getID()
         );
         _registered = false;
@@ -219,12 +223,12 @@ Exhibit.View = function(key, div, uiContext) {
                 + "-"
                 + self.getUIContext().getCollection().getID()
                 + "-"
-                + self.getUIContext().getMain().getRegistry().generateIdentifier(Exhibit.View.getRegistryKey());
+                + self.getUIContext().getMain().getRegistry().generateIdentifier(View.getRegistryKey());
         }
     };
 
     _setIdentifier();
-    this.addSettingSpecs(Exhibit.View._settingSpecs);
+    this.addSettingSpecs(View._settingSpecs);
 };
 
 /**
@@ -234,10 +238,10 @@ Exhibit.View = function(key, div, uiContext) {
  * @private
  * @param {Function} retriever
  */
-Exhibit.View.prototype._initializeViewUI = function(retriever) {
+View.prototype._initializeViewUI = function(retriever) {
     if (this._settings.showToolbox) {
         this.setToolbox(
-            Exhibit.ToolboxWidget.create(
+            ToolboxWidget.create(
                 { "toolboxHoverReveal": this._settings.toolboxHoverReveal },
                 this.getContainer(),
                 this.getUIContext()
@@ -251,13 +255,13 @@ Exhibit.View.prototype._initializeViewUI = function(retriever) {
  * @private
  * @constant
  */
-Exhibit.View._registryKey = "view";
+View._registryKey = "view";
 
 /**
  * @private
  * @constant
  */
-Exhibit.View._settingSpecs = {
+View._settingSpecs = {
     "showToolbox":          { "type": "boolean", "defaultValue": true },
     "toolboxHoverReveal":   { "type": "boolean", "defaultValue": false }
 };
@@ -267,8 +271,8 @@ Exhibit.View._settingSpecs = {
  * @static
  * @returns {String}
  */
-Exhibit.View.getRegistryKey = function() {
-    return Exhibit.View._registryKey;
+View.getRegistryKey = function() {
+    return View._registryKey;
 };
 
 /**
@@ -277,9 +281,9 @@ Exhibit.View.getRegistryKey = function() {
  * @param {jQuery.Event} evt
  * @param {Exhibit.Registry} reg
  */
-Exhibit.View.registerComponent = function(evt, reg) {
-    if (!reg.hasRegistry(Exhibit.View.getRegistryKey())) {
-        reg.createRegistry(Exhibit.View.getRegistryKey());
+View.registerComponent = function(evt, reg) {
+    if (!reg.hasRegistry(View.getRegistryKey())) {
+        reg.createRegistry(View.getRegistryKey());
     }
 };
 
@@ -290,22 +294,22 @@ Exhibit.View.registerComponent = function(evt, reg) {
  * @param {String} id
  * @param {Object} state
  */
-Exhibit.View.addViewState = function(id, state) {
+View.addViewState = function(id, state) {
     var fullState;
 
-    fullState = Exhibit.History.getState();
+    fullState = EHistory.getState();
     // If History has been initialized already; don't worry if not
     if (fullState !== null) {
         if (typeof fullState.data.components[id] === "undefined") {
             fullState.data.components[id] = {
                 "state": state,
-                "type": Exhibit.View.getRegistryKey()
+                "type": View.getRegistryKey()
             };
-            Exhibit.History.replaceState(fullState.data);
+            EHistory.replaceState(fullState.data);
         } else {
             $(document).trigger(
                 "importReady.exhibit",
-                [Exhibit.View.getRegistryKey(), id]
+                [View.getRegistryKey(), id]
             );
         }
     }
@@ -313,9 +317,9 @@ Exhibit.View.addViewState = function(id, state) {
 
 $(document).one(
     "registerComponents.exhibit",
-    Exhibit.View.registerComponent
+    View.registerComponent
 );
 
     // end define
-    return Exhibit;
+    return View;
 });

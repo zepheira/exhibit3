@@ -4,7 +4,10 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["exhibit", "data/expression"], function(Exhibit) {
+define([
+    "util/localizer",
+    "data/expression/functions"
+], function(_, Functions) {
 /**
  * @class
  * @constructor
@@ -12,7 +15,7 @@ define(["exhibit", "data/expression"], function(Exhibit) {
  * @param {String} name
  * @param {Array} args
  */
-Exhibit.Expression._FunctionCall = function(name, args) {
+var FunctionCall = function(name, args) {
     this._name = name;
     this._args = args;
 };
@@ -25,7 +28,7 @@ Exhibit.Expression._FunctionCall = function(name, args) {
  * @returns {Exhibit.Expression._Collection}
  * @throws Error
  */
-Exhibit.Expression._FunctionCall.prototype.evaluate = function(
+FunctionCall.prototype.evaluate = function(
     roots, 
     rootValueTypes, 
     defaultRootName, 
@@ -36,13 +39,13 @@ Exhibit.Expression._FunctionCall.prototype.evaluate = function(
         args.push(this._args[i].evaluate(roots, rootValueTypes, defaultRootName, database));
     }
     
-    if (typeof Exhibit.Functions[this._name] !== "undefined") {
-        return Exhibit.Functions[this._name].f(args);
+    if (typeof Functions[this._name] !== "undefined") {
+        return Functions[this._name].f(args);
     } else {
-        throw new Error(Exhibit._("%expression.noSuchFunction", this._name));
+        throw new Error(_("%expression.noSuchFunction", this._name));
     }
 };
 
     // end define
-    return Exhibit;
+    return FunctionCall;
 });

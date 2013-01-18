@@ -1,20 +1,18 @@
 /**
- * This requires the entire Exhibit infrastructure to be oriented around
- * generating registered state changes.
- */
-
-define(
-    ["lib/jquery", "exhibit", "lib/jquery.history", "lib/jquery.history.shim"],
-    function($, Exhibit) {
-/**
  * @fileOverview Local interface to a history manager.
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define([
+    "lib/jquery",
+    "util/ui",
+    "lib/jquery.history",
+    "lib/jquery.history.shim"
+], function($, UIUtilities) {
 /**
  * @namespace For history management related methods.
  */
-Exhibit.History = {
+var EHistory = {
     /**
      * Whether the history module is available.
      */
@@ -48,45 +46,17 @@ Exhibit.History = {
 };
 
 /**
- * @depends History.js
- * @param {Exhibit._Impl} ex
- * @param {Boolean} persist Expected to be true in production mode; set to
- *     false while in developer mode to prevent reading from history.
- */
-Exhibit.History.init = function(ex, persist) {
-    var state, types, i, j, keys, component;
-
-    if (typeof History !== "undefined" && History.enabled) {
-        Exhibit.History.enabled = true;
-        Exhibit.History._originalTitle = document.title;
-        Exhibit.History._originalLocation = Exhibit.Persistence.getURLWithoutQueryAndHash();
-        Exhibit.History._registry = ex.getRegistry();
-
-        $(window).bind("statechange", Exhibit.History.stateListener);
-        if (Exhibit.Bookmark.runBookmark()) {
-            Exhibit.Bookmark.implementBookmark(Exhibit.Bookmark.state);
-        } else {
-            if (!persist) {
-                Exhibit.History.eraseState();
-            }
-            Exhibit.History._processEmptyState();
-            Exhibit.History.stateListener();
-        }
-    }
-};
-
-/**
  * @private
  * @static
  */
-Exhibit.History._processEmptyState = function() {
+EHistory._processEmptyState = function() {
     var state, types, reg, keys, component, i, j;
-    types = Exhibit.History._activeTypes;
-    reg = Exhibit.History._registry;
-    state = Exhibit.History.getState();
+    types = EHistory._activeTypes;
+    reg = EHistory._registry;
+    state = EHistory.getState();
     if (typeof state.data.components === "undefined") {
         state.data.components = {};
-        state.data.state = Exhibit.History._state;
+        state.data.state = EHistory._state;
         for (i = 0; i < types.length; i++) {
             keys = reg.getKeys(types[i]);
             for (j = 0; j < keys.length; j++) {
@@ -98,27 +68,27 @@ Exhibit.History._processEmptyState = function() {
                 }
             }
         }
-        Exhibit.History.replaceState(state.data);
+        EHistory.replaceState(state.data);
     }
 };
 
 /**
  * @param {jQuery.Event} evt
  */
-Exhibit.History.stateListener = function(evt) {
+EHistory.stateListener = function(evt) {
     var fullState, components, key, id, componentState, component;
 
-    fullState = Exhibit.History.getState();
+    fullState = EHistory.getState();
 
     if (fullState.data.lengthy) {
-        Exhibit.UI.showBusyIndicator();
+        UIUtilities.showBusyIndicator();
     }
 
     components = fullState.data.components;
     for (key in components) {
         if (components.hasOwnProperty(key)) {
             componentState = components[key].state;
-            component = Exhibit.History._registry.get(components[key].type, key);
+            component = EHistory._registry.get(components[key].type, key);
             if (component !== null &&
                 typeof component.importState === "function") {
                 // @@@ not every component is immediately available
@@ -126,10 +96,10 @@ Exhibit.History.stateListener = function(evt) {
             }
         }
     }
-    Exhibit.History._state = fullState.data.state || 0;
+    EHistory._state = fullState.data.state || 0;
 
     if (fullState.data.lengthy) {
-        Exhibit.UI.hideBusyIndicator();
+        UIUtilities.hideBusyIndicator();
     }
 };
 
@@ -140,14 +110,14 @@ Exhibit.History.stateListener = function(evt) {
  * @param {String} type
  * @param {String} id
  */
-Exhibit.History.componentStateListener = function(evt, type, id) {
+EHistory.componentStateListener = function(evt, type, id) {
     var fullState, components, componentState, component;
-    fullState = Exhibit.History.getState();
+    fullState = EHistory.getState();
     if (fullState !== null) {
         components = fullState.data.components;
         if (typeof components[id] !== "undefined") {
             componentState = components[id].state;
-            component = Exhibit.History._registry.get(type, id);
+            component = EHistory._registry.get(type, id);
             if (component !== null &&
                 typeof component.importState === "function") {
                 // @@@ not every component is immediately available
@@ -164,8 +134,8 @@ Exhibit.History.componentStateListener = function(evt, type, id) {
  * @static
  * @returns {Object}
  */
-Exhibit.History.getState = function() {
-    if (Exhibit.History.enabled) {
+EHistory.getState = function() {
+    if (EHistory.enabled) {
         return History.getState();
     } else {
         return null;
@@ -181,7 +151,7 @@ Exhibit.History.getState = function() {
  * @param {Boolean} lengthy
  * @returns {Object}
  */
-Exhibit.History.setComponentState = function(state, component, registry, data, lengthy) {
+EHistory.setComponentState = function(state, component, registry, data, lengthy) {
     if (typeof state === "undefined" || state === null) {
         state = { "data": { "components": {} } };
     }
@@ -210,10 +180,10 @@ Exhibit.History.setComponentState = function(state, component, registry, data, l
  * @param {String} subtitle
  * @param {Boolean} lengthy
  */
-Exhibit.History.pushComponentState = function(component, registry, data, subtitle, lengthy) {
-    var state = Exhibit.History.getState();
-    Exhibit.History.setComponentState(state, component, registry, data, lengthy);
-    Exhibit.History.pushState(state.data, subtitle);
+EHistory.pushComponentState = function(component, registry, data, subtitle, lengthy) {
+    var state = EHistory.getState();
+    EHistory.setComponentState(state, component, registry, data, lengthy);
+    EHistory.pushState(state.data, subtitle);
 };
 
 /**
@@ -223,14 +193,14 @@ Exhibit.History.pushComponentState = function(component, registry, data, subtitl
  * @param {Object} data
  * @param {String} subtitle
  */
-Exhibit.History.pushState = function(data, subtitle) {
+EHistory.pushState = function(data, subtitle) {
     var title, url;
 
-    if (Exhibit.History.enabled) {
-        Exhibit.History._state++;
-        data.state = Exhibit.History._state;
+    if (EHistory.enabled) {
+        EHistory._state++;
+        data.state = EHistory._state;
 
-        title = Exhibit.History._originalTitle;
+        title = EHistory._originalTitle;
 
         if (typeof subtitle !== "undefined" &&
             subtitle !== null &&
@@ -238,7 +208,7 @@ Exhibit.History.pushState = function(data, subtitle) {
             title += " {" + subtitle + "}";
         }
         
-        url = Exhibit.History._originalLocation;
+        url = EHistory._originalLocation;
         
         History.pushState(data, title, url);
     }
@@ -252,12 +222,12 @@ Exhibit.History.pushState = function(data, subtitle) {
  * @param {String} subtitle
  * @param {String} url
  */
-Exhibit.History.replaceState = function(data, subtitle, url) {
+EHistory.replaceState = function(data, subtitle, url) {
     var title, currentState;
 
-    if (Exhibit.History.enabled) {
-        currentState = Exhibit.History.getState();
-        title = Exhibit.History._originalTitle;
+    if (EHistory.enabled) {
+        currentState = EHistory.getState();
+        title = EHistory._originalTitle;
 
         if (typeof subtitle !== "undefined" &&
             subtitle !== null &&
@@ -265,7 +235,7 @@ Exhibit.History.replaceState = function(data, subtitle, url) {
             title += " {" + subtitle + "}";
         } else {
             if (typeof currentState.title !== "undefined") {
-                title = Exhibit.History.getState().title;
+                title = EHistory.getState().title;
             }
         }
 
@@ -284,15 +254,15 @@ Exhibit.History.replaceState = function(data, subtitle, url) {
  * 
  * @static
  */
-Exhibit.History.eraseState = function() {
-    Exhibit.History.pushState({});
+EHistory.eraseState = function() {
+    EHistory.pushState({});
 };
 
 $(document).bind(
     "importReady.exhibit",
-    Exhibit.History.componentStateListener
+    EHistory.componentStateListener
 );
 
     // end define
-    return Exhibit;
+    return EHistory;
 });

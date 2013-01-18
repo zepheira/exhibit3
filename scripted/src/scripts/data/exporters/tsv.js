@@ -4,11 +4,15 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "exhibit", "data/exporter"], function($, Exhibit) {
+define([
+    "lib/jquery",
+    "util/localizer",
+    "data/exporter"
+], function($, _, Exporter) {
 /**
  * @namespace
  */
-Exhibit.Exporter.TSV = {
+var TSV = {
     _mimeType: "text/tab-separated-values",
     exporter: null
 };
@@ -18,7 +22,7 @@ Exhibit.Exporter.TSV = {
  * @param {Exhibit.Database} database
  * @returns {String}
  */
-Exhibit.Exporter.TSV.wrap = function(s, database) {
+TSV.wrap = function(s, database) {
     var header, i, allProperties, propertyID, property, valueType;
 
     header = "";
@@ -38,7 +42,7 @@ Exhibit.Exporter.TSV.wrap = function(s, database) {
  * @param {String} s
  * @returns {String}
  */
-Exhibit.Exporter.TSV.wrapOne = function(s, first, last) {
+TSV.wrapOne = function(s, first, last) {
     return s + "\n";
 };
 
@@ -47,7 +51,7 @@ Exhibit.Exporter.TSV.wrapOne = function(s, first, last) {
  * @param {Object} o
  * @returns {String}
  */
-Exhibit.Exporter.TSV.exportOne = function(itemID, o) {
+TSV.exportOne = function(itemID, o) {
     var prop, s = "";
 
     for (prop in o) {
@@ -62,21 +66,21 @@ Exhibit.Exporter.TSV.exportOne = function(itemID, o) {
 /**
  * @private
  */
-Exhibit.Exporter.TSV._register = function() {
-    Exhibit.Exporter.TSV.exporter = new Exhibit.Exporter(
-        Exhibit.Exporter.TSV._mimeType,
-        Exhibit._("%export.tsvExporterLabel"),
-        Exhibit.Exporter.TSV.wrap,
-        Exhibit.Exporter.TSV.wrapOne,
-        Exhibit.Exporter.TSV.exportOne
+TSV._register = function() {
+    TSV.exporter = new Exporter(
+        TSV._mimeType,
+        _("%export.tsvExporterLabel"),
+        TSV.wrap,
+        TSV.wrapOne,
+        TSV.exportOne
     );
 };
 
 $(document).one(
     "registerExporters.exhibit",
-    Exhibit.Exporter.TSV._register
+    TSV._register
 );
 
     // end define
-    return Exhibit;
+    return TSV;
 });

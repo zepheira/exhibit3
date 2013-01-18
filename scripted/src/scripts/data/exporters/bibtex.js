@@ -4,11 +4,16 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "exhibit", "data/exporter"], function($, Exhibit) {
+define([
+    "lib/jquery",
+    "util/localizer",
+    "util/persistence",
+    "data/exporter"
+], function($, _, Persistence, Exporter) {
 /**
  * @namespace
  */
-Exhibit.Exporter.BibTex = {
+var BibTex = {
     /**
      * @private
      * @constant
@@ -27,7 +32,7 @@ Exhibit.Exporter.BibTex = {
  * @param {String} s
  * @returns {String}
  */
-Exhibit.Exporter.BibTex.wrap = function(s) {
+BibTex.wrap = function(s) {
     return s;
 };
 
@@ -35,7 +40,7 @@ Exhibit.Exporter.BibTex.wrap = function(s) {
  * @param {String} s
  * @returns {String}
  */
-Exhibit.Exporter.BibTex.wrapOne = function(s, first, last) {
+BibTex.wrapOne = function(s, first, last) {
     return s + "\n";
 };
 
@@ -44,7 +49,7 @@ Exhibit.Exporter.BibTex.wrapOne = function(s, first, last) {
  * @param {Object} o
  * @returns {String}
  */
-Exhibit.Exporter.BibTex.exportOne = function(itemID, o) {
+BibTex.exportOne = function(itemID, o) {
     var type, key, prop, s = "";
 
     if (typeof o["pub-type"] !== "undefined") {
@@ -65,7 +70,7 @@ Exhibit.Exporter.BibTex.exportOne = function(itemID, o) {
 
     for (prop in o) {
         if (o.hasOwnProperty(prop)) {
-            if (typeof Exhibit.Exporter.BibTex._excludeProperties[prop] === "undefined") {
+            if (typeof BibTex._excludeProperties[prop] === "undefined") {
                 s += "\t" + (prop === "label" ?
                          "title" :
                          prop) + " = \"";
@@ -74,7 +79,7 @@ Exhibit.Exporter.BibTex.exportOne = function(itemID, o) {
         }
     }
 
-    s += "\torigin = \"" + Exhibit.Persistence.getItemLink(itemID) + "\"\n";
+    s += "\torigin = \"" + Persistence.getItemLink(itemID) + "\"\n";
     s += "}\n";
 
     return s;
@@ -83,21 +88,21 @@ Exhibit.Exporter.BibTex.exportOne = function(itemID, o) {
 /**
  * @private
  */
-Exhibit.Exporter.BibTex._register = function() {
-    Exhibit.Exporter.BibTex.exporter = new Exhibit.Exporter(
-        Exhibit.Exporter.BibTex._mimeType,
-        Exhibit._("%export.bibtexExporterLabel"),
-        Exhibit.Exporter.BibTex.wrap,
-        Exhibit.Exporter.BibTex.wrapOne,
-        Exhibit.Exporter.BibTex.exportOne
+BibTex._register = function() {
+    BibTex.exporter = new Exporter(
+        BibTex._mimeType,
+        _("%export.bibtexExporterLabel"),
+        BibTex.wrap,
+        BibTex.wrapOne,
+        BibTex.exportOne
     );
 };
 
 $(document).one(
     "registerExporters.exhibit",
-    Exhibit.Exporter.BibTex._register
+    BibTex._register
 );
 
     // end define
-    return Exhibit;
+    return BibTex;
 });

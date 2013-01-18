@@ -3,14 +3,23 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "exhibit"], function($, Exhibit) {
+define([
+    "lib/jquery",
+    "exhibit",
+    "util/settings",
+    "ui/ui-context",
+    "ui/views/view-panel",
+    "ui/views/view",
+    "ui/widgets/bookmark-widget",
+    "ui/widgets/reset-history-widget"
+], function($, Exhibit, SettingsUtilities, UIContext, ViewPanel, View, BookmarkWidget, ResetHistoryWidget) {
 /**
  * @class
  * @constructor
  * @param {Element} elmt
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.ControlPanel = function(elmt, uiContext) {
+var ControlPanel = function(elmt, uiContext) {
     this._uiContext = uiContext;
     this._widgets = [];
     this._div = elmt;
@@ -26,7 +35,7 @@ Exhibit.ControlPanel = function(elmt, uiContext) {
  * @static
  * @private
  */
-Exhibit.ControlPanel._settingSpecs = {
+ControlPanel._settingSpecs = {
     "showBookmark":         { type: "boolean", defaultValue: true },
     "developerMode":        { type: "boolean", defaultvalue: false },
     "hoverReveal":          { type: "boolean", defaultValue: false }
@@ -36,7 +45,7 @@ Exhibit.ControlPanel._settingSpecs = {
  * @private
  * @constant
  */
-Exhibit.ControlPanel._registryKey = "controlPanel";
+ControlPanel._registryKey = "controlPanel";
 
 /**
  * @static
@@ -45,12 +54,12 @@ Exhibit.ControlPanel._registryKey = "controlPanel";
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.ControlPanel}
  */
-Exhibit.ControlPanel.create = function(configuration, elmt, uiContext) {
-    var panel = new Exhibit.ControlPanel(
+ControlPanel.create = function(configuration, elmt, uiContext) {
+    var panel = new ControlPanel(
         elmt,
-        Exhibit.UIContext.create(configuration, uiContext)
+        UIContext.create(configuration, uiContext)
     );
-    Exhibit.ControlPanel._configure(panel, configuration);
+    ControlPanel._configure(panel, configuration);
     panel._setIdentifier();
     panel.register();
     panel._initializeUI();
@@ -63,16 +72,16 @@ Exhibit.ControlPanel.create = function(configuration, elmt, uiContext) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.Coordinator}
  */
-Exhibit.ControlPanel.createFromDOM = function(configElmt, containerElmt, uiContext) {
+ControlPanel.createFromDOM = function(configElmt, containerElmt, uiContext) {
     var configuration, panel;
     configuration = Exhibit.getConfigurationFromDOM(configElmt);
-    panel = new Exhibit.ControlPanel(
+    panel = new ControlPanel(
         (typeof containerElmt !== "undefined" && containerElmt !== null) ?
             containerElmt :
             configElmt,
-        Exhibit.UIContext.createFromDOM(configElmt, uiContext)
+        UIContext.createFromDOM(configElmt, uiContext)
     );
-    Exhibit.ControlPanel._configureFromDOM(panel, configuration);
+    ControlPanel._configureFromDOM(panel, configuration);
     panel._setIdentifier();
     panel.register();
     panel._initializeUI();
@@ -85,10 +94,10 @@ Exhibit.ControlPanel.createFromDOM = function(configElmt, containerElmt, uiConte
  * @param {Exhibit.ControlPanel} panel
  * @param {Object} configuration
  */
-Exhibit.ControlPanel._configure = function(panel, configuration) {
-    Exhibit.SettingsUtilities.collectSettings(
+ControlPanel._configure = function(panel, configuration) {
+    SettingsUtilities.collectSettings(
         configuration,
-        Exhibit.ControlPanel._settingSpecs,
+        ControlPanel._settingSpecs,
         panel._settings
     );
 };
@@ -99,10 +108,10 @@ Exhibit.ControlPanel._configure = function(panel, configuration) {
  * @param {Exhibit.ControlPanel} panel
  * @param {Object} configuration
  */
-Exhibit.ControlPanel._configureFromDOM = function(panel, configuration) {
-    Exhibit.SettingsUtilities.collectSettingsFromDOM(
+ControlPanel._configureFromDOM = function(panel, configuration) {
+    SettingsUtilities.collectSettingsFromDOM(
         panel._div,
-        Exhibit.ControlPanel._settingSpecs,
+        ControlPanel._settingSpecs,
         panel._settings
     );
 };
@@ -112,9 +121,9 @@ Exhibit.ControlPanel._configureFromDOM = function(panel, configuration) {
  * @param {jQuery.Event} evt
  * @param {Exhibit.Registry} reg
  */
-Exhibit.ControlPanel.registerComponent = function(evt, reg) {
-    if (!reg.hasRegistry(Exhibit.ControlPanel._registryKey)) {
-        reg.createRegistry(Exhibit.ControlPanel._registryKey);
+ControlPanel.registerComponent = function(evt, reg) {
+    if (!reg.hasRegistry(ControlPanel._registryKey)) {
+        reg.createRegistry(ControlPanel._registryKey);
     }
 };
 
@@ -123,7 +132,7 @@ Exhibit.ControlPanel.registerComponent = function(evt, reg) {
  * @param {jQuery.Event} evt
  * @param {jQuery} elmt
  */
-Exhibit.ControlPanel.mouseOutsideElmt = function(evt, elmt) {
+ControlPanel.mouseOutsideElmt = function(evt, elmt) {
     var coords = $(elmt).offset();
     return (
         evt.pageX < coords.left
@@ -136,7 +145,7 @@ Exhibit.ControlPanel.mouseOutsideElmt = function(evt, elmt) {
 /**
  * @private
  */
-Exhibit.ControlPanel.prototype._initializeUI = function() {
+ControlPanel.prototype._initializeUI = function() {
     var widget, self;
     self = this;
     if (this._settings.hoverReveal) {
@@ -148,7 +157,7 @@ Exhibit.ControlPanel.prototype._initializeUI = function() {
         $(document.body).bind("mousemove", function(evt) {
             if (self._hovering
                 && !self._childOpen
-                && Exhibit.ControlPanel.mouseOutsideElmt(
+                && ControlPanel.mouseOutsideElmt(
                     evt,
                     self.getContainer()
                 )) {
@@ -158,7 +167,7 @@ Exhibit.ControlPanel.prototype._initializeUI = function() {
         });
     }
     if (this._settings.showBookmark) {
-        widget = Exhibit.BookmarkWidget.create(
+        widget = BookmarkWidget.create(
             { },
             this.getContainer(),
             this._uiContext
@@ -166,7 +175,7 @@ Exhibit.ControlPanel.prototype._initializeUI = function() {
         this.addWidget(widget, true);
     }
     if (this._settings.developerMode) {
-        widget = Exhibit.ResetHistoryWidget.create(
+        widget = ResetHistoryWidget.create(
             { },
             this.getContainer(),
             this._uiContext
@@ -179,15 +188,15 @@ Exhibit.ControlPanel.prototype._initializeUI = function() {
 /**
  *
  */
-Exhibit.ControlPanel.prototype._setIdentifier = function() {
+ControlPanel.prototype._setIdentifier = function() {
     this._id = $(this._div).attr("id");
     if (typeof this._id === "undefined" || this._id === null) {
-        this._id = Exhibit.ControlPanel._registryKey
+        this._id = ControlPanel._registryKey
             + "-"
             + this._uiContext.getCollection().getID()
             + "-"
             + this._uiContext.getMain().getRegistry().generateIdentifier(
-                Exhibit.ControlPanel._registryKey
+                ControlPanel._registryKey
             );
     }
 };
@@ -195,13 +204,13 @@ Exhibit.ControlPanel.prototype._setIdentifier = function() {
 /**
  *
  */
-Exhibit.ControlPanel.prototype.register = function() {
+ControlPanel.prototype.register = function() {
     if (!this._uiContext.getMain().getRegistry().isRegistered(
-        Exhibit.ControlPanel._registryKey,
+        ControlPanel._registryKey,
         this.getID()
     )) {
         this._uiContext.getMain().getRegistry().register(
-            Exhibit.ControlPanel._registryKey,
+            ControlPanel._registryKey,
             this.getID(),
             this
         );
@@ -212,9 +221,9 @@ Exhibit.ControlPanel.prototype.register = function() {
 /**
  *
  */
-Exhibit.ControlPanel.prototype.unregister = function() {
+ControlPanel.prototype.unregister = function() {
     this._uiContext.getMain().getRegistry().unregister(
-        Exhibit.ControlPanel._registryKey,
+        ControlPanel._registryKey,
         this.getID()
     );
     this._registered = false;
@@ -223,45 +232,45 @@ Exhibit.ControlPanel.prototype.unregister = function() {
 /**
  * @returns {jQuery}
  */
-Exhibit.ControlPanel.prototype.getContainer = function() {
+ControlPanel.prototype.getContainer = function() {
     return $(this._div);
 };
 
 /**
  * @returns {String}
  */
-Exhibit.ControlPanel.prototype.getID = function() {
+ControlPanel.prototype.getID = function() {
     return this._id;
 };
 
 /**
  *
  */
-Exhibit.ControlPanel.prototype.childOpened = function() {
+ControlPanel.prototype.childOpened = function() {
     this._childOpen = true;
 };
 
 /**
  *
  */
-Exhibit.ControlPanel.prototype.childClosed = function() {
+ControlPanel.prototype.childClosed = function() {
     this._childOpen = false;
 };
 
 /**
  * 
  */
-Exhibit.ControlPanel.prototype.setCreatedAsDefault = function() {
+ControlPanel.prototype.setCreatedAsDefault = function() {
     var self;
     self = this;
     this._createdAsDefault = true;
     $(this._div).hide();
     $(document).one("exhibitConfigured.exhibit", function(evt, ex) {
         var keys, component, i, place;
-        component = Exhibit.ViewPanel._registryKey;
+        component = ViewPanel._registryKey;
         keys = ex.getRegistry().getKeys(component);
         if (keys.length === 0) {
-            component = Exhibit.View._registryKey;
+            component = View._registryKey;
             keys = ex.getRegistry().getKeys(component);
         }
         if (keys.length !== 0) {
@@ -281,14 +290,14 @@ Exhibit.ControlPanel.prototype.setCreatedAsDefault = function() {
 /**
  * @returns {Boolean}
  */
-Exhibit.ControlPanel.prototype.createdAsDefault = function() {
+ControlPanel.prototype.createdAsDefault = function() {
     return this._createdAsDefault;
 };
 
 /**
  *
  */
-Exhibit.ControlPanel.prototype.dispose = function() {
+ControlPanel.prototype.dispose = function() {
     this.unregister();
     this._uiContext.dispose();
     this._uiContext = null;
@@ -301,7 +310,7 @@ Exhibit.ControlPanel.prototype.dispose = function() {
  * @param {Object} widget
  * @param {Boolean} initial
  */
-Exhibit.ControlPanel.prototype.addWidget = function(widget, initial) {
+ControlPanel.prototype.addWidget = function(widget, initial) {
     this._widgets.push(widget);
     if (typeof widget.setControlPanel === "function") {
         widget.setControlPanel(this);
@@ -315,7 +324,7 @@ Exhibit.ControlPanel.prototype.addWidget = function(widget, initial) {
  * @param {Object} widget
  * @returns {Object}
  */
-Exhibit.ControlPanel.prototype.removeWidget = function(widget) {
+ControlPanel.prototype.removeWidget = function(widget) {
     var i, removed;
     removed = null;
     for (i = 0; i < this._widgets.length; i++) {
@@ -331,7 +340,7 @@ Exhibit.ControlPanel.prototype.removeWidget = function(widget) {
 /**
  *
  */
-Exhibit.ControlPanel.prototype.reconstruct = function() {
+ControlPanel.prototype.reconstruct = function() {
     var i;
     $(this._div).empty();
     for (i = 0; i < this._widgets.length; i++) {
@@ -343,9 +352,9 @@ Exhibit.ControlPanel.prototype.reconstruct = function() {
 
 $(document).one(
     "registerComponents.exhibit",
-    Exhibit.ControlPanel.registerComponent
+    ControlPanel.registerComponent
 );
     
     // end define
-    return Exhibit;
+    return ControlPanel;
 });

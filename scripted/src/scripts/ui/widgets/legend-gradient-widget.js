@@ -5,16 +5,17 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(
-    ["lib/jquery", "exhibit", "lib/jquery.simile.dom"],
-    function($, Exhibit) {
+define([
+    "lib/jquery",
+    "lib/jquery.simile.dom"
+], function($) {
 /**
  * @constructor
  * @class
  * @param {Element} containerElmt
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.LegendGradientWidget = function(containerElmt, uiContext) {
+var LegendGradientWidget = function(containerElmt, uiContext) {
     this._div = containerElmt;
     this._uiContext = uiContext;
 
@@ -31,8 +32,8 @@ Exhibit.LegendGradientWidget = function(containerElmt, uiContext) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.LegendGradientWidget}
  */
-Exhibit.LegendGradientWidget.create = function (containerElmt, uiContext) {
-    return new Exhibit.LegendGradientWidget(containerElmt, uiContext);
+LegendGradientWidget.create = function (containerElmt, uiContext) {
+    return new LegendGradientWidget(containerElmt, uiContext);
 };
 
 /**
@@ -43,7 +44,7 @@ Exhibit.LegendGradientWidget.create = function (containerElmt, uiContext) {
  * @param {Number} point.blue
  * @returns {String}
  */
-Exhibit.LegendGradientWidget.prototype._makeRGB = function(point) {
+LegendGradientWidget.prototype._makeRGB = function(point) {
     return "rgb("
         + point.red + ","
         + point.green + ","
@@ -57,7 +58,7 @@ Exhibit.LegendGradientWidget.prototype._makeRGB = function(point) {
  *
  * @param {Array} configuration
  */
-Exhibit.LegendGradientWidget.prototype.addGradient = function(configuration) {
+LegendGradientWidget.prototype.addGradient = function(configuration) {
     var row1, row2, row3, sortObj, stepSize, counter, i, j, fraction;
     if (configuration.length < 2) {
         return;
@@ -145,7 +146,7 @@ Exhibit.LegendGradientWidget.prototype.addGradient = function(configuration) {
  * @param {String} color
  * @param {String} label
  */
-Exhibit.LegendGradientWidget.prototype.addEntry = function(color, label) {
+LegendGradientWidget.prototype.addEntry = function(color, label) {
     $("<td>")
         .width("1.5em")
         .height("2em")
@@ -168,7 +169,7 @@ Exhibit.LegendGradientWidget.prototype.addEntry = function(color, label) {
  * @param {String} label
  * @param {String} type
  */
-Exhibit.LegendGradientWidget.prototype.addLegendLabel = function(label) {
+LegendGradientWidget.prototype.addLegendLabel = function(label) {
     var dom;
 	dom = $.simileDOM("string",
 			"div",
@@ -186,7 +187,7 @@ Exhibit.LegendGradientWidget.prototype.addLegendLabel = function(label) {
 /**
  *
  */
-Exhibit.LegendGradientWidget.prototype.dispose = function() {
+LegendGradientWidget.prototype.dispose = function() {
     this.clear();
     
     this._div = null;
@@ -196,7 +197,7 @@ Exhibit.LegendGradientWidget.prototype.dispose = function() {
 /**
  *
  */
-Exhibit.LegendGradientWidget.prototype._initializeUI = function() {
+LegendGradientWidget.prototype._initializeUI = function() {
     var table, tbody, row1, row2, row3;
 
     this.clear();
@@ -234,7 +235,7 @@ Exhibit.LegendGradientWidget.prototype._initializeUI = function() {
 /**
  *
  */
-Exhibit.LegendGradientWidget.prototype.clear = function() {
+LegendGradientWidget.prototype.clear = function() {
     $(this._div).empty();
     this._row1 = null;
     this._row2 = null;
@@ -244,11 +245,11 @@ Exhibit.LegendGradientWidget.prototype.clear = function() {
 /**
  *
  */
-Exhibit.LegendGradientWidget.prototype.reconstruct = function() {
+LegendGradientWidget.prototype.reconstruct = function() {
     $(this._div).empty();
     this._initializeUI();
 };
 
     // end define
-    return Exhibit;
+    return LegendGradientWidget;
 });

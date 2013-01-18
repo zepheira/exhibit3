@@ -4,27 +4,27 @@
  * @fileOverview A collection of date/time utility functions.
  */
 
-define(["exhibit"], function(Exhibit) {
+define(["util/localizer"], function(_) {
 /**
  * @namespace A collection of date/time utility functions.
  */
-Exhibit.DateTime = {};
+var DateTime = {};
                                      /** @constant */
-Exhibit.DateTime.MILLISECOND    = 0; /** @constant */
-Exhibit.DateTime.SECOND         = 1; /** @constant */
-Exhibit.DateTime.MINUTE         = 2; /** @constant */
-Exhibit.DateTime.HOUR           = 3; /** @constant */
-Exhibit.DateTime.DAY            = 4; /** @constant */
-Exhibit.DateTime.WEEK           = 5; /** @constant */
-Exhibit.DateTime.MONTH          = 6; /** @constant */
-Exhibit.DateTime.YEAR           = 7; /** @constant */
-Exhibit.DateTime.DECADE         = 8; /** @constant */
-Exhibit.DateTime.CENTURY        = 9; /** @constant */
-Exhibit.DateTime.MILLENNIUM     = 10; /** @constant */
-Exhibit.DateTime.QUARTER        = 11; /** @constant */
+DateTime.MILLISECOND    = 0; /** @constant */
+DateTime.SECOND         = 1; /** @constant */
+DateTime.MINUTE         = 2; /** @constant */
+DateTime.HOUR           = 3; /** @constant */
+DateTime.DAY            = 4; /** @constant */
+DateTime.WEEK           = 5; /** @constant */
+DateTime.MONTH          = 6; /** @constant */
+DateTime.YEAR           = 7; /** @constant */
+DateTime.DECADE         = 8; /** @constant */
+DateTime.CENTURY        = 9; /** @constant */
+DateTime.MILLENNIUM     = 10; /** @constant */
+DateTime.QUARTER        = 11; /** @constant */
     
-Exhibit.DateTime.EPOCH          = -1; /** @constant */
-Exhibit.DateTime.ERA            = -2;
+DateTime.EPOCH          = -1; /** @constant */
+DateTime.ERA            = -2;
     
 /**
  * An array of unit lengths, expressed in milliseconds, of various
@@ -33,10 +33,10 @@ Exhibit.DateTime.ERA            = -2;
  * @constant
  * @type {Array}
  */
-Exhibit.DateTime.gregorianUnitLengths = [];
+DateTime.gregorianUnitLengths = [];
 (function() {
     var d, a;
-    d = Exhibit.DateTime;
+    d = DateTime;
     a = d.gregorianUnitLengths;
         
     a[d.MILLISECOND] = 1;
@@ -58,7 +58,7 @@ Exhibit.DateTime.gregorianUnitLengths = [];
  * @static
  * @constant
  */
-Exhibit.DateTime._dateRegexp = new RegExp(
+DateTime._dateRegexp = new RegExp(
     "^(-?)([0-9]{4})(" + [
         "(-?([0-9]{2})(-?([0-9]{2}))?)", // -month-dayOfMonth
         "(-?([0-9]{3}))",                // -dayOfYear
@@ -71,14 +71,14 @@ Exhibit.DateTime._dateRegexp = new RegExp(
  * @static
  * @constant
  */
-Exhibit.DateTime._timezoneRegexp = /Z|(([\-+])([0-9]{2})(:?([0-9]{2}))?)$/;
+DateTime._timezoneRegexp = /Z|(([\-+])([0-9]{2})(:?([0-9]{2}))?)$/;
     
 /**
  * @private
  * @static
  * @constant
  */
-Exhibit.DateTime._timeRegexp = /^([0-9]{2})(:?([0-9]{2})(:?([0-9]{2})(\.([0-9]+))?)?)?$/;
+DateTime._timeRegexp = /^([0-9]{2})(:?([0-9]{2})(:?([0-9]{2})(\.([0-9]+))?)?)?$/;
     
 /**
  * Takes a date object and a string containing an ISO 8601 date and sets
@@ -90,15 +90,15 @@ Exhibit.DateTime._timeRegexp = /^([0-9]{2})(:?([0-9]{2})(:?([0-9]{2})(\.([0-9]+)
  * @param {String} string An ISO 8601 string to parse.
  * @returns {Date} The modified date object.
  */
-Exhibit.DateTime.setIso8601Date = function(dateObject, string) {
+DateTime.setIso8601Date = function(dateObject, string) {
     /*
      *  This function has been adapted from dojo.date, v.0.3.0
      *  http://dojotoolkit.org/.
      */
     var d, sign, year, month, date, dayofyear, week, dayofweek, gd, day, offset;
-    d = string.match(Exhibit.DateTime._dateRegexp);
+    d = string.match(DateTime._dateRegexp);
     if (!d) {
-        throw new Error(Exhibit._("%datetime.error.invalidDate", string));
+        throw new Error(_("%datetime.error.invalidDate", string));
     }
         
     sign = (d[1] === "-") ? -1 : 1; // BC or AD
@@ -147,15 +147,15 @@ Exhibit.DateTime.setIso8601Date = function(dateObject, string) {
  * @param {String} string An ISO 8601 string to parse.
  * @returns {Date} The modified date object.
  */
-Exhibit.DateTime.setIso8601Time = function(dateObject, string) {
+DateTime.setIso8601Time = function(dateObject, string) {
     /*
      *  This function has been adapted from dojo.date, v.0.3.0
      *  http://dojotoolkit.org/.
      */
     var d, hours, mins, secs, ms;
-    d = string.match(Exhibit.DateTime._timeRegexp);
+    d = string.match(DateTime._timeRegexp);
     if (!d) {
-        throw new Error(Exhibit._("%datetime.error.invalidTime", string));
+        throw new Error(_("%datetime.error.invalidTime", string));
     }
     hours = d[1];
     mins = Number((d[3]) ? d[3] : 0);
@@ -174,7 +174,7 @@ Exhibit.DateTime.setIso8601Time = function(dateObject, string) {
  * The timezone offset in minutes in the user's browser.
  * @type {Number}
  */
-Exhibit.DateTime.timezoneOffset = new Date().getTimezoneOffset();
+DateTime.timezoneOffset = new Date().getTimezoneOffset();
     
 /**
  * Takes a date object and a string containing an ISO 8601 date and time 
@@ -184,7 +184,7 @@ Exhibit.DateTime.timezoneOffset = new Date().getTimezoneOffset();
  * @param {String} string An ISO 8601 string to parse.
  * @returns {Date} The modified date object.
  */
-Exhibit.DateTime.setIso8601 = function(dateObject, string) {
+DateTime.setIso8601 = function(dateObject, string) {
     /*
      *  This function has been adapted from dojo.date, v.0.3.0
      *  http://dojotoolkit.org/.
@@ -193,10 +193,10 @@ Exhibit.DateTime.setIso8601 = function(dateObject, string) {
     offset = null;
     comps = (string.indexOf("T") === -1) ? string.split(" ") : string.split("T");
     
-    Exhibit.DateTime.setIso8601Date(dateObject, comps[0]);
+    DateTime.setIso8601Date(dateObject, comps[0]);
     if (comps.length === 2) { 
        // first strip timezone info from the end
-       d = comps[1].match(Exhibit.DateTime._timezoneRegexp);
+       d = comps[1].match(DateTime._timezoneRegexp);
        if (d) {
             if (d[0] === 'Z') {
                 offset = 0;
@@ -207,7 +207,7 @@ Exhibit.DateTime.setIso8601 = function(dateObject, string) {
             comps[1] = comps[1].substr(0, comps[1].length - d[0].length);
         }
         
-        Exhibit.DateTime.setIso8601Time(dateObject, comps[1]); 
+        DateTime.setIso8601Time(dateObject, comps[1]); 
     }
     if (typeof offset === "undefined" || offset === null) {
         offset = dateObject.getTimezoneOffset(); // local time zone if no tz info
@@ -225,9 +225,9 @@ Exhibit.DateTime.setIso8601 = function(dateObject, string) {
  * @param {String} string An ISO 8601 string to parse.
  * @returns {Date} A new date object created from the string.
  */
-Exhibit.DateTime.parseIso8601DateTime = function(string) {
+DateTime.parseIso8601DateTime = function(string) {
     try {
-        return Exhibit.DateTime.setIso8601(new Date(0), string);
+        return DateTime.setIso8601(new Date(0), string);
     } catch (e) {
         return null;
     }
@@ -239,7 +239,7 @@ Exhibit.DateTime.parseIso8601DateTime = function(string) {
  * @param {Date} d Date to format
  * @returns {String}
  */
-Exhibit.DateTime.toISODateString = function(d) {
+DateTime.toISODateString = function(d) {
     var s, f;
     if (typeof Date.prototype.toISOString !== "undefined") {
         s = date.toISOString().split("T")[0];
@@ -265,7 +265,7 @@ Exhibit.DateTime.toISODateString = function(d) {
  * @param {Date|String} o An object, to either return or parse as a string.
  * @returns {Date} The date object.
  */
-Exhibit.DateTime.parseGregorianDateTime = function(o) {
+DateTime.parseGregorianDateTime = function(o) {
     var s, space, year, suffix, d;
     if (typeof o === "undefined" || o === null) {
         return null;
@@ -322,13 +322,13 @@ Exhibit.DateTime.parseGregorianDateTime = function(o) {
  * @param {Number} firstDayOfWeek An integer specifying the first day of the
  *   week, 0 corresponds to Sunday, 1 to Monday, etc.
  */
-Exhibit.DateTime.roundDownToInterval = function(date, intervalUnit, timeZone, multiple, firstDayOfWeek) {
+DateTime.roundDownToInterval = function(date, intervalUnit, timeZone, multiple, firstDayOfWeek) {
     var timeShift, date2, clearInDay, clearInYear, x, first;
     timeShift = timeZone * 
-        Exhibit.DateTime.gregorianUnitLengths[Exhibit.DateTime.HOUR];
+        DateTime.gregorianUnitLengths[DateTime.HOUR];
         
     date2 = new Date(date.getTime() + timeShift);
-    clearInDay = Exhibit.DateTime.zeroTimeUTC;
+    clearInDay = DateTime.zeroTimeUTC;
     clearInYear = function(d) {
         clearInDay(d);
         d.setUTCDate(1);
@@ -336,25 +336,25 @@ Exhibit.DateTime.roundDownToInterval = function(date, intervalUnit, timeZone, mu
     };
     
     switch(intervalUnit) {
-    case Exhibit.DateTime.MILLISECOND:
+    case DateTime.MILLISECOND:
         x = date2.getUTCMilliseconds();
         date2.setUTCMilliseconds(x - (x % multiple));
         break;
-    case Exhibit.DateTime.SECOND:
+    case DateTime.SECOND:
         date2.setUTCMilliseconds(0);
             
         x = date2.getUTCSeconds();
         date2.setUTCSeconds(x - (x % multiple));
         break;
-    case Exhibit.DateTime.MINUTE:
+    case DateTime.MINUTE:
         date2.setUTCMilliseconds(0);
         date2.setUTCSeconds(0);
         
         x = date2.getUTCMinutes();
         date2.setTime(date2.getTime() - 
-                      (x % multiple) * Exhibit.DateTime.gregorianUnitLengths[Exhibit.DateTime.MINUTE]);
+                      (x % multiple) * DateTime.gregorianUnitLengths[DateTime.MINUTE]);
         break;
-    case Exhibit.DateTime.HOUR:
+    case DateTime.HOUR:
         date2.setUTCMilliseconds(0);
         date2.setUTCSeconds(0);
         date2.setUTCMinutes(0);
@@ -362,44 +362,44 @@ Exhibit.DateTime.roundDownToInterval = function(date, intervalUnit, timeZone, mu
         x = date2.getUTCHours();
         date2.setUTCHours(x - (x % multiple));
         break;
-    case Exhibit.DateTime.DAY:
+    case DateTime.DAY:
         clearInDay(date2);
         
         x = date2.getUTCDate();
         date2.setUTCDate(x - (x % multiple));
         break;
-    case Exhibit.DateTime.WEEK:
+    case DateTime.WEEK:
         first = new Date(date2.getUTCFullYear(), 0, 1);
         clearInDay(date2);
         clearInDay(first);
-        x = Math.ceil((((date2 - first) / Exhibit.DateTime.gregorianUnitLengths[Exhibit.DateTime.DAY]) - ((firstDayOfWeek - first.getUTCDay() + 7) % 7) + 1) / 7) + (first.getUTCDay() !== firstDayOfWeek ? 1 : 0);
-        date2.setTime(date2.getTime() - ((x % multiple) * Exhibit.DateTime.gregorianUnitLengths[Exhibit.DateTime.WEEK]));
+        x = Math.ceil((((date2 - first) / DateTime.gregorianUnitLengths[DateTime.DAY]) - ((firstDayOfWeek - first.getUTCDay() + 7) % 7) + 1) / 7) + (first.getUTCDay() !== firstDayOfWeek ? 1 : 0);
+        date2.setTime(date2.getTime() - ((x % multiple) * DateTime.gregorianUnitLengths[DateTime.WEEK]));
         if (date2 < first) {
             date2 = first;
         }
         break;
-    case Exhibit.DateTime.MONTH:
+    case DateTime.MONTH:
         clearInDay(date2);
         date2.setUTCDate(1);
         
         x = date2.getUTCMonth() + 1;
         date2.setUTCMonth(Math.max(0, x - 1 - (x % multiple)));
         break;
-    case Exhibit.DateTime.YEAR:
+    case DateTime.YEAR:
         clearInYear(date2);
         
         x = date2.getUTCFullYear();
         date2.setUTCFullYear(x - (x % multiple));
         break;
-    case Exhibit.DateTime.DECADE:
+    case DateTime.DECADE:
         clearInYear(date2);
         date2.setUTCFullYear(Math.floor(date2.getUTCFullYear() / 10) * 10);
         break;
-    case Exhibit.DateTime.CENTURY:
+    case DateTime.CENTURY:
         clearInYear(date2);
         date2.setUTCFullYear(Math.floor(date2.getUTCFullYear() / 100) * 100);
         break;
-    case Exhibit.DateTime.MILLENNIUM:
+    case DateTime.MILLENNIUM:
         clearInYear(date2);
         date2.setUTCFullYear(Math.floor(date2.getUTCFullYear() / 1000) * 1000);
         break;
@@ -429,73 +429,73 @@ Exhibit.DateTime.roundDownToInterval = function(date, intervalUnit, timeZone, mu
  *   the week, 0 corresponds to Sunday, 1 to Monday, etc.
  * @see Exhibit.DateTime.roundDownToInterval
  */
-Exhibit.DateTime.roundUpToInterval = function(date, intervalUnit, timeZone, multiple, firstDayOfWeek) {
+DateTime.roundUpToInterval = function(date, intervalUnit, timeZone, multiple, firstDayOfWeek) {
     var originalTime, useRoundDown, usedRoundDown, date2, first, x, clearInYear;
     originalTime = date.getTime();
     clearInYear = function(d) {
-        Exhibit.DateTime.zeroTimeUTC(d);
+        DateTime.zeroTimeUTC(d);
         d.setUTCDate(1);
         d.setUTCMonth(0);
     };
     usedRoundDown = false;
     useRoundDown = function() {
-        Exhibit.DateTime.roundDownToInterval(date, intervalUnit, timeZone, multiple, firstDayOfWeek);
+        DateTime.roundDownToInterval(date, intervalUnit, timeZone, multiple, firstDayOfWeek);
         if (date.getTime() < originalTime) {
             date.setTime(date.getTime() + 
-                         Exhibit.DateTime.gregorianUnitLengths[intervalUnit] * multiple);
+                         DateTime.gregorianUnitLengths[intervalUnit] * multiple);
         }
         usedRoundDown = true;
     };
     
     timeShift = timeZone * 
-        Exhibit.DateTime.gregorianUnitLengths[Exhibit.DateTime.HOUR];
+        DateTime.gregorianUnitLengths[DateTime.HOUR];
     date2 = new Date(date.getTime() + timeShift);
     
     switch(intervalUnit) {
-    case Exhibit.DateTime.MILLISECOND:
+    case DateTime.MILLISECOND:
         useRoundDown();
         break;
-    case Exhibit.DateTime.SECOND:
+    case DateTime.SECOND:
         useRoundDown();
         break;
-    case Exhibit.DateTime.MINUTE:
+    case DateTime.MINUTE:
         useRoundDown();
         break;
-    case Exhibit.DateTime.HOUR:
+    case DateTime.HOUR:
         useRoundDown();
         break;
-    case Exhibit.DateTime.DAY:
+    case DateTime.DAY:
         useRoundDown();
         break;
-    case Exhibit.DateTime.WEEK:
+    case DateTime.WEEK:
         first = new Date(date2.getUTCFullYear(), 0, 1);
-        Exhibit.DateTime.zeroTimeUTC(date2);
-        Exhibit.DateTime.zeroTimeUTC(first);
-        x = Math.ceil((((date2 - first) / Exhibit.DateTime.gregorianUnitLengths[Exhibit.DateTime.DAY]) - ((firstDayOfWeek - first.getUTCDay() + 7) % 7) + 1) / 7) + (first.getUTCDay() !== firstDayOfWeek ? 1 : 0);
-        date2.setTime(date2.getTime() + (((multiple - (x % multiple)) % multiple) * Exhibit.DateTime.gregorianUnitLengths[Exhibit.DateTime.WEEK]));
+        DateTime.zeroTimeUTC(date2);
+        DateTime.zeroTimeUTC(first);
+        x = Math.ceil((((date2 - first) / DateTime.gregorianUnitLengths[DateTime.DAY]) - ((firstDayOfWeek - first.getUTCDay() + 7) % 7) + 1) / 7) + (first.getUTCDay() !== firstDayOfWeek ? 1 : 0);
+        date2.setTime(date2.getTime() + (((multiple - (x % multiple)) % multiple) * DateTime.gregorianUnitLengths[DateTime.WEEK]));
         break;
-    case Exhibit.DateTime.MONTH:
-        Exhibit.DateTime.zeroTimeUTC(date2);
+    case DateTime.MONTH:
+        DateTime.zeroTimeUTC(date2);
         date2.setUTCDate(1);
         
         x = date2.getUTCMonth() + 1;
         date2.setUTCMonth(x - 1 + (multiple - (x % multiple)) % multiple);
         break;
-    case Exhibit.DateTime.YEAR:
+    case DateTime.YEAR:
         clearInYear(date2);
         
         x = date2.getUTCFullYear();
         date2.setUTCFullYear(x + (multiple - (x % multiple)) % multiple);
         break;
-    case Exhibit.DateTime.DECADE:
+    case DateTime.DECADE:
         clearInYear(date2);
         date2.setUTCFullYear(Math.ceil(date2.getUTCFullYear() / 10) * 10);
         break;
-    case Exhibit.DateTime.CENTURY:
+    case DateTime.CENTURY:
         clearInYear(date2);
         date2.setUTCFullYear(Math.ceil(date2.getUTCFullYear() / 100) * 100);
         break;
-    case Exhibit.DateTime.MILLENNIUM:
+    case DateTime.MILLENNIUM:
         clearInYear(date2);
         date2.setUTCFullYear(Math.ceil(date2.getUTCFullYear() / 1000) * 1000);
         break;
@@ -515,48 +515,48 @@ Exhibit.DateTime.roundUpToInterval = function(date, intervalUnit, timeZone, mult
  *   interval, e.g. Exhibit.DateTime.HOUR.
  * @param {Number} timeZone The timezone offset in hours.
  */
-Exhibit.DateTime.incrementByInterval = function(date, intervalUnit, timeZone) {
+DateTime.incrementByInterval = function(date, intervalUnit, timeZone) {
     timeZone = (typeof timeZone === 'undefined') ? 0 : timeZone;
     var timeShift, date2;
     timeShift = timeZone * 
-        Exhibit.DateTime.gregorianUnitLengths[Exhibit.DateTime.HOUR];
+        DateTime.gregorianUnitLengths[DateTime.HOUR];
     
     date2 = new Date(date.getTime() + timeShift);
     
     switch(intervalUnit) {
-    case Exhibit.DateTime.MILLISECOND:
+    case DateTime.MILLISECOND:
         date2.setTime(date2.getTime() + 1);
         break;
-    case Exhibit.DateTime.SECOND:
+    case DateTime.SECOND:
         date2.setTime(date2.getTime() + 1000);
         break;
-    case Exhibit.DateTime.MINUTE:
+    case DateTime.MINUTE:
         date2.setTime(date2.getTime() + 
-                      Exhibit.DateTime.gregorianUnitLengths[Exhibit.DateTime.MINUTE]);
+                      DateTime.gregorianUnitLengths[DateTime.MINUTE]);
         break;
-    case Exhibit.DateTime.HOUR:
+    case DateTime.HOUR:
         date2.setTime(date2.getTime() + 
-                      Exhibit.DateTime.gregorianUnitLengths[Exhibit.DateTime.HOUR]);
+                      DateTime.gregorianUnitLengths[DateTime.HOUR]);
         break;
-    case Exhibit.DateTime.DAY:
+    case DateTime.DAY:
         date2.setUTCDate(date2.getUTCDate() + 1);
         break;
-    case Exhibit.DateTime.WEEK:
+    case DateTime.WEEK:
         date2.setUTCDate(date2.getUTCDate() + 7);
         break;
-    case Exhibit.DateTime.MONTH:
+    case DateTime.MONTH:
         date2.setUTCMonth(date2.getUTCMonth() + 1);
         break;
-    case Exhibit.DateTime.YEAR:
+    case DateTime.YEAR:
         date2.setUTCFullYear(date2.getUTCFullYear() + 1);
         break;
-    case Exhibit.DateTime.DECADE:
+    case DateTime.DECADE:
         date2.setUTCFullYear(date2.getUTCFullYear() + 10);
         break;
-    case Exhibit.DateTime.CENTURY:
+    case DateTime.CENTURY:
         date2.setUTCFullYear(date2.getUTCFullYear() + 100);
         break;
-    case Exhibit.DateTime.MILLENNIUM:
+    case DateTime.MILLENNIUM:
         date2.setUTCFullYear(date2.getUTCFullYear() + 1000);
         break;
     }
@@ -571,9 +571,9 @@ Exhibit.DateTime.incrementByInterval = function(date, intervalUnit, timeZone) {
  * @param {Number} timeZone A timezone specified in an hour offset to remove.
  * @returns {Date} A new date object with the offset removed.
  */
-Exhibit.DateTime.removeTimeZoneOffset = function(date, timeZone) {
+DateTime.removeTimeZoneOffset = function(date, timeZone) {
     return new Date(date.getTime() + 
-                    timeZone * Exhibit.DateTime.gregorianUnitLengths[Exhibit.DateTime.HOUR]);
+                    timeZone * DateTime.gregorianUnitLengths[DateTime.HOUR]);
 };
     
 /**
@@ -584,7 +584,7 @@ Exhibit.DateTime.removeTimeZoneOffset = function(date, timeZone) {
  *
  * @returns {Number} The timezone in the user's locale in hours.
  */
-Exhibit.DateTime.getTimezone = function() {
+DateTime.getTimezone = function() {
     var d = new Date().getTimezoneOffset();
     return d / -60;
 };
@@ -596,7 +596,7 @@ Exhibit.DateTime.getTimezone = function() {
  * @param {Date} date The Date object to modify.
  * @returns {Date} The modified Date object.
  */
-Exhibit.DateTime.zeroTimeUTC = function(date) {
+DateTime.zeroTimeUTC = function(date) {
     date.setUTCHours(0);
     date.setUTCMinutes(0);
     date.setUTCSeconds(0);
@@ -605,5 +605,5 @@ Exhibit.DateTime.zeroTimeUTC = function(date) {
 };
 
     // end define
-    return Exhibit;
+    return DateTime;
 });

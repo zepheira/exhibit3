@@ -5,18 +5,29 @@
  * @author <a href="mailto:axel@pike.org">Axel Hecht</a>
  */
 
-define(["lib/jquery", "exhibit"], function($, Exhibit) {
+define([
+    "lib/jquery",
+    "exhibit",
+    "util/localizer",
+    "util/debug",
+    "util/set",
+    "util/settings",
+    "util/history",
+    "data/expression-parser",
+    "ui/ui-context",
+    "ui/facets/facet"
+], function($, Exhibit, _, Debug, Set, SettingsUtilities, EHistory, ExpressionParser, UIContext, Facet) {
 /**
  * @constructor
  * @class
  * @param {Element} containerElmt
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.CloudFacet = function(containerElmt, uiContext) {
-    $.extend(this, new Exhibit.Facet("cloud", containerElmt, uiContext));
-    this.addSettingSpecs(Exhibit.CloudFacet._settingSpecs);
+var CloudFacet = function(containerElmt, uiContext) {
+    $.extend(this, new Facet("cloud", containerElmt, uiContext));
+    this.addSettingSpecs(CloudFacet._settingSpecs);
     this._colorCoder = null;
-    this._valueSet = new Exhibit.Set();
+    this._valueSet = new Set();
     this._itemToValue = null;
     this._valueToItem = null;
     this._missingItems = null;
@@ -29,7 +40,7 @@ Exhibit.CloudFacet = function(containerElmt, uiContext) {
 /**
  * @constant
  */
-Exhibit.CloudFacet._settingSpecs = {
+CloudFacet._settingSpecs = {
     "minimumCount":     { "type": "int", "defaultValue": 1 },
     "showMissing":      { "type": "boolean", "defaultValue": true },
     "missingLabel":     { "type": "text" }
@@ -41,12 +52,12 @@ Exhibit.CloudFacet._settingSpecs = {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.CloudFacet}
  */
-Exhibit.CloudFacet.create = function(configuration, containerElmt, uiContext) {
+CloudFacet.create = function(configuration, containerElmt, uiContext) {
     var facet, thisUIContext;
-    thisUIContext = Exhibit.UIContext.create(configuration, uiContext);
-    facet = new Exhibit.CloudFacet(containerElmt, thisUIContext);
+    thisUIContext = UIContext.create(configuration, uiContext);
+    facet = new CloudFacet(containerElmt, thisUIContext);
     
-    Exhibit.CloudFacet._configure(facet, configuration);
+    CloudFacet._configure(facet, configuration);
     
     facet._initializeUI();
     thisUIContext.getCollection().addFacet(facet);
@@ -61,23 +72,23 @@ Exhibit.CloudFacet.create = function(configuration, containerElmt, uiContext) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.CloudFacet}
  */
-Exhibit.CloudFacet.createFromDOM = function(configElmt, containerElmt, uiContext) {
+CloudFacet.createFromDOM = function(configElmt, containerElmt, uiContext) {
     var configuration, thisUIContext, facet, expressionString, selection, selectMissing, i;
     configuration = Exhibit.getConfigurationFromDOM(configElmt);
-    thisUIContext = Exhibit.UIContext.createFromDOM(configElmt, uiContext);
-    facet = new Exhibit.CloudFacet(
+    thisUIContext = UIContext.createFromDOM(configElmt, uiContext);
+    facet = new CloudFacet(
         (typeof containerElmt !== "undefined" && containerElmt !== null) ?
             containerElmt :
             configElmt, 
         thisUIContext
     );
     
-    Exhibit.SettingsUtilities.collectSettingsFromDOM(configElmt, facet.getSettingSpecs(), facet._settings);
+    SettingsUtilities.collectSettingsFromDOM(configElmt, facet.getSettingSpecs(), facet._settings);
     
     try {
         expressionString = Exhibit.getAttribute(configElmt, "expression");
         if (typeof expressionString !== "undefined" && expressionString !== null && expressionString.length > 0) {
-            facet.setExpression(Exhibit.ExpressionParser.parse(expressionString));
+            facet.setExpression(ExpressionParser.parse(expressionString));
             facet.setExpressionString(expressionString);
         }
 
@@ -93,9 +104,9 @@ Exhibit.CloudFacet.createFromDOM = function(configElmt, containerElmt, uiContext
             facet._selectMissing = (selectMissing === "true");
         }
     } catch (e) {
-        Exhibit.Debug.exception(e, Exhibit._("%facets.error.configuration", "CloudFacet"));
+        Debug.exception(e, _("%facets.error.configuration", "CloudFacet"));
     }
-    Exhibit.CloudFacet._configure(facet, configuration);
+    CloudFacet._configure(facet, configuration);
 
     facet._initializeUI();
     thisUIContext.getCollection().addFacet(facet);
@@ -108,13 +119,13 @@ Exhibit.CloudFacet.createFromDOM = function(configElmt, containerElmt, uiContext
  * @param {Exhibit.CloudFacet} facet
  * @param {Object} configuration
  */
-Exhibit.CloudFacet._configure = function(facet, configuration) {
+CloudFacet._configure = function(facet, configuration) {
     var selection, i, segment, property, values, orderMap, formatter;
-    Exhibit.SettingsUtilities.collectSettings(configuration, facet.getSettingSpecs(), facet._settings);
+    SettingsUtilities.collectSettings(configuration, facet.getSettingSpecs(), facet._settings);
     
     if (typeof configuration.expression !== "undefined") {
         facet.setExpressionString(configuration.expression);
-        facet.setExpression(Exhibit.ExpressionParser.parse(configuration.expression));
+        facet.setExpression(ExpressionParser.parse(configuration.expression));
     }
     if (typeof configuration.selection !== "undefined") {
         selection = configuration.selection;
@@ -130,7 +141,7 @@ Exhibit.CloudFacet._configure = function(facet, configuration) {
 /**
  *
  */
-Exhibit.CloudFacet.prototype._dispose = function() {
+CloudFacet.prototype._dispose = function() {
     this._dom = null;
     this._valueSet = null;
     this._itemToValue = null;
@@ -143,16 +154,16 @@ Exhibit.CloudFacet.prototype._dispose = function() {
 /**
  * @returns {Boolean}
  */
-Exhibit.CloudFacet.prototype.hasRestrictions = function() {
+CloudFacet.prototype.hasRestrictions = function() {
     return this._valueSet.size() > 0 || this._selectMissing;
 };
 
 /**
  *
  */
-Exhibit.CloudFacet.prototype.clearAllRestrictions = function() {
+CloudFacet.prototype.clearAllRestrictions = function() {
     $(this.getContainer()).trigger("onBeforeFacetReset.exhibit");
-    this._valueSet = new Exhibit.Set();
+    this._valueSet = new Set();
     this._selectMissing = false;
     this._notifyCollection();
 };
@@ -160,9 +171,9 @@ Exhibit.CloudFacet.prototype.clearAllRestrictions = function() {
 /**
  * @param {Array} restrictions
  */
-Exhibit.CloudFacet.prototype.applyRestrictions = function(restrictions) {
+CloudFacet.prototype.applyRestrictions = function(restrictions) {
     var i;
-    this._valueSet = new Exhibit.Set();
+    this._valueSet = new Set();
     for (i = 0; i < restrictions.selection.length; i++) {
         this._valueSet.add(restrictions.selection[i]);
     }
@@ -175,7 +186,7 @@ Exhibit.CloudFacet.prototype.applyRestrictions = function(restrictions) {
  * @param {String} value
  * @param {Boolean} selected
  */
-Exhibit.CloudFacet.prototype.setSelection = function(value, selected) {
+CloudFacet.prototype.setSelection = function(value, selected) {
     if (selected) {
         this._valueSet.add(value);
     } else {
@@ -187,7 +198,7 @@ Exhibit.CloudFacet.prototype.setSelection = function(value, selected) {
 /**
  * @param {Boolean} selected
  */
-Exhibit.CloudFacet.prototype.setSelectMissing = function(selected) {
+CloudFacet.prototype.setSelectMissing = function(selected) {
     if (selected !== this._selectMissing) {
         this._selectMissing = selected;
         this._notifyCollection();
@@ -198,7 +209,7 @@ Exhibit.CloudFacet.prototype.setSelectMissing = function(selected) {
  * @param {Exhibit.Set} items
  * @returns {Exhibit.Set}
  */
-Exhibit.CloudFacet.prototype.restrict = function(items) {
+CloudFacet.prototype.restrict = function(items) {
     var set, itemA, i, item, valueToItem, missingItems;
 
     if (this._valueSet.size() === 0 && !this._selectMissing) {
@@ -215,7 +226,7 @@ Exhibit.CloudFacet.prototype.restrict = function(items) {
     } else {
         this._buildMaps();
         
-        set = new Exhibit.Set();
+        set = new Set();
         
         valueToItem = this._valueToItem;
         this._valueSet.visit(function(value) {
@@ -248,7 +259,7 @@ Exhibit.CloudFacet.prototype.restrict = function(items) {
 /**
  * @param {Exhibit.Set} items
  */
-Exhibit.CloudFacet.prototype.update = function(items) {
+CloudFacet.prototype.update = function(items) {
     this._constructBody(this._computeFacet(items));
 };
 
@@ -256,7 +267,7 @@ Exhibit.CloudFacet.prototype.update = function(items) {
  * @param {Exhibit.Set} items
  * @returns {Array}
  */
-Exhibit.CloudFacet.prototype._computeFacet = function(items) {
+CloudFacet.prototype._computeFacet = function(items) {
     var database, entries, valueType, self, path, facetValueResult, itemSubcollection, value, itemA, count, i, item, sortValueFunction, orderMap, sortFunction, sortDirectionFunction;
     database = this.getUIContext().getDatabase();
     entries = [];
@@ -366,7 +377,7 @@ Exhibit.CloudFacet.prototype._computeFacet = function(items) {
             span = $("<span>");
             $(span).html((typeof this._settings.missingLabel !== "undefined") ? 
                          this._settings.missingLabel :
-                         Exhibit._("%facets..missingThisField"));
+                         _("%facets.missingThisField"));
             $(span).attr("class", "exhibit-facet-value-missingThisField");
             
             entries.unshift({
@@ -374,7 +385,7 @@ Exhibit.CloudFacet.prototype._computeFacet = function(items) {
                 count:          count,
                 selected:       this._selectMissing,
                 selectionLabel: $(span).get(0),
-                actionLabel:    Exhibit._("%facets.missingThisField")
+                actionLabel:    _("%facets.missingThisField")
             });
         }
     }
@@ -385,14 +396,14 @@ Exhibit.CloudFacet.prototype._computeFacet = function(items) {
 /**
  *
  */
-Exhibit.CloudFacet.prototype._notifyCollection = function() {
+CloudFacet.prototype._notifyCollection = function() {
     this.getUIContext().getCollection().onFacetUpdated(this);
 };
 
 /**
  *
  */
-Exhibit.CloudFacet.prototype._initializeUI = function() {
+CloudFacet.prototype._initializeUI = function() {
     $(this.getContainer()).empty();
     $(this.getContainer()).attr("class", "exhibit-cloudFacet");
 
@@ -415,7 +426,7 @@ Exhibit.CloudFacet.prototype._initializeUI = function() {
 /**
  * @param {Array} entries
  */
-Exhibit.CloudFacet.prototype._constructBody = function(entries) {
+CloudFacet.prototype._constructBody = function(entries) {
     var self, containerDiv, constructFacetItemFunction, facetHasSelection, constructValue, j, min, max, entry, range;
     self = this;
     containerDiv = this._dom.valuesContainer;
@@ -478,11 +489,11 @@ Exhibit.CloudFacet.prototype._constructBody = function(entries) {
  * @param {String} label
  * @param {Boolean} selectOnly
  */
-Exhibit.CloudFacet.prototype._filter = function(value, label, selectOnly) {
+CloudFacet.prototype._filter = function(value, label, selectOnly) {
     var self, selected, select, deselect, oldValues, oldSelectMissing, newValues, newSelectMissing, actionLabel, wasSelected, wasOnlyThingSelected, newRestrictions, facetLabel;
     self = this;
     
-    oldValues = new Exhibit.Set(this._valueSet);
+    oldValues = new Set(this._valueSet);
     oldSelectMissing = this._selectMissing;
     
     if (typeof value === "undefined" || value === null) {
@@ -496,10 +507,10 @@ Exhibit.CloudFacet.prototype._filter = function(value, label, selectOnly) {
             } else {
                 newSelectMissing = true;
             }
-            newValues = new Exhibit.Set();
+            newValues = new Set();
         } else {
             newSelectMissing = !oldSelectMissing;
-            newValues = new Exhibit.Set(oldValues);
+            newValues = new Set(oldValues);
         }
     } else {
         wasSelected = oldValues.contains(value);
@@ -507,7 +518,7 @@ Exhibit.CloudFacet.prototype._filter = function(value, label, selectOnly) {
         
         if (selectOnly) {
             newSelectMissing = false;
-            newValues = new Exhibit.Set();
+            newValues = new Set();
             
             if (!oldValues.contains(value)) {
                 newValues.add(value);
@@ -516,7 +527,7 @@ Exhibit.CloudFacet.prototype._filter = function(value, label, selectOnly) {
             }
         } else {
             newSelectMissing = oldSelectMissing;
-            newValues = new Exhibit.Set(oldValues);
+            newValues = new Set(oldValues);
             if (newValues.contains(value)) {
                 newValues.remove(value);
             } else {
@@ -528,28 +539,28 @@ Exhibit.CloudFacet.prototype._filter = function(value, label, selectOnly) {
     newRestrictions = { selection: newValues.toArray(), selectMissing: newSelectMissing };
     
     facetLabel = this.getLabel();
-    Exhibit.History.pushComponentState(
+    EHistory.pushComponentState(
         this,
-        Exhibit.Facet.getRegistryKey(),
+        Facet.getRegistryKey(),
         newRestrictions,
         (selectOnly && !wasOnlyThingSelected) ?
-            Exhibit._("%facets.facetSelectOnlyActionTitle", label, facetLabel) :
-            Exhibit._(wasSelected ? "%facets.facetUnselectActionTitle" : "%facets.facetSelectActionTitle", label, facetLabel),
+            _("%facets.facetSelectOnlyActionTitle", label, facetLabel) :
+            _(wasSelected ? "%facets.facetUnselectActionTitle" : "%facets.facetSelectActionTitle", label, facetLabel),
         true
     );
 };
 
-Exhibit.CloudFacet.prototype._clearSelections = function() {
-    Exhibit.History.pushComponentState(
+CloudFacet.prototype._clearSelections = function() {
+    EHistory.pushComponentState(
         this,
-        Exhibit.Facet.getRegistryKey(),
+        Facet.getRegistryKey(),
         this.exportEmptyState(),
-        Exhibit._("%facets.facetClearSelectionsActionTitle", this.getLabel()),
+        _("%facets.facetClearSelectionsActionTitle", this.getLabel()),
         true
     );
 };
 
-Exhibit.CloudFacet.prototype._buildMaps = function() {
+CloudFacet.prototype._buildMaps = function() {
     var itemToValue, valueToItem, missingItems, valueType, insert, expression, database;
 
     if (this._itemToValue === null) {
@@ -593,14 +604,14 @@ Exhibit.CloudFacet.prototype._buildMaps = function() {
 /**
  * @returns {Object}
  */
-Exhibit.CloudFacet.prototype.exportState = function() {
+CloudFacet.prototype.exportState = function() {
     return this._exportState(false);
 };
 
 /**
  * @returns {Object}
  */
-Exhibit.CloudFacet.prototype.exportEmptyState = function() {
+CloudFacet.prototype.exportEmptyState = function() {
     return this._exportState(true);
 };
 
@@ -608,7 +619,7 @@ Exhibit.CloudFacet.prototype.exportEmptyState = function() {
  * @private
  * @param {Boolean} empty
  */
-Exhibit.CloudFacet.prototype._exportState = function(empty) {
+CloudFacet.prototype._exportState = function(empty) {
     var s = [];
 
     if (!empty) {
@@ -626,7 +637,7 @@ Exhibit.CloudFacet.prototype._exportState = function(empty) {
  * @param {Boolean} state.selectMissing
  * @param {Array} state.selection
  */
-Exhibit.CloudFacet.prototype.importState = function(state) {
+CloudFacet.prototype.importState = function(state) {
     if (this.stateDiffers(state)) {
         if (state.selection.length === 0 && !state.selectMissing) {
             this.clearAllRestrictions();
@@ -645,7 +656,7 @@ Exhibit.CloudFacet.prototype.importState = function(state) {
  * @param {Boolean} state.selectMissing
  * @param {Array} state.selection
  */
-Exhibit.CloudFacet.prototype.stateDiffers = function(state) {
+CloudFacet.prototype.stateDiffers = function(state) {
     var stateSet, stateStartCount, valueStartCount;
 
     if (state.selectMissing !== this._selectMissing) {
@@ -658,7 +669,7 @@ Exhibit.CloudFacet.prototype.stateDiffers = function(state) {
     if (stateStartCount !== valueStartCount) {
         return true;
     } else {
-        stateSet = new Exhibit.Set(state.selection);
+        stateSet = new Set(state.selection);
         stateSet.addSet(this._valueSet);
         if (stateSet.size() !== stateStartCount) {
             return true;
@@ -669,5 +680,5 @@ Exhibit.CloudFacet.prototype.stateDiffers = function(state) {
 };
 
     // end define
-    return Exhibit;
+    return CloudFacet;
 });

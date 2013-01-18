@@ -3,14 +3,20 @@
  *     can get in an odd state if the Exhibit is being designed.
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
-define(["lib/jquery", "exhibit"], function($, Exhibit) {
+define([
+    "lib/jquery",
+    "exhibit",
+    "util/history",
+    "util/ui",
+    "ui/ui-context"
+], function($, Exhibit, EHistory, UIUtilities, UIContext) {
 /**
  * @constructor
  * @class
  * @param {Element} containerElmt
  * @param {Exhibit.UIContext} uiContext 
  */
-Exhibit.ResetHistoryWidget = function(containerElmt, uiContext) {
+var ResetHistoryWidget = function(containerElmt, uiContext) {
     this._containerElmt = containerElmt;
     this._uiContext = uiContext;
     this._settings = {};
@@ -23,12 +29,12 @@ Exhibit.ResetHistoryWidget = function(containerElmt, uiContext) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.ResetHistoryWidget}
  */
-Exhibit.ResetHistoryWidget.create = function(configuration, elmt, uiContext) {
-    var widget = new Exhibit.ResetHistoryWidget(
+ResetHistoryWidget.create = function(configuration, elmt, uiContext) {
+    var widget = new ResetHistoryWidget(
         elmt,
-        Exhibit.UIContext.create(configuration, uiContext)
+        UIContext.create(configuration, uiContext)
     );
-    Exhibit.ResetHistoryWidget._configure(widget, configuration);
+    ResetHistoryWidget._configure(widget, configuration);
     widget._initializeUI();
     return widget;
 };
@@ -40,15 +46,15 @@ Exhibit.ResetHistoryWidget.create = function(configuration, elmt, uiContext) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.ResetHistoryWidget}
  */
-Exhibit.ResetHistoryWidget.createFromDOM = function(configElmt, containerElmt, uiContext) {
+ResetHistoryWidget.createFromDOM = function(configElmt, containerElmt, uiContext) {
     var configuration, widget;
     configuration = Exhibit.getConfigurationFromDOM(configElmt);
-    widget = new Exhibit.ResetHistoryWidget(
+    widget = new ResetHistoryWidget(
         (typeof containerElmt !== "undefined" && containerElmt !== null) ?
             containerElmt : configElmt,
-        Exhibit.UIContext.createFromDOM(configElmt, uiContext)
+        UIContext.createFromDOM(configElmt, uiContext)
     );
-    Exhibit.ResetHistoryWidget._configure(widget, configuration);
+    ResetHistoryWidget._configure(widget, configuration);
     widget._initializeUI();
     return widget;
 };
@@ -59,30 +65,30 @@ Exhibit.ResetHistoryWidget.createFromDOM = function(configElmt, containerElmt, u
  * @param {Exhibit.ResetHistoryWidget} widget
  * @param {Object} configuration
  */
-Exhibit.ResetHistoryWidget._configure = function(widget, configuration) {
+ResetHistoryWidget._configure = function(widget, configuration) {
 };
 
 /**
  * Sets the history to its initial, empty state and reloads the page.
  * @static
  */
-Exhibit.ResetHistoryWidget.resetHistory = function() {
-    Exhibit.History.eraseState();
+ResetHistoryWidget.resetHistory = function() {
+    EHistory.eraseState();
     window.location.reload();
 };
 
 /**
  *
  */
-Exhibit.ResetHistoryWidget.prototype._initializeUI = function() {
+ResetHistoryWidget.prototype._initializeUI = function() {
     var img;
 
-    img = Exhibit.UI.createTranslucentImage("images/reset-history-icon.png");
+    img = UIUtilities.createTranslucentImage("images/reset-history-icon.png");
     $(img)
         .attr("class", "exhibit-resetHistoryWidget-button")
         .attr("title", "Click to clear state and refresh window")
         .bind("click", function(evt) {
-            Exhibit.ResetHistoryWidget.resetHistory();
+            ResetHistoryWidget.resetHistory();
         });
     $(this._containerElmt).append(img);
 };
@@ -91,14 +97,14 @@ Exhibit.ResetHistoryWidget.prototype._initializeUI = function() {
  * @public
  * @param {Exhibit.ControlPanel} panel
  */
-Exhibit.ResetHistoryWidget.prototype.reconstruct = function(panel) {
+ResetHistoryWidget.prototype.reconstruct = function(panel) {
     this._initializeUI();
 };
 
 /**
  *
  */
-Exhibit.ResetHistoryWidget.prototype.dispose = function() {
+ResetHistoryWidget.prototype.dispose = function() {
     this._uiContext.dispose();
     this._uiContext = null;
     this._div = null;
@@ -106,5 +112,5 @@ Exhibit.ResetHistoryWidget.prototype.dispose = function() {
 };
 
     // end define
-    return Exhibit;
+    return ResetHistoryWidget;
 });

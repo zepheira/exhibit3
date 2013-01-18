@@ -3,24 +3,24 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["exhibit"], function(Exhibit) {
-/**
- * @namespace
- */
-Exhibit.Backwards = {
-    "enabled": {
-        "Attributes": false
-    }
-};
+define(function() {
+    /**
+     * @namespace
+     */
+    var Backwards = {
+        "enabled": {
+            "Attributes": false
+        }
+    };
 
-/**
- * Enable a backwards compatibility module.
- * @param {String} module
- */
-Exhibit.Backwards.enable = function(module) {
-    Exhibit.Backwards[module].enable();
-};
-
+    /**
+     * Enable a backwards compatibility module.
+     * @param {String} module
+     */
+    Backwards.enable = function(module) {
+        Backwards[module].enable();
+    };
+    
     // end define
-    return Exhibit;
+    return Backwards;
 });

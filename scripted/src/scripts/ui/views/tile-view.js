@@ -4,23 +4,29 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(
-    ["lib/jquery", "exhibit", "lib/jquery.simile.dom"],
-    function($, Exhibit) {
+define([
+    "lib/jquery",
+    "exhibit",
+    "util/settings",
+    "util/history",
+    "ui/views/view",
+    "ui/views/ordered-view-frame",
+    "lib/jquery.simile.dom"
+], function($, Exhibit, SettingsUtilities, EHistory, View, OrderedViewFrame) {
 /**
  * @constructor
  * @class
  * @param {Element} containerElement
  * @param {Exhibit.UIContext} uiContext
  */ 
-Exhibit.TileView = function(containerElmt, uiContext) {
+var TileView = function(containerElmt, uiContext) {
     var view = this;
-    $.extend(this, new Exhibit.View(
+    $.extend(this, new View(
         "tile",
         containerElmt,
         uiContext
     ));
-    this.addSettingSpecs(Exhibit.TileView._settingSpecs);
+    this.addSettingSpecs(TileView._settingSpecs);
 
     this._onItemsChanged = function() {
         // @@@this will ignore the stored state, which is odd
@@ -35,14 +41,14 @@ Exhibit.TileView = function(containerElmt, uiContext) {
         view._onItemsChanged
     );
 
-    this._orderedViewFrame = new Exhibit.OrderedViewFrame(uiContext);
+    this._orderedViewFrame = new OrderedViewFrame(uiContext);
     this._orderedViewFrame.parentReconstruct = function() {
         view._reconstruct();
     };
     this._orderedViewFrame.parentHistoryAction = function(child, state, title) {
-        Exhibit.History.pushComponentState(
+        EHistory.pushComponentState(
             view,
-            Exhibit.View.getRegistryKey(),
+            View.getRegistryKey(),
             view.exportState(view.makeStateWithSub(child, state)),
             title,
             true
@@ -55,7 +61,7 @@ Exhibit.TileView = function(containerElmt, uiContext) {
 /**
  * @constant
  */
-Exhibit.TileView._settingSpecs = { };
+TileView._settingSpecs = { };
 
 /**
  * @param {Object} configuration
@@ -63,13 +69,13 @@ Exhibit.TileView._settingSpecs = { };
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.TileView}
  */
-Exhibit.TileView.create = function(configuration, containerElmt, uiContext) {
-    var view = new Exhibit.TileView(
+TileView.create = function(configuration, containerElmt, uiContext) {
+    var view = new TileView(
         containerElmt,
-        Exhibit.UIContext.create(configuration, uiContext)
+        uiContext.asParentFromConfig(configuration)
     );
     
-    Exhibit.SettingsUtilities.collectSettings(
+    SettingsUtilities.collectSettings(
         configuration, view.getSettingSpecs(), view._settings);
         
     view._orderedViewFrame.configure(configuration);
@@ -84,19 +90,19 @@ Exhibit.TileView.create = function(configuration, containerElmt, uiContext) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.TileView}
  */
-Exhibit.TileView.createFromDOM = function(configElmt, containerElmt, uiContext) {
+TileView.createFromDOM = function(configElmt, containerElmt, uiContext) {
     var configuration, view;
     configuration = Exhibit.getConfigurationFromDOM(configElmt);
-    view = new Exhibit.TileView(
+    view = new TileView(
         typeof containerElmt !== "undefined" && containerElmt !== null ?
             containerElmt :
             configElmt,
-        Exhibit.UIContext.createFromDOM(configElmt, uiContext)
+        uiContext.asParentFromDOM(configElmt)
     );
     
-    Exhibit.SettingsUtilities.collectSettingsFromDOM(
+    SettingsUtilities.collectSettingsFromDOM(
         configElmt, view.getSettingSpecs(), view._settings);
-    Exhibit.SettingsUtilities.collectSettings(
+    SettingsUtilities.collectSettings(
         configuration, view.getSettingSpecs(), view._settings);
     
     view._orderedViewFrame.configureFromDOM(configElmt);
@@ -108,7 +114,7 @@ Exhibit.TileView.createFromDOM = function(configElmt, containerElmt, uiContext) 
 /**
  *
  */
-Exhibit.TileView.prototype.dispose = function() {
+TileView.prototype.dispose = function() {
     var view = this;
     $(this.getUIContext().getCollection().getElement()).unbind(
         "onItemsChanged.exhibit",
@@ -125,7 +131,7 @@ Exhibit.TileView.prototype.dispose = function() {
 /**
  *
  */
-Exhibit.TileView.prototype._initializeUI = function() {
+TileView.prototype._initializeUI = function() {
     var self, template;
 
     self = this;
@@ -155,7 +161,7 @@ Exhibit.TileView.prototype._initializeUI = function() {
     this._orderedViewFrame._divFooter = this._dom.footerDiv;
     this._orderedViewFrame.initializeUI();
 
-    Exhibit.View.addViewState(
+    View.addViewState(
         this.getID(),
         this.exportState()
     );
@@ -166,7 +172,7 @@ Exhibit.TileView.prototype._initializeUI = function() {
 /**
  *
  */
-Exhibit.TileView.prototype._reconstruct = function() {
+TileView.prototype._reconstruct = function() {
     var view, state, closeGroups, i;
     view = this;
     state = {
@@ -194,7 +200,7 @@ Exhibit.TileView.prototype._reconstruct = function() {
     this._orderedViewFrame.onNewGroup = function(groupSortKey, keyType, groupLevel) {
         closeGroups(groupLevel);
 
-        var groupDom = Exhibit.TileView.constructGroup(groupLevel, groupSortKey);
+        var groupDom = TileView.constructGroup(groupLevel, groupSortKey);
 
         $(state.div).append(groupDom.elmt);
         state.div = groupDom.contentDiv;
@@ -206,7 +212,7 @@ Exhibit.TileView.prototype._reconstruct = function() {
     this._orderedViewFrame.onNewItem = function(itemID, index) {
         var i, itemLensItem, itemLens;
         if (typeof state.contents === "undefined" || state.contents === null) {
-            state.contents = Exhibit.TileView.constructList();
+            state.contents = TileView.constructList();
             $(state.div).append(state.contents);
         }
 
@@ -231,7 +237,7 @@ Exhibit.TileView.prototype._reconstruct = function() {
 /**
  * @returns {Object}
  */
-Exhibit.TileView.prototype.makeState = function() {
+TileView.prototype.makeState = function() {
     return {};
 };
 
@@ -240,7 +246,7 @@ Exhibit.TileView.prototype.makeState = function() {
  * @param {Object} state
  * @returns {Object}
  */
-Exhibit.TileView.prototype.makeStateWithSub = function(sub, state) {
+TileView.prototype.makeStateWithSub = function(sub, state) {
     var original;
     original = this.makeState();
     original[sub] = state;
@@ -251,7 +257,7 @@ Exhibit.TileView.prototype.makeStateWithSub = function(sub, state) {
  * @param {Object} state
  * @returns {Object}
  */
-Exhibit.TileView.prototype.exportState = function(state) {
+TileView.prototype.exportState = function(state) {
     if (typeof state === "undefined" || state === null) {
         return this.makeStateWithSub(this._orderedViewFrame._historyKey,
                                      this._orderedViewFrame.exportState());
@@ -264,7 +270,7 @@ Exhibit.TileView.prototype.exportState = function(state) {
  * @param {Object} state
  * @param {Object} state.orderedViewFrame
  */
-Exhibit.TileView.prototype.importState = function(state) {
+TileView.prototype.importState = function(state) {
     if (this._orderedViewFrame !== null && this.stateDiffers(state)) {
         this._orderedViewFrame.importState(state.orderedViewFrame);
     }
@@ -275,7 +281,7 @@ Exhibit.TileView.prototype.importState = function(state) {
  * @param {Object} state.orderedViewFrame
  * @returns {Boolean}
  */
-Exhibit.TileView.prototype.stateDiffers = function(state) {
+TileView.prototype.stateDiffers = function(state) {
     if (typeof state.orderedViewFrame !== "undefined") {
         return this._orderedViewFrame.stateDiffers(state.orderedViewFrame);
     } else {
@@ -289,7 +295,7 @@ Exhibit.TileView.prototype.stateDiffers = function(state) {
  * @param {String} label
  * @returns {Element}
  */
-Exhibit.TileView.constructGroup = function(groupLevel, label) {
+TileView.constructGroup = function(groupLevel, label) {
     var template = {
         tag: "div",
         "class": "exhibit-collectionView-group",
@@ -322,10 +328,10 @@ Exhibit.TileView.constructGroup = function(groupLevel, label) {
 /**
  * @returns {jQuery}
  */
-Exhibit.TileView.constructList = function() {
+TileView.constructList = function() {
     return $("<ol>").addClass("exhibit-tileView-body");
 };
 
     // end define
-    return Exhibit;
+    return TileView;
 });

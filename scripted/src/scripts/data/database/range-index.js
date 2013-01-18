@@ -4,7 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["exhibit", "data/database"], function(Exhibit) {
+define(["util/set"], function(Set) {
 /**
  * Builds a Exhibit.Database.RangeIndex object.
  *
@@ -14,7 +14,7 @@ define(["exhibit", "data/database"], function(Exhibit) {
  * @param {Exhibit.Set} items Subjects with values to index.
  * @param {Function} getter Function to return a value given the item.
  */
-Exhibit.Database.RangeIndex = function(items, getter) {
+var RangeIndex = function(items, getter) {
     var pairs = [];
     items.visit(function(item) {
         getter(item, function(value) {
@@ -35,7 +35,7 @@ Exhibit.Database.RangeIndex = function(items, getter) {
  *
  * @returns {Number} The number of values in the index.
  */
-Exhibit.Database.RangeIndex.prototype.getCount = function() {
+RangeIndex.prototype.getCount = function() {
     return this._pairs.length;
 };
 
@@ -44,7 +44,7 @@ Exhibit.Database.RangeIndex.prototype.getCount = function() {
  *
  * @returns {Number} The smallest value in the index.
  */
-Exhibit.Database.RangeIndex.prototype.getMin = function() {
+RangeIndex.prototype.getMin = function() {
     return this._pairs.length > 0 ?
         this._pairs[0].value :
         Number.POSITIVE_INFINITY;
@@ -55,7 +55,7 @@ Exhibit.Database.RangeIndex.prototype.getMin = function() {
  *
  * @returns {Number} The largest value in the index.
  */
-Exhibit.Database.RangeIndex.prototype.getMax = function() {
+RangeIndex.prototype.getMax = function() {
     return this._pairs.length > 0 ?
         this._pairs[this._pairs.length - 1].value :
         Number.NEGATIVE_INFINITY;
@@ -70,7 +70,7 @@ Exhibit.Database.RangeIndex.prototype.getMax = function() {
  * @param {Number} max Upper bound of range.
  * @param {Boolean} inclusive Whether max is included in bounds or not.
  */
-Exhibit.Database.RangeIndex.prototype.getRange = function(visitor, min, max, inclusive) {
+RangeIndex.prototype.getRange = function(visitor, min, max, inclusive) {
     var startIndex, pairs, l, pair, value;
 
     startIndex = this._indexOf(min);
@@ -100,9 +100,9 @@ Exhibit.Database.RangeIndex.prototype.getRange = function(visitor, min, max, inc
  * @param {Exhibit.Set} [filter] Only include items in the filter
  * @returns {Exhibit.Set} Filtered items in defined range.
  */
-Exhibit.Database.RangeIndex.prototype.getSubjectsInRange = function(min, max, inclusive, set, filter) {
+RangeIndex.prototype.getSubjectsInRange = function(min, max, inclusive, set, filter) {
     if (typeof set === "undefined" || set === null) {
-        set = new Exhibit.Set();
+        set = new Set();
     }
 
     var f = (typeof filter !== "undefined" && filter !== null) ?
@@ -129,7 +129,7 @@ Exhibit.Database.RangeIndex.prototype.getSubjectsInRange = function(min, max, in
  * @param {Boolean} inclusive Whether max is included in bounds or not.
  * @returns {Number} The number of items with values in the defined range.
  */
-Exhibit.Database.RangeIndex.prototype.countRange = function(min, max, inclusive) {
+RangeIndex.prototype.countRange = function(min, max, inclusive) {
     var startIndex, endIndex, pairs, l;
     startIndex = this._indexOf(min);
     endIndex = this._indexOf(max);
@@ -156,7 +156,7 @@ Exhibit.Database.RangeIndex.prototype.countRange = function(min, max, inclusive)
  * @param {Number} v The value to find the closest index for.
  * @returns {Number} The closest preceding index to the given value.
  */
-Exhibit.Database.RangeIndex.prototype._indexOf = function(v) {
+RangeIndex.prototype._indexOf = function(v) {
     var pairs, from, to, middle, v2;
 
     pairs = this._pairs;
@@ -180,5 +180,5 @@ Exhibit.Database.RangeIndex.prototype._indexOf = function(v) {
 };
 
     // end define
-    return Exhibit;
+    return RangeIndex;
 });

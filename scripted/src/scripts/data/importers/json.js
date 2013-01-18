@@ -4,11 +4,17 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "exhibit", "data/importer"], function($, Exhibit) {
+define([
+    "lib/jquery",
+    "exhibit",
+    "util/localizer",
+    "data/importer",
+    "util/ui"
+], function($, Exhibit, _, Importer, UIUtilities) {
 /**
  * @namespace
  */
-Exhibit.Importer.ExhibitJSON = {
+var ExhibitJSONImporter = {
     _importer: null
 };
 
@@ -18,13 +24,13 @@ Exhibit.Importer.ExhibitJSON = {
  * @param {Function} callback
  * @depends JSON
  */
-Exhibit.Importer.ExhibitJSON.parse = function(url, s, callback) {
+ExhibitJSONImporter.parse = function(url, s, callback) {
     var o = null;
 
     try {
         o = JSON.parse(s);
     } catch(e) {
-        Exhibit.UI.showJsonFileValidation(Exhibit._("%general.badJsonMessage", url, e.message), url);
+        UIUtilities.showJsonFileValidation(_("%general.badJsonMessage", url, e.message), url);
     }
 
     if (typeof callback === "function") {
@@ -35,20 +41,20 @@ Exhibit.Importer.ExhibitJSON.parse = function(url, s, callback) {
 /**
  * @private
  */
-Exhibit.Importer.ExhibitJSON._register = function() {
-    Exhibit.Importer.ExhibitJSON._importer = new Exhibit.Importer(
+ExhibitJSONImporter._register = function() {
+    ExhibitJSONImporter._importer = new Importer(
         "application/json",
         "get",
-        Exhibit.Importer.ExhibitJSON.parse
+        ExhibitJSONImporter.parse
     );
 };
 
 $(document).one(
     "registerImporters.exhibit",
-    Exhibit.Importer.ExhibitJSON._register
+    ExhibitJSONImporter._register
 );
 
 
     // end define
-    return Exhibit;
+    return ExhibitJSONImporter;
 });

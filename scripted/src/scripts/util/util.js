@@ -4,11 +4,20 @@
  * @fileOverview Base for Exhibit utilities and native datatype modifications.
  */
 
-define(["exhibit"], function(Exhibit) {
+define(function() {
 /**
  * @namespace For Exhibit utility classes and methods.
  */
-Exhibit.Util = {};
+var Util = {
+    /**
+     * @constant
+     */
+    "_lessThanRegex": /</g,
+    /**
+     * @constant
+     */
+    "_greaterThanRegex": />/g
+};
 
 /**
  * Round a number n to the nearest multiple of precision (any positive value),
@@ -22,7 +31,7 @@ Exhibit.Util = {};
  * @returns {String} Rounded number into the nearest bucket at the bucket's
  *                   precision, in a form readable by users.
  */
-Exhibit.Util.round = function(n, precision) {
+Util.round = function(n, precision) {
     var lg;
     precision = precision || 1;
     lg = Math.floor( Math.log(precision) / Math.log(10) );
@@ -35,14 +44,18 @@ Exhibit.Util.round = function(n, precision) {
     return parseFloat(n).toFixed(lg);
 };
 
-    // end define
-    return Exhibit;
-});
-
 /**
- * Modify the native String type.
+ * @param {String} s
+ * @returns {String}
  */
-(function() {
+Util.encodeAngleBrackets = function(s) {
+    return s.replace(Util._lessThanRegex, "&lt;").
+        replace(Util._greaterThanRegex, "&gt;");
+};
+
+    /**
+     * Modify the native String type.
+     */
     if (typeof String.prototype.trim === "undefined") {
         /**
          * Removes leading and trailing spaces.
@@ -77,4 +90,7 @@ Exhibit.Util.round = function(n, precision) {
             return this.length >= suffix.length && this.substr(this.length - suffix.length) === suffix;
         };
     }
-}());
+
+    // end define
+    return Util;
+});

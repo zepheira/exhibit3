@@ -3,7 +3,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "exhibit"], function($, Exhibit) {
+define(["lib/jquery", "util/persistence"], function($, Persistence) {
 /**
  * @class
  * @constructor
@@ -19,7 +19,7 @@ define(["lib/jquery", "exhibit"], function($, Exhibit) {
  *    returning a string, which overrides the default exportMany that uses
  *    the other three functions in conjunction.
  */
-Exhibit.Exporter = function(mimeType, label, wrap, wrapOne, exportOne, exportMany) {
+var Exporter = function(mimeType, label, wrap, wrapOne, exportOne, exportMany) {
     this._mimeType = mimeType;
     this._label = label;
     this._wrap = wrap;
@@ -33,21 +33,21 @@ Exhibit.Exporter = function(mimeType, label, wrap, wrapOne, exportOne, exportMan
  * @private
  * @constant
  */
-Exhibit.Exporter._registryKey = "exporter";
+Exporter._registryKey = "exporter";
 
 /**
  * @private
  */
-Exhibit.Exporter._registry = null;
+Exporter._registry = null;
 
 /**
  * @static
  * @param {Exhibit._Impl} ex
  */
-Exhibit.Exporter._registerComponent = function(evt, reg) {
-    Exhibit.Exporter._registry = reg;
-    if (!reg.hasRegistry(Exhibit.Exporter._registryKey)) {
-        reg.createRegistry(Exhibit.Exporter._registryKey);
+Exporter._registerComponent = function(evt, reg) {
+    Exporter._registry = reg;
+    if (!reg.hasRegistry(Exporter._registryKey)) {
+        reg.createRegistry(Exporter._registryKey);
         $(document).trigger("registerExporters.exhibit");
     }
 };
@@ -55,14 +55,14 @@ Exhibit.Exporter._registerComponent = function(evt, reg) {
 /**
  * @returns {Boolean}
  */
-Exhibit.Exporter.prototype.register = function() {
-    var reg = Exhibit.Exporter._registry;
+Exporter.prototype.register = function() {
+    var reg = Exporter._registry;
     if (!reg.isRegistered(
-        Exhibit.Exporter._registryKey,
+        Exporter._registryKey,
         this._mimeType
     )) {
         reg.register(
-            Exhibit.Exporter._registryKey,
+            Exporter._registryKey,
             this._mimeType,
             this
         );
@@ -75,9 +75,9 @@ Exhibit.Exporter.prototype.register = function() {
 /**
  *
  */
-Exhibit.Exporter.prototype.dispose = function() {
-    Exhibit.Exporter._registry.unregister(
-        Exhibit.Exporter._registryKey,
+Exporter.prototype.dispose = function() {
+    Exporter._registry.unregister(
+        Exporter._registryKey,
         this._mimeType
     );
 };
@@ -85,14 +85,14 @@ Exhibit.Exporter.prototype.dispose = function() {
 /**
  * @returns {Boolean}
  */
-Exhibit.Exporter.prototype.isRegistered = function() {
+Exporter.prototype.isRegistered = function() {
     return this._registered;
 };
 
 /**
  * @returns {String}
  */
-Exhibit.Exporter.prototype.getLabel = function() {
+Exporter.prototype.getLabel = function() {
     return this._label;
 };
 
@@ -101,7 +101,7 @@ Exhibit.Exporter.prototype.getLabel = function() {
  * @param {Exhibit.Database} database
  * @returns {Object}
  */
-Exhibit.Exporter.prototype.exportOneFromDatabase = function(itemID, database) {
+Exporter.prototype.exportOneFromDatabase = function(itemID, database) {
     var allProperties, fn, i, propertyID, property, values, valueType, item;
 
     fn = function(vt, s) {
@@ -111,7 +111,7 @@ Exhibit.Exporter.prototype.exportOneFromDatabase = function(itemID, database) {
             };
         } else if (vt === "url") {
             return function(value) {
-                s.push(Exhibit.Persistence.resolveURL(value));
+                s.push(Persistence.resolveURL(value));
             };
         }
     };
@@ -144,12 +144,12 @@ Exhibit.Exporter.prototype.exportOneFromDatabase = function(itemID, database) {
  * @param {Exhibit.Database} database
  * @returns {String}
  */
-Exhibit.Exporter.prototype.exportOne = function(itemID, database) {
+Exporter.prototype.exportOne = function(itemID, database) {
     return this._wrap(
         this._exportOne(
             itemID,
             this.exportOneFromDatabase(itemID, database),
-            Exhibit.Exporter._getPropertiesWithValueTypes(database)
+            Exporter._getPropertiesWithValueTypes(database)
         ),
         database
     );
@@ -160,7 +160,7 @@ Exhibit.Exporter.prototype.exportOne = function(itemID, database) {
  * @param {Exhibit.Database} database
  * @returns {String}
  */
-Exhibit.Exporter.prototype.exportMany = function(set, database) {
+Exporter.prototype.exportMany = function(set, database) {
     if (typeof this._exportMany !== "undefined" && typeof this._exportMany === "function") {
         this.exportMany = this._exportMany;
         return this._exportMany(set, database);
@@ -168,7 +168,7 @@ Exhibit.Exporter.prototype.exportMany = function(set, database) {
 
     var s = "", self = this, count = 0, size = set.size(), props;
 
-    props = Exhibit.Exporter._getPropertiesWithValueTypes(database);
+    props = Exporter._getPropertiesWithValueTypes(database);
     set.visit(function(itemID) {
         s += self._wrapOne(
             self._exportOne(
@@ -188,7 +188,7 @@ Exhibit.Exporter.prototype.exportMany = function(set, database) {
  * @static
  * @param {Exhibit.Database} database
  */
-Exhibit.Exporter._getPropertiesWithValueTypes = function(database) {
+Exporter._getPropertiesWithValueTypes = function(database) {
     var properties, i, propertyID, property, valueType, map;
     map = {};
     properties = database.getAllProperties();
@@ -204,9 +204,9 @@ Exhibit.Exporter._getPropertiesWithValueTypes = function(database) {
 
 $(document).one(
     "registerStaticComponents.exhibit",
-    Exhibit.Exporter._registerComponent
+    Exporter._registerComponent
 );
 
     // end define
-    return Exhibit;
+    return Exporter;
 });

@@ -4,7 +4,9 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["exhibit", "data/expression"], function(Exhibit) {
+define([
+    "data/expression/collection"
+], function(ExpressionCollection) {
 /**
  * @class
  * @constructor
@@ -12,7 +14,7 @@ define(["exhibit", "data/expression"], function(Exhibit) {
  * @param {String} operator
  * @param {Array} args
  */
-Exhibit.Expression._Operator = function(operator, args) {
+var Operator = function(operator, args) {
     this._operator = operator;
     this._args = args;
 };
@@ -24,7 +26,7 @@ Exhibit.Expression._Operator = function(operator, args) {
  * @param {Exhibit.Database} database
  * @returns {Exhibit.Expression._Collection}
  */
-Exhibit.Expression._Operator.prototype.evaluate = function(
+Operator.prototype.evaluate = function(
     roots, 
     rootValueTypes, 
     defaultRootName, 
@@ -36,7 +38,7 @@ Exhibit.Expression._Operator.prototype.evaluate = function(
         args.push(this._args[i].evaluate(roots, rootValueTypes, defaultRootName, database));
     }
     
-    operator = Exhibit.Expression._operators[this._operator];
+    operator = Operator._operators[this._operator];
     f = operator.f;
     if (operator.argumentType === "number") {
         args[0].forEachValue(function(v1) {
@@ -60,13 +62,13 @@ Exhibit.Expression._Operator.prototype.evaluate = function(
         });
     }
     
-    return new Exhibit.Expression._Collection(values, operator.valueType);
+    return new ExpressionCollection(values, operator.valueType);
 };
 
 /**
  * @private
  */
-Exhibit.Expression._operators = {
+Operator._operators = {
     "+" : {
         argumentType: "number",
         valueType: "number",
@@ -133,5 +135,5 @@ Exhibit.Expression._operators = {
 };
 
     // end define
-    return Exhibit;
+    return Operator;
 });

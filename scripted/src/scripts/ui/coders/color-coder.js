@@ -4,34 +4,43 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "exhibit"], function($, Exhibit) {
+define([
+    "lib/jquery",
+    "exhibit",
+    "util/localizer",
+    "util/debug",
+    "util/settings",
+    "util/coders",
+    "ui/ui-context",
+    "ui/coders/coder"
+], function($, Exhibit, _, Debug, SettingsUtilities, Coders, UIContext, Coder) {
 /**
  * @constructor
  * @class
  * @param {Element|jQuery} containerElmt 
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.ColorCoder = function(containerElmt, uiContext) {
-    $.extend(this, new Exhibit.Coder(
+var ColorCoder = function(containerElmt, uiContext) {
+    $.extend(this, new Coder(
         "color",
         containerElmt,
         uiContext
     ));
-    this.addSettingSpecs(Exhibit.ColorCoder._settingSpecs);
+    this.addSettingSpecs(ColorCoder._settingSpecs);
 
     this._map = {};
 
     this._mixedCase = { 
-        "label": Exhibit._("%coders.mixedCaseLabel"),
-        "color": Exhibit.Coders.mixedCaseColor
+        "label": _("%coders.mixedCaseLabel"),
+        "color": Coders.mixedCaseColor
     };
     this._missingCase = { 
-        "label": Exhibit._("%coders.missingCaseLabel"),
-        "color": Exhibit.Coders.missingCaseColor 
+        "label": _("%coders.missingCaseLabel"),
+        "color": Coders.missingCaseColor 
     };
     this._othersCase = { 
-        "label": Exhibit._("%coders.othersCaseLabel"),
-        "color": Exhibit.Coders.othersCaseColor 
+        "label": _("%coders.othersCaseLabel"),
+        "color": Coders.othersCaseColor 
     };
 
     this.register();
@@ -40,7 +49,7 @@ Exhibit.ColorCoder = function(containerElmt, uiContext) {
 /**
  * @constant
  */
-Exhibit.ColorCoder._settingSpecs = {
+ColorCoder._settingSpecs = {
 };
 
 /**
@@ -48,14 +57,14 @@ Exhibit.ColorCoder._settingSpecs = {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.ColorCoder}
  */
-Exhibit.ColorCoder.create = function(configuration, uiContext) {
+ColorCoder.create = function(configuration, uiContext) {
     var coder, div;
     div = $("<div>")
         .hide()
         .appendTo("body");
-    coder = new Exhibit.ColorCoder(div, Exhibit.UIContext.create(configuration, uiContext));
+    coder = new ColorCoder(div, UIContext.create(configuration, uiContext));
     
-    Exhibit.ColorCoder._configure(coder, configuration);
+    ColorCoder._configure(coder, configuration);
     return coder;
 };
 
@@ -64,18 +73,18 @@ Exhibit.ColorCoder.create = function(configuration, uiContext) {
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.ColorCoder}
  */
-Exhibit.ColorCoder.createFromDOM = function(configElmt, uiContext) {
+ColorCoder.createFromDOM = function(configElmt, uiContext) {
     var configuration, coder;
 
     $(configElmt).hide();
 
     configuration = Exhibit.getConfigurationFromDOM(configElmt);
-    coder = new Exhibit.ColorCoder(
+    coder = new ColorCoder(
         configElmt,
-        Exhibit.UIContext.create(configuration, uiContext)
+        UIContext.create(configuration, uiContext)
     );
     
-    Exhibit.SettingsUtilities.collectSettingsFromDOM(
+    SettingsUtilities.collectSettingsFromDOM(
         configElmt,
         coder.getSettingSpecs(),
         coder._settings
@@ -90,10 +99,10 @@ Exhibit.ColorCoder.createFromDOM = function(configElmt, uiContext) {
             );
         });
     } catch (e) {
-        Exhibit.Debug.exception(e, "ColorCoder: Error processing configuration of coder");
+        Debug.exception(e, "ColorCoder: Error processing configuration of coder");
     }
     
-    Exhibit.ColorCoder._configure(coder, configuration);
+    ColorCoder._configure(coder, configuration);
     return coder;
 };
 
@@ -101,10 +110,10 @@ Exhibit.ColorCoder.createFromDOM = function(configElmt, uiContext) {
  * @param {Exhibit.ColorCoder} coder
  * @param {Object} configuration
  */
-Exhibit.ColorCoder._configure = function(coder, configuration) {
+ColorCoder._configure = function(coder, configuration) {
     var entries, i;
 
-    Exhibit.SettingsUtilities.collectSettings(
+    SettingsUtilities.collectSettings(
         configuration,
         coder.getSettingSpecs(),
         coder._settings
@@ -121,7 +130,7 @@ Exhibit.ColorCoder._configure = function(coder, configuration) {
 /**
  *
  */
-Exhibit.ColorCoder.prototype.dispose = function() {
+ColorCoder.prototype.dispose = function() {
     this._map = null;
     this._dispose();
 };
@@ -129,7 +138,7 @@ Exhibit.ColorCoder.prototype.dispose = function() {
 /**
  * @constant
  */
-Exhibit.ColorCoder._colorTable = {
+ColorCoder._colorTable = {
     "red" :     "#ff0000",
     "green" :   "#00ff00",
     "blue" :    "#0000ff",
@@ -143,9 +152,9 @@ Exhibit.ColorCoder._colorTable = {
  * @param {String} key
  * @param {String} color
  */
-Exhibit.ColorCoder.prototype._addEntry = function(kase, key, color) {
-    if (typeof Exhibit.ColorCoder._colorTable[color] !== "undefined") {
-        color = Exhibit.ColorCoder._colorTable[color];
+ColorCoder.prototype._addEntry = function(kase, key, color) {
+    if (typeof ColorCoder._colorTable[color] !== "undefined") {
+        color = ColorCoder._colorTable[color];
     }
     
     var entry = null;
@@ -169,7 +178,7 @@ Exhibit.ColorCoder.prototype._addEntry = function(kase, key, color) {
  * @param {Boolean} flags.others
  * @param {Exhibit.Set} flags.keys
  */
-Exhibit.ColorCoder.prototype.translate = function(key, flags) {
+ColorCoder.prototype.translate = function(key, flags) {
     if (typeof this._map[key] !== "undefined") {
         if (flags) {
             flags.keys.add(key);
@@ -195,7 +204,7 @@ Exhibit.ColorCoder.prototype.translate = function(key, flags) {
  * @param {Boolean} flags.mixed
  * @returns {String}
  */
-Exhibit.ColorCoder.prototype.translateSet = function(keys, flags) {
+ColorCoder.prototype.translateSet = function(keys, flags) {
     var color, self;
     color = null;
     self = this;
@@ -226,45 +235,45 @@ Exhibit.ColorCoder.prototype.translateSet = function(keys, flags) {
 /**
  * @returns {String}
  */
-Exhibit.ColorCoder.prototype.getOthersLabel = function() {
+ColorCoder.prototype.getOthersLabel = function() {
     return this._othersCase.label;
 };
 
 /**
  * @returns {String}
  */
-Exhibit.ColorCoder.prototype.getOthersColor = function() {
+ColorCoder.prototype.getOthersColor = function() {
     return this._othersCase.color;
 };
 
 /**
  * @returns {String}
  */
-Exhibit.ColorCoder.prototype.getMissingLabel = function() {
+ColorCoder.prototype.getMissingLabel = function() {
     return this._missingCase.label;
 };
 
 /**
  * @returns {String}
  */
-Exhibit.ColorCoder.prototype.getMissingColor = function() {
+ColorCoder.prototype.getMissingColor = function() {
     return this._missingCase.color;
 };
 
 /**
  * @returns {String}
  */
-Exhibit.ColorCoder.prototype.getMixedLabel = function() {
+ColorCoder.prototype.getMixedLabel = function() {
     return this._mixedCase.label;
 };
 
 /**
  * @returns {String}
  */
-Exhibit.ColorCoder.prototype.getMixedColor = function() {
+ColorCoder.prototype.getMixedColor = function() {
     return this._mixedCase.color;
 };
 
     // end define
-    return Exhibit;
+    return ColorCoder;
 });

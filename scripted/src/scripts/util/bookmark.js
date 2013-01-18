@@ -4,11 +4,15 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["exhibit", "lib/base64"], function(Exhibit, Base64) {
+define([
+    "exhibit",
+    "lib/base64",
+    "util/history"
+], function(Exhibit, Base64, EHistory) {
 /**
  * @namespace Bookmarking the current state of a browsing session.
  */
-Exhibit.Bookmark = {
+var Bookmark = {
     /**
      * Whether the History system should load the bookmarked state.
      *
@@ -40,7 +44,7 @@ Exhibit.Bookmark = {
  * @depends JSON
  * @depends Base64
  */
-Exhibit.Bookmark.generateBookmarkHash = function(state) {
+Bookmark.generateBookmarkHash = function(state) {
     if (typeof state === "undefined" ||
         state === null ||
         typeof state.data === "undefined" ||
@@ -62,7 +66,7 @@ Exhibit.Bookmark.generateBookmarkHash = function(state) {
  * @depends JSON
  * @depends Base64
  */
-Exhibit.Bookmark.interpretBookmarkHash = function(hash) {
+Bookmark.interpretBookmarkHash = function(hash) {
     if (typeof hash === "undefined" || hash === null || hash === "") {
         return null;
     } else {
@@ -77,9 +81,9 @@ Exhibit.Bookmark.interpretBookmarkHash = function(hash) {
  * @returns {String} The bookmark URI
  * @depends Exhibit.History
  */
-Exhibit.Bookmark.generateBookmark = function() {
+Bookmark.generateBookmark = function() {
     var hash;
-    hash = Exhibit.Bookmark.generateBookmarkHash(Exhibit.History.getState());
+    hash = Bookmark.generateBookmarkHash(EHistory.getState());
     return document.location.href + ((hash === "") ? "": "#" + hash);
 };
 
@@ -91,10 +95,10 @@ Exhibit.Bookmark.generateBookmark = function() {
  *                       object History.js uses.
  * @depends Exhibit.History
  */
-Exhibit.Bookmark.implementBookmark = function(state) {
+Bookmark.implementBookmark = function(state) {
     if (typeof state !== "undefined" && state !== null) {
-        Exhibit.History.replaceState(state.data, state.title, state.url);
-        Exhibit.Bookmark.run = true;
+        EHistory.replaceState(state.data, state.title, state.url);
+        Bookmark.run = true;
     }
 };
 
@@ -104,8 +108,8 @@ Exhibit.Bookmark.implementBookmark = function(state) {
  *
  * @returns {Boolean}
  */
-Exhibit.Bookmark.runBookmark = function() {
-    return Exhibit.Bookmark._shouldRun;
+Bookmark.runBookmark = function() {
+    return Bookmark._shouldRun;
 };
 
 /**
@@ -114,29 +118,29 @@ Exhibit.Bookmark.runBookmark = function() {
  *
  * @static
  */
-Exhibit.Bookmark.init = function() {
+Bookmark.init = function() {
     var hash, state;
     hash = document.location.hash;
     if (hash.length > 0) {
         try {
-            state = Exhibit.Bookmark.interpretBookmarkHash(hash.substr(1));
+            state = Bookmark.interpretBookmarkHash(hash.substr(1));
             if (typeof state === "object" &&
                 typeof state["data"] !== "undefined" &&
                 typeof state["title"] !== "undefined" &&
                 typeof state["url"] !== "undefined") {
-                Exhibit.Bookmark.state = state;
-                Exhibit.Bookmark._shouldRun = true;
+                Bookmark.state = state;
+                Bookmark._shouldRun = true;
             } else {
-                Exhibit.Bookmark._shouldRun = false;
+                Bookmark._shouldRun = false;
             }
         } catch (ex) {
-            Exhibit.Bookmark._shouldRun = false;
+            Bookmark._shouldRun = false;
         } finally {
-            Exhibit.Bookmark.run = false;
+            Bookmark.run = false;
         }
     }
 };
 
     // end define
-    return Exhibit;
+    return Bookmark;
 });

@@ -3,25 +3,28 @@
  *     valid JSON 2.0.  If the existing Exhibit JSON import fails
  *     it will offer this as an option via confirmation dialog.  This tool
  *     should not be included under normal operation, only when upgrading
- *     and your data fails to load.
- * @example
- * <script src="http://host/exhibit/3.0.0/exhibit-api.js?autoCreate=false&js=http://host/exhibit/3.0.0/extensions/invalid-json/invalid-json-extension.js">
- * </script>
+ *     and your data fails to load.  There is an evil call to eval leftover
+ *     from Exhibit 2.x days.
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define([
+    "lib/jquery",
+    "lib/json2",
+    "ui/widgets/toolbox-widget"
+], function($, JSON, ToolboxWidget) {
 /**
  * @namespace
  */
-Exhibit.Extension.InvalidJSON = {};
+InvalidJSON = {};
 
 /**
  * @param {String} url
  */
-Exhibit.Extension.InvalidJSON.process = function(url) {
-    Exhibit.Extension.InvalidJSON.get(
+InvalidJSON.process = function(url) {
+    InvalidJSON.get(
         url,
-        Exhibit.Extension.InvalidJSON.onSuccess
+        InvalidJSON.onSuccess
     );
 };
 
@@ -30,7 +33,7 @@ Exhibit.Extension.InvalidJSON.process = function(url) {
  * @param {String} json
  * @returns {Object}
  */
-Exhibit.Extension.InvalidJSON.parseJSON = function(json) {
+InvalidJSON.parseJSON = function(json) {
     return eval("(" + json + ")");
 };
 
@@ -39,11 +42,11 @@ Exhibit.Extension.InvalidJSON.parseJSON = function(json) {
  * @param {String} json
  * @returns {String}
  */
-Exhibit.Extension.InvalidJSON.makeValid = function(url, json) {
+InvalidJSON.makeValid = function(url, json) {
     try {
-        return JSON.stringify(Exhibit.Extension.InvalidJSON.parseJSON(json), null, "\t");
+        return JSON.stringify(InvalidJSON.parseJSON(json), null, "\t");
     } catch(e) {
-        Exhibit.jQuery(document).trigger(
+        $(document).trigger(
             "error.exhibit",
             [e, "Failed to convert."]
         );
@@ -54,8 +57,8 @@ Exhibit.Extension.InvalidJSON.makeValid = function(url, json) {
  * @param {String} url
  * @param {Function} callback
  */
-Exhibit.Extension.InvalidJSON.get = function(url, callback) {
-    Exhibit.jQuery.ajax({
+InvalidJSON.get = function(url, callback) {
+    $.ajax({
         "url": url,
         "dataType": "text",
         "success": function(s, t, j) {
@@ -70,10 +73,10 @@ Exhibit.Extension.InvalidJSON.get = function(url, callback) {
  * @param {String} textStatus
  * @param {jQuery.XmlHttpRequest} jqxhr
  */
-Exhibit.Extension.InvalidJSON.onSuccess = function(url, s, textStatus, jqxhr) {
-    Exhibit.Extension.InvalidJSON.show(
+InvalidJSON.onSuccess = function(url, s, textStatus, jqxhr) {
+    InvalidJSON.show(
         url,
-        Exhibit.Extension.InvalidJSON.makeValid(url, s)
+        InvalidJSON.makeValid(url, s)
     );
 };
 
@@ -81,23 +84,19 @@ Exhibit.Extension.InvalidJSON.onSuccess = function(url, s, textStatus, jqxhr) {
  * @param {String} url
  * @param {String} json
  */
-Exhibit.Extension.InvalidJSON.show = function(url, json) {
+InvalidJSON.show = function(url, json) {
     var valid = json + "\n// " + url + "\n";
-    Exhibit.ToolboxWidget.createExportDialogBox(valid).open();
+    ToolboxWidget.createExportDialogBox(valid).open();
 };
 
 // Initialize
-(function loadInvalidJSONExtension() {
-    setTimeout(function() {
-        if (typeof jQuery === "undefined") {
-            loadInvalidJSONExtension();
-        } else {
-            Exhibit.jQuery(document).one("localeLoaded.exhibit", function(evt) {
-                Exhibit.jQuery('link[rel="exhibit/data"][type="application/json"],link[rel="exhibit-data"][type="application/json"]')
-                    .each(function(idx) {
-                        Exhibit.Extension.InvalidJSON.process(Exhibit.jQuery(this).attr("href"));
-                    });
-            });
-        }
-    }, 500);
-}());
+$(document).one("localeLoaded.exhibit", function(evt) {
+    $('link[rel="exhibit/data"][type="application/json"],link[rel="exhibit-data"][type="application/json"]')
+        .each(function(idx) {
+            InvalidJSON.process($(this).attr("href"));
+        });
+});
+
+    // end define
+    return InvalidJSON;
+});
