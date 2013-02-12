@@ -5,12 +5,13 @@ define([
     "util/localizer",
     "util/debug",
     "util/database",
+    "util/ui",
     "bc/bc",
     "data/collection",
     "ui/ui",
     "ui/ui-context",
     "ui/control-panel"
-], function($, Exhibit, Registry, _, Debug, DatabaseUtilities, Backwards, Collection, UI, UIContext, ControlPanel) {
+], function($, Exhibit, Registry, _, Debug, DatabaseUtilities, UIUtilities, Backwards, Collection, UI, UIContext, ControlPanel) {
     /**
      * Code to automatically create the database, load the data links in
      * <head>, and then to create an exhibit if there's no Exhibit ondataload 
@@ -354,7 +355,7 @@ Exhibit._Impl.prototype._showFocusDialogOnItem = function(itemID) {
         "</div>"
     );
     $(dom.elmt).attr("class", "exhibit-focusDialog exhibit-ui-protection");
-    UI.setupDialog(dom, true);
+    UIUtilities.setupDialog(dom, true);
     
     itemLens = this._uiContext.getLensRegistry().createLens(itemID, dom.lensContainer, this._uiContext);
     

@@ -335,5 +335,266 @@ UIUtilities.enableActionLink = function(a, enabled) {
     }
 };
 
+/**
+ * @static
+ * @param {String} itemID
+ * @param {Exhibit} exhibit
+ * @param {Object} configuration
+ * @returns {Object}
+ */
+UIUtilities.createFocusDialogBox = function(itemID, exhibit, configuration) {
+    var template, dom;
+    template = {
+        tag:        "div",
+        className:  "exhibit-focusDialog exhibit-ui-protection",
+        children: [
+            {   tag:        "div",
+                className:  "exhibit-focusDialog-viewContainer",
+                field:      "viewContainer"
+            },
+            {   tag:        "div",
+                className:  "exhibit-focusDialog-controls",
+                children: [
+                    {   tag:        "button",
+                        field:      "closeButton",
+                        children:   [ _("%general.focusDialogBoxCloseButtonLabel") ]
+                    }
+                ]
+            }
+        ]
+    };
+
+    /**
+     * @ignore
+     */
+    dom = $.simileDOM("template", template);
+
+    UIUtilities.setupDialog(dom, true);
+
+    /**
+     * @ignore Can't get JSDocTK to ignore this one method for some reason.
+     */
+    dom.open = function() {
+        var lens;
+        $(document).trigger("modalSuperseded.exhibit");
+        lens = new Lens(itemID, dom.viewContainer, exhibit, configuration);
+        
+        $(dom.elmt).css("top", (document.body.scrollTop + 100) + "px");
+        $(document.body).append(dom.elmt);
+        
+        $(dom.closeButton).bind("click", function(evt) {
+            dom.close();
+            evt.preventDefault();
+            evt.stopPropagation();
+        });
+        $(dom.elmt).trigger("modalOpened.exhibit");
+    };
+    
+    return dom;
+};
+
+/**
+ * @static
+ * @param {Element} element
+ * @returns {Object}
+ */
+UIUtilities.createPopupMenuDom = function(element) {
+    var div, dom;
+
+    div = $("<div>").
+        addClass("exhibit-menu-popup").
+        addClass("exhibit-ui-protection");
+    
+    /**
+     * @ignore
+     */
+    dom = {
+        elmt: div,
+        open: function(evt) {
+            var self, docWidth, docHeight, coords;
+            self = this;
+            // @@@ exhibit-dialog needs to be set
+            if (typeof evt !== "undefined") {
+                if ($(evt.target).parent(".exhibit-dialog").length > 0) {
+                    dom._dialogParent = $(evt.target).parent(".exhibit-dialog:eq(0)").get(0);
+                }
+                evt.preventDefault();
+            }
+                
+            docWidth = $(document.body).width();
+            docHeight = $(document.body).height();
+        
+            coords = $(element).offset();
+            this.elmt.css("top", (coords.top + element.scrollHeight) + "px");
+            this.elmt.css("right", (docWidth - (coords.left + element.scrollWidth)) + "px");
+
+            $(document.body).append(this.elmt);
+            this.elmt.trigger("modelessOpened.exhibit");
+            evt.stopPropagation();
+        },
+        appendMenuItem: function(label, icon, onClick) {
+            var self, a, container;
+            self = this;
+            a = $("<a>").
+                attr("href", "#").
+                addClass("exhibit-menu-item").
+                bind("click", function(evt) {
+                    onClick(evt); // elmt, evt, target:being passed a jqevent
+                    dom.close();
+                    evt.preventDefault();
+                    evt.stopPropagation();
+                });
+
+            container = $("<div>");
+            a.append(container);
+    
+            container.append($.simileBubble("createTranslucentImage",
+                (typeof icon !== "undefined" && icon !== null) ?
+                    icon :
+                    (Exhibit.urlPrefix + "images/blank-16x16.png")));
+                
+            container.append(document.createTextNode(label));
+            
+            this.elmt.append(a);
+        },
+        appendSeparator: function() {
+            this.elmt.append("<hr/>");
+        }
+    };
+    UIUtilities.setupDialog(dom, false);
+    return dom;
+};
+
+/**
+ * Add the close property to dom, a function taking a jQuery event that
+ * simulates the UI for closing a dialog.  THe dialog can either be modal
+ * (takes over the window focus) or modeless (will be closed if something
+ * other than it is focused).
+ *
+ * This scheme assumes a modeless dialog will never produce a modal dialog
+ * without also closing down.
+ * 
+ * @param {Object} dom An object with pointers into the DOM.
+ * @param {Boolean} modal Whether the dialog is modal or not.
+ * @param {Element} [dialogParent] The element containing the parent dialog.
+ */
+UIUtilities.setupDialog = function(dom, modal, dialogParent) {
+    var clickHandler, cancelHandler, cancelAllHandler, createdHandler, i, trap;
+
+    if (typeof parentDialog !== "undefined" && parentDialog !== null) {
+        dom._dialogParent = dialogParent;
+    }
+
+    if (!modal) {
+        dom._dialogDescendants = [];
+        
+        clickHandler = function(evt) {
+            if (!UIUtilities._clickInElement(evt.pageX, evt.pageY, dom.elmt)) {
+                trap = false;
+                for (i = 0; i < dom._dialogDescendants; i++) {
+                    trap = trap || UIUtilities._clickInElement(evt.pageX, evt.pageY, dom._dialogDescendants[i]);
+                    if (trap) {
+                        break;
+                    }
+                }
+                if (!trap) {
+                    dom.close(evt);
+                }
+            }
+        };
+
+        cancelAllHandler = function(evt) {
+            dom.close(evt);
+        };
+
+        cancelHandler = function(evt) {
+            dom.close(evt);
+        };
+
+        createdHandler = function(evt) {
+            var descendant = evt.target;
+            dom._dialogDescendants.push(descendant);
+            $(descendant).bind("cancelModeless.exhibit", function(evt) {
+                dom._dialogDescendants.splice(dom._dialogDescendants.indexOf(descendant), 1);
+                $(descendant).unbind(evt);
+            });
+        };
+
+        dom.close = function(evt) {
+            if (typeof evt !== "undefined") {
+                if (evt.type !== "cancelAllModeless") {
+                    $(dom.elmt).trigger("cancelModeless.exhibit");
+                }
+            } else {
+                $(dom.elmt).trigger("cancelModeless.exhibit");
+            }
+            $(document.body).unbind("click", clickHandler);
+            $(dom._dialogParent).unbind("cancelModeless.exhibit", cancelHandler);
+            $(document).unbind("cancelAllModeless.exhibit", cancelAllHandler);
+            $(dom.elmt).trigger("closed.exhibit");
+            $(dom.elmt).remove();
+        };
+
+        $(dom.elmt).bind("modelessOpened.exhibit", createdHandler);
+        $(dom.elmt).one("modelessOpened.exhibit", function(evt) {
+            $(document.body).bind("click", clickHandler);
+            $(dom._dialogParent).bind("cancelModeless.exhibit", cancelHandler);
+            $(document).bind("cancellAllModeless.exhibit", cancelAllHandler);
+        });
+    } else {
+        dom._superseded = 0;
+
+        clickHandler = function(evt) {
+            if (dom._superseded === 0 &&
+                !UIUtilities._clickInElement(evt.pageX, evt.pageY, dom.elmt)) {
+                evt.preventDefault();
+                evt.stopImmediatePropagation();
+            }
+        };
+
+        closedHandler = function(evt) {
+            dom._superseded--;
+        };
+        
+        supersededHandler = function(evt) {
+            dom._superseded++;
+            // Will be unbound when element issuing this signal removes
+            // itself.
+            $(evt.target).bind("cancelModal.exhibit", closedHandler);
+        };
+
+        // Some UI element or keystroke should bind dom.close now that
+        // it's been setup.
+        dom.close = function(evt) {
+            $(dom.elmt).trigger("cancelModal.exhibit");
+            $(document).trigger("cancelAllModeless.exhibit");
+            $(dom.elmt).remove();
+            $(document.body).unbind("click", clickHandler);
+            $(document).unbind("modalSuperseded.exhibit", supersededHandler);
+        };
+
+        $(dom.elmt).one("modalOpened.exhibit", function() {
+            $(document.body).bind("click", clickHandler);
+            $(document).bind("modalSuperseded.exhibit", supersededHandler);
+        });
+    }
+};
+
+/**
+ * @param {Number} x
+ * @param {Number} y
+ * @param {Element} elmt
+ * @returns {Boolean}
+ */
+UIUtilities._clickInElement = function(x, y, elmt) {
+    var offset = $(elmt).offset();
+    var dims = { "w": $(elmt).outerWidth(),
+                 "h": $(elmt).outerHeight() };
+    return (x < offset.left &&
+            x > offset.left + dims.w &&
+            y < offset.top &&
+            y > offset.top + dims.h);
+};
+
     return UIUtilities;
 });

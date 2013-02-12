@@ -15,12 +15,11 @@ define([
     "util/views",
     "util/ui",
     "data/expression-parser",
-    "ui/ui",
     "ui/formatter",
     "ui/widgets/option-widget",
     "ui/widgets/collection-summary-widget",
     "lib/jquery.simile.dom"
-], function($, Exhibit, _, Debug, Set, DateTime, SettingsUtilities, ViewUtilities, UIUtilities, ExpressionParser, UI, Formatter, OptionWidget, CollectionSummaryWidget) {
+], function($, Exhibit, _, Debug, Set, DateTime, SettingsUtilities, ViewUtilities, UIUtilities, ExpressionParser, Formatter, OptionWidget, CollectionSummaryWidget) {
 /**
  * @constructor
  * @class
@@ -630,7 +629,7 @@ OrderedViewFrame.prototype._openSortPopup = function(evt, index) {
     self = this;
     database = this._uiContext.getDatabase();
     
-    popupDom = UI.createPopupMenuDom(evt.target);
+    popupDom = UIUtilities.createPopupMenuDom(evt.target);
 
     /*
      *  Ascending/descending/remove options for the current order

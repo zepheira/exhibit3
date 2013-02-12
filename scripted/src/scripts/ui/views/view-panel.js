@@ -10,10 +10,9 @@ define([
     "util/localizer",
     "util/debug",
     "util/history",
-    "ui/ui",
-    "ui/views/tile-view",
+    "util/from-string",
     "lib/jquery.simile.dom"
-], function($, Exhibit, _, Debug, EHistory, UI, TileView) {
+], function($, Exhibit, _, Debug, EHistory, FromString) {
 /**
  * @constructor
  * @class
@@ -70,10 +69,10 @@ ViewPanel.create = function(configuration, div, uiContext) {
             
             viewClass = (typeof view.viewClass !== "undefined") ?
                 view.viewClass :
-                TileView;
+                "TileView";
             if (typeof viewClass === "string") {
                 viewClassName = viewClass;
-                viewClass = UI.viewClassNameToViewClass(viewClass);
+                viewClass = FromString.viewClassNameToViewClass(viewClass);
             }
             
             label = null;
@@ -136,10 +135,10 @@ ViewPanel.createFromDOM = function(div, uiContext) {
         $(this).hide();
         role = Exhibit.getRoleAttribute(this);
         if (role === "view") {
-            viewClass = TileView;
+            viewClass = FromString.viewClassNameToViewClass("TileView");
             viewClassName = Exhibit.getAttribute(this, "viewClass");
             if (typeof viewClassName !== "undefined" && viewClassName !== null && viewClassName.length > 0) {
-                viewClass = UI.viewClassNameToViewClass(viewClassName);
+                viewClass = FromString.viewClassNameToViewClass(viewClassName);
                 if (typeof viewClass === "undefined" || viewClass === null) {
                     Debug.warn(_("%viewPanel.error.unknownView", viewClassName));
                 }
@@ -318,7 +317,7 @@ ViewPanel.prototype.getID = function() {
  */
 ViewPanel.prototype._internalValidate = function() {
     if (this._viewConstructors.length === 0) {
-        this._viewConstructors.push(TileView);
+        this._viewConstructors.push(FromString.viewClassNameToViewClass("TileView"));
         this._viewConfigs.push({});
         this._viewLabels.push(_("%TileView.label"));
         this._viewTooltips.push(_("%TileView.tooltip"));

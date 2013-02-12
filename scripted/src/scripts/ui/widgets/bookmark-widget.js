@@ -11,9 +11,8 @@ define([
     "util/localizer",
     "util/bookmark",
     "util/ui",
-    "ui/ui",
     "ui/ui-context"
-], function($, Exhibit, _, Bookmark, UIUtilities, UI, UIContext) {
+], function($, Exhibit, _, Bookmark, UIUtilities, UIContext) {
 /**
  * @class
  * @constructor
@@ -120,7 +119,7 @@ BookmarkWidget.prototype._showBookmark = function(elmt, evt) {
     var self, popupDom, el;
     self = this;
     self._controlPanel.childOpened();
-    popupDom = UI.createPopupMenuDom(elmt);
+    popupDom = UIUtilities.createPopupMenuDom(elmt);
     el = $('<input type="text" />').
         attr("value", Bookmark.generateBookmark()).
         attr("size", 40);

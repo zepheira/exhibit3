@@ -8,13 +8,12 @@ define([
     "lib/jquery",
     "exhibit",
     "ui/ui-context",
-    "ui/ui",
     "util/settings",
     "util/localizer",
     "util/ui",
     "data/exporter",
     "lib/jquery.simile.dom"
-], function($, Exhibit, UIContext, UI, SettingsUtilities, _, UIUtilities, Exporter) {
+], function($, Exhibit, UIContext, SettingsUtilities, _, UIUtilities, Exporter) {
 /**
  * @constructor
  * @class
@@ -276,7 +275,7 @@ ToolboxWidget.prototype._showExportMenu = function(elmt, evt) {
 
     self = this;
 
-    popupDom = UI.createPopupMenuDom(elmt);
+    popupDom = UIUtilities.createPopupMenuDom(elmt);
     
     makeMenuItem = function(exporter) {
         popupDom.appendMenuItem(
@@ -340,7 +339,7 @@ ToolboxWidget.createExportDialogBox = function(string) {
     dom = $.simileDOM("template", template);
     $(dom.textAreaContainer).html("<textarea wrap='off' rows='15'>" + string + "</textarea>");
         
-    UI.setupDialog(dom, true);
+    UIUtilities.setupDialog(dom, true);
 
     dom.open = function() {
         var textarea;
