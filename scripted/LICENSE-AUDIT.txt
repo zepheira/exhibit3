@@ -112,3 +112,11 @@ async RequireJS plugin
  * 0.1.1
  * MIT License
  * scripted/src/lib/async.js
+
+xrayquire RequireJS supplement
+------------------------------
+ * https://github.com/requirejs/xrayquire
+ * 722a7e212b71b5083b8e5ad53150b8d22e8e9334
+ * Modified BSD / MIT License
+ * scripted/src/lib/xrayquire.js
+ * This is NOT bundled for distribution and is used to detect depenency cycles
