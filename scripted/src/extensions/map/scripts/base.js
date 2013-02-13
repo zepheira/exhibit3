@@ -15,14 +15,6 @@ define(function() {
         "markerUrlPrefix" :"http://service.simile-widgets.org/painter/painter?",
         "initialized": false, // used in the view
         "hasCanvas": false, // used in the view
-        "locales": [
-            "en",
-            "de",
-            "es",
-            "fr",
-            "nl",
-            "sv"
-        ],
         "_CORSWarned": false // used in the view
     };
 
