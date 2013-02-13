@@ -19,7 +19,9 @@ define([
     // @@@requirejs + multiple options for mapping = bad
     // "map/google-maps-v2-view"
 ], function(require, $, Exhibit, MapExtension, Painter, Marker, Canvas, Locale) {
-    var cssFiles, paramTypes, url, cssURLs, ajaxURLs, i, localesToLoad;
+    var cssFiles, paramTypes, url, cssURLs, i;
+
+    $(document).trigger("loadLocale.exhibit", Locale);
         
     Exhibit.MapExtension = MapExtension;
     Exhibit.MapExtension.Painter = Painter;
@@ -90,8 +92,6 @@ define([
    // } else {
    //     Exhibit.prefixURLs(cssURLs, Exhibit.MapExtension.urlPrefix + "styles/", cssFiles);
     //}
-    
-    // @@@ register Locale
     
     Exhibit.includeCssFiles(document, null, cssURLs);
 

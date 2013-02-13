@@ -4,10 +4,23 @@
  */
 
 define([
+    "lib/jquery",
     "lib/sprintf",
     "i18n!nls/locale"
-], function(vsprintf, Locale) {
-    var _;
+], function($, vsprintf, Locale) {
+    var _, Localizer;
+
+    Localizer = {
+        "_locale": Locale
+    };
+
+    Localizer.extendLocale = function(extension) {
+        $.extend(Localizer._locale, extension);
+    };
+
+    $(document).bind("loadLocale.exhibit", function(evt, extension) {
+        Localizer.extendLocale(extension);
+    });
 
     /**
      * Localizing function; take an identifying key and return the most
@@ -28,10 +41,7 @@ define([
         args = [].slice.apply(arguments);
         if (args.length > 0) {
             key = args.shift();
-            // @@@ minor sea change - locales are masked by a bundle; looking
-            //     through all bundles is now necessary, unless $.extend will
-            //     still work?
-            s = Locale[key];
+            s = Localizer._locale[key];
             if (typeof s !== "undefined" && typeof s !== "object") {
                 return vsprintf(s, args);
             } else {

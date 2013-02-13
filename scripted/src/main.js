@@ -47,7 +47,7 @@ define('gmaps2', ['async!http://maps.googleapis.com/maps/api/js?v=2&sensor=false
 );
 
 requirejs(
-    ["require", "lib/jquery", "exhibit", "util/history", "util/localization", "final", "ext/map/map-extension"],
+    ["require", "lib/jquery", "exhibit", "final", "ext/map/map-extension"],
     function(require, $, Exhibit) {
         if (typeof window.JSON === "undefined" || window.JSON === null) {
             window.JSON = require("lib/json2");
