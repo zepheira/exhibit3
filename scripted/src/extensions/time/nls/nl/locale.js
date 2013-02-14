@@ -1,4 +1,4 @@
-Exhibit.Localization.importExtensionLocale("nl", {
+define({
     "%TimelineView.label": "Tijdlijn",
     "%TimelineView.tooltip": "Bekijk items op een tijdlijn"
 });

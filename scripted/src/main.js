@@ -28,6 +28,13 @@ requirejs.config({
         },
         "lib/jquery.history.shim": {
             "deps": ["lib/jquery.history"]
+        },
+        "simile-ajax": {
+            "exports": "SimileAjax"
+        },
+        "timeline": {
+            "deps": ["simile-ajax"],
+            "exports": "Timeline"
         }
     }
 });
@@ -46,8 +53,22 @@ define('gmaps2', ['async!http://maps.googleapis.com/maps/api/js?v=2&sensor=false
     }
 );
 
+// Define SimileAjax API
+define('simile-ajax', ['http://api.simile-widgets.org/ajax/2.2.1/simile-ajax-api.js?bundle=true'],
+    function() {
+        return window.SimileAjax;
+    }
+);
+
+// Define Timeline API
+define('timeline', ['http://api.simile-widgets.org/timeline/2.3.1/timeline-api.js?bundle=true'],
+    function() {
+        return window.Timeline;
+    }
+);
+
 requirejs(
-    ["require", "lib/jquery", "exhibit", "final", "ext/map/map-extension"],
+    ["require", "lib/jquery", "exhibit", "final", "ext/map/map-extension", "ext/time/time-extension"],
     function(require, $, Exhibit) {
         if (typeof window.JSON === "undefined" || window.JSON === null) {
             window.JSON = require("lib/json2");

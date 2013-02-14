@@ -4,20 +4,35 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
+define([
+    "lib/jquery",
+    "exhibit",
+    "timeline",
+    "time/base",
+    "util/set",
+    "util/date-time",
+    "util/accessors",
+    "util/settings",
+    "util/views",
+    "ui/ui-context",
+    "ui/views/view",
+    "ui/coders/default-color-coder"
+], function($, Exhibit, Timeline, TimeExtension, Set, DateTime, AccessorsUtilities, SettingsUtilities, ViewUtilities, UIContext, View, DefaultColorCoder) {
+    console.log(Timeline);
 /**
  * @class
  * @constructor
  * @param {Element} containerElmt
  * @param {Exhibit.UIContext} uiContext
  */
-Exhibit.TimelineView = function(containerElmt, uiContext) {
+var TimelineView = function(containerElmt, uiContext) {
     var view = this;
-    Exhibit.jQuery.extend(this, new Exhibit.View(
+    $.extend(this, new View(
         "time",
         containerElmt,
         uiContext
     ));
-    this.addSettingSpecs(Exhibit.TimelineView._settingSpecs);
+    this.addSettingSpecs(TimelineView._settingSpecs);
 
     this._accessors = {
         "getEventLabel":  function(itemID, database, visitor) {
@@ -42,7 +57,7 @@ Exhibit.TimelineView = function(containerElmt, uiContext) {
         view._reconstruct(); 
     };
 
-    Exhibit.jQuery(uiContext.getCollection().getElement()).bind(
+    $(uiContext.getCollection().getElement()).bind(
         "onItemsChanged.exhibit",
         view._onItemsChanged
     );
@@ -53,19 +68,19 @@ Exhibit.TimelineView = function(containerElmt, uiContext) {
 /**
  * @constant
  */
-Exhibit.TimelineView._intervalChoices = [
+TimelineView._intervalChoices = [
     "millisecond", "second", "minute", "hour", "day", "week", "month", "year", "decade", "century", "millennium"
 ];
 
 /**
  * @constant
  */
-Exhibit.TimelineView._settingSpecs = {
+TimelineView._settingSpecs = {
     "topBandHeight":           { "type": "int",        "defaultValue": 75 },
-    "topBandUnit":             { "type": "enum",       "choices": Exhibit.TimelineView._intervalChoices },
+    "topBandUnit":             { "type": "enum",       "choices": TimelineView._intervalChoices },
     "topBandPixelsPerUnit":    { "type": "int",        "defaultValue": 200 },
     "bottomBandHeight":        { "type": "int",        "defaultValue": 25 },
-    "bottomBandUnit":          { "type": "enum",       "choices": Exhibit.TimelineView._intervalChoices },
+    "bottomBandUnit":          { "type": "enum",       "choices": TimelineView._intervalChoices },
     "bottomBandPixelsPerUnit": { "type": "int",        "defaultValue": 200 },
     "timelineHeight":          { "type": "int",        "defaultValue": 400 },
     "timelineConstructor":     { "type": "function",   "defaultValue": null },
@@ -80,7 +95,7 @@ Exhibit.TimelineView._settingSpecs = {
 /**
  * @constant
  */
-Exhibit.TimelineView._accessorSpecs = [
+TimelineView._accessorSpecs = [
     {   "accessorName":   "getProxy",
         "attributeName":  "proxy"
     },
@@ -134,12 +149,12 @@ Exhibit.TimelineView._accessorSpecs = [
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.TimelineView}
  */
-Exhibit.TimelineView.create = function(configuration, containerElmt, uiContext) {
-    var view = new Exhibit.TimelineView(
+TimelineView.create = function(configuration, containerElmt, uiContext) {
+    var view = new TimelineView(
         containerElmt,
-        Exhibit.UIContext.create(configuration, uiContext)
+        UIContext.create(configuration, uiContext)
     );
-    Exhibit.TimelineView._configure(view, configuration);
+    TimelineView._configure(view, configuration);
     
     view._internalValidate();
     view._initializeUI();
@@ -152,17 +167,17 @@ Exhibit.TimelineView.create = function(configuration, containerElmt, uiContext) 
  * @param {Exhibit.UIContext} uiContext
  * @returns {Exhibit.TimelineView}
  */
-Exhibit.TimelineView.createFromDOM = function(configElmt, containerElmt, uiContext) {
+TimelineView.createFromDOM = function(configElmt, containerElmt, uiContext) {
     var configuration, view;
     configuration = Exhibit.getConfigurationFromDOM(configElmt);
-    view = new Exhibit.TimelineView(
+    view = new TimelineView(
         containerElmt !== null ? containerElmt : configElmt, 
-        Exhibit.UIContext.createFromDOM(configElmt, uiContext)
+        UIContext.createFromDOM(configElmt, uiContext)
     );
     
-    Exhibit.SettingsUtilities.createAccessorsFromDOM(configElmt, Exhibit.TimelineView._accessorSpecs, view._accessors);
-    Exhibit.SettingsUtilities.collectSettingsFromDOM(configElmt, view.getSettingSpecs(), view._settings);
-    Exhibit.TimelineView._configure(view, configuration);
+    AccessorsUtilities.createAccessorsFromDOM(configElmt, TimelineView._accessorSpecs, view._accessors);
+    SettingsUtilities.collectSettingsFromDOM(configElmt, view.getSettingSpecs(), view._settings);
+    TimelineView._configure(view, configuration);
     
     view._internalValidate();
     view._initializeUI();
@@ -173,10 +188,10 @@ Exhibit.TimelineView.createFromDOM = function(configElmt, containerElmt, uiConte
  * @param {Exhibit.TimelineView} view
  * @param {Object} configuration
  */
-Exhibit.TimelineView._configure = function(view, configuration) {
+TimelineView._configure = function(view, configuration) {
     var accessors;
-    Exhibit.SettingsUtilities.createAccessors(configuration, Exhibit.TimelineView._accessorSpecs, view._accessors);
-    Exhibit.SettingsUtilities.collectSettings(configuration, view.getSettingSpecs(), view._settings);
+    AccessorsUtilities.createAccessors(configuration, TimelineView._accessorSpecs, view._accessors);
+    SettingsUtilities.collectSettings(configuration, view.getSettingSpecs(), view._settings);
     
     accessors = view._accessors;
     view._getDuration = function(itemID, database, visitor) {
@@ -189,8 +204,8 @@ Exhibit.TimelineView._configure = function(view, configuration) {
 /**
  *
  */
-Exhibit.TimelineView.prototype.dispose = function() {
-    Exhibit.jQuery(this.getUIContext().getCollection().getElement()).unbind(
+TimelineView.prototype.dispose = function() {
+    $(this.getUIContext().getCollection().getElement()).unbind(
         "onItemsChanged.exhibit",
         this._onItemsChanged
     );
@@ -211,7 +226,7 @@ Exhibit.TimelineView.prototype.dispose = function() {
 /**
  *
  */
-Exhibit.TimelineView.prototype._internalValidate = function() {
+TimelineView.prototype._internalValidate = function() {
     var selectCoordinator, self;
     if (typeof this._accessors.getColorKey !== "undefined") {
         if (typeof this._settings.colorCoder !== "undefined") {
@@ -219,7 +234,7 @@ Exhibit.TimelineView.prototype._internalValidate = function() {
         }
 
         if (this._colorCoder === null) {
-            this._colorCoder = new Exhibit.DefaultColorCoder(this.getUIContext());
+            this._colorCoder = new DefaultColorCoder(this.getUIContext());
         }
     }
     if (typeof this._accessors.getIconKey !== "undefined") {
@@ -242,22 +257,22 @@ Exhibit.TimelineView.prototype._internalValidate = function() {
 /**
  *
  */
-Exhibit.TimelineView.prototype._initializeUI = function() {
+TimelineView.prototype._initializeUI = function() {
     var self, legendWidgetSettings;
     self = this;
     legendWidgetSettings = {};
     
     legendWidgetSettings.colorGradient = (this._colorCoder !== null && typeof this._colorCoder._gradientPoints !== "undefined");
     legendWidgetSettings.iconMarkerGenerator = function(iconURL) {
-        var elmt = Exhibit.jQuery("<img>")
+        var elmt = $("<img>")
             .attr("src", iconURL)
             .css("verticalAlign", "middle");
         return elmt.get(0);
     };
     
-    Exhibit.jQuery(this.getContainer()).empty();
+    $(this.getContainer()).empty();
 
-    this._dom = Exhibit.ViewUtilities.constructPlottingViewDom(
+    this._dom = ViewUtilities.constructPlottingViewDom(
         this.getContainer(), 
         this.getUIContext(), 
         this._settings.showSummary && this._settings.showHeader,
@@ -278,7 +293,7 @@ Exhibit.TimelineView.prototype._initializeUI = function() {
 /**
  * @param {Array} newEvents
  */
-Exhibit.TimelineView.prototype._reconstructTimeline = function(newEvents) {
+TimelineView.prototype._reconstructTimeline = function(newEvents) {
     var settings, timelineDiv, theme, topIntervalUnit, bottomIntervalUnit, earliest, latest, totalDuration, totalEventCount, totalDensity, intervalDuration, eventsPerPixel, bandInfos, self, listener, i;
     settings = this._settings;
     
@@ -294,7 +309,7 @@ Exhibit.TimelineView.prototype._reconstructTimeline = function(newEvents) {
     if (settings.timelineConstructor !== null) {
         this._timeline = settings.timelineConstructor(timelineDiv, this._eventSource);
     } else {
-        Exhibit.jQuery(timelineDiv)
+        $(timelineDiv)
             .css("height", settings.timelineHeight + "px")
             .attr("class", "exhibit-timelineView-timeline");
 
@@ -303,31 +318,31 @@ Exhibit.TimelineView.prototype._reconstructTimeline = function(newEvents) {
         theme.event.bubble.height = this.getUIContext().getSetting("bubbleHeight");
         
         if ((typeof settings.topBandUnit !== "undefined" && settings.topBandUnit !== null) || (typeof settings.bottomBandUnit !== "undefined" && settings.bottomBandUnit !== null)) {
-            if (typeof Exhibit.TimelineView._intervalLabelMap === "undefined" || Exhibit.TimelineView._intervalLabelMap === null) {
-                Exhibit.TimelineView._intervalLabelMap = {
-                    "millisecond":      Exhibit.DateTime.MILLISECOND,
-                    "second":           Exhibit.DateTime.SECOND,
-                    "minute":           Exhibit.DateTime.MINUTE,
-                    "hour":             Exhibit.DateTime.HOUR,
-                    "day":              Exhibit.DateTime.DAY,
-                    "week":             Exhibit.DateTime.WEEK,
-                    "month":            Exhibit.DateTime.MONTH,
-                    "year":             Exhibit.DateTime.YEAR,
-                    "decade":           Exhibit.DateTime.DECADE,
-                    "century":          Exhibit.DateTime.CENTURY,
-                    "millennium":       Exhibit.DateTime.MILLENNIUM
+            if (typeof TimelineView._intervalLabelMap === "undefined" || TimelineView._intervalLabelMap === null) {
+                TimelineView._intervalLabelMap = {
+                    "millisecond":      DateTime.MILLISECOND,
+                    "second":           DateTime.SECOND,
+                    "minute":           DateTime.MINUTE,
+                    "hour":             DateTime.HOUR,
+                    "day":              DateTime.DAY,
+                    "week":             DateTime.WEEK,
+                    "month":            DateTime.MONTH,
+                    "year":             DateTime.YEAR,
+                    "decade":           DateTime.DECADE,
+                    "century":          DateTime.CENTURY,
+                    "millennium":       DateTime.MILLENNIUM
                 };
             }
             
             if (typeof settings.topBandUnit === "undefined" || settings.topBandUnit === null) {
-                bottomIntervalUnit = Exhibit.TimelineView._intervalLabelMap[settings.bottomBandUnit];
+                bottomIntervalUnit = TimelineView._intervalLabelMap[settings.bottomBandUnit];
                 topIntervalUnit = bottomIntervalUnit - 1;
             } else if (typeof settings.bottomBandUnit === "undefined" || settings.bottomBandUnit === null) {
-                topIntervalUnit = Exhibit.TimelineView._intervalLabelMap[settings.topBandUnit];
+                topIntervalUnit = TimelineView._intervalLabelMap[settings.topBandUnit];
                 bottomIntervalUnit = topIntervalUnit + 1;
             } else {
-                topIntervalUnit = Exhibit.TimelineView._intervalLabelMap[settings.topBandUnit];
-                bottomIntervalUnit = Exhibit.TimelineView._intervalLabelMap[settings.bottomBandUnit];
+                topIntervalUnit = TimelineView._intervalLabelMap[settings.topBandUnit];
+                bottomIntervalUnit = TimelineView._intervalLabelMap[settings.bottomBandUnit];
             }
         } else { // figure this out dynamically
             earliest = this._eventSource.getEarliestDate();
@@ -338,9 +353,9 @@ Exhibit.TimelineView.prototype._reconstructTimeline = function(newEvents) {
             if (totalDuration > 0 && totalEventCount > 1) {
                 totalDensity = totalEventCount / totalDuration;
                 
-                topIntervalUnit = Exhibit.DateTime.MILLENNIUM;
+                topIntervalUnit = DateTime.MILLENNIUM;
                 while (topIntervalUnit > 0) {
-                    intervalDuration = Exhibit.DateTime.gregorianUnitLengths[topIntervalUnit];
+                    intervalDuration = DateTime.gregorianUnitLengths[topIntervalUnit];
                     eventsPerPixel = totalDensity * intervalDuration / settings.topBandPixelsPerUnit;
                     if (eventsPerPixel < 0.01) {
                         break;
@@ -348,7 +363,7 @@ Exhibit.TimelineView.prototype._reconstructTimeline = function(newEvents) {
                     topIntervalUnit--;
                 }
             } else {
-                topIntervalUnit = Exhibit.DateTime.YEAR;
+                topIntervalUnit = DateTime.YEAR;
             }
             bottomIntervalUnit = topIntervalUnit + 1;
         }
@@ -392,7 +407,7 @@ Exhibit.TimelineView.prototype._reconstructTimeline = function(newEvents) {
 /**
  *
  */
-Exhibit.TimelineView.prototype._reconstruct = function() {
+TimelineView.prototype._reconstruct = function() {
     var self, collection, database, settings, accessors, currentSize, unplottableItems, currentSet, hasColorKey, hasIconKey, hasHoverText, hasCaption, colorCodingFlags, iconCodingFlags, events, addEvent, legendWidget, colorCoder, keys, k, key, color, iconCoder, icon, plottableSize, band, centerDate, earliest, latest;
 
     self = this;
@@ -416,8 +431,8 @@ Exhibit.TimelineView.prototype._reconstruct = function() {
         hasIconKey = (this._accessors.getIconKey !== null && this._iconCoder !== null);
         hasHoverText = this._accessors.getHoverText !== null;
         hasCaption = this._accessors.getCaption !== null;
-        colorCodingFlags = { mixed: false, missing: false, others: false, keys: new Exhibit.Set() };
-        iconCodingFlags = { mixed: false, missing: false, others: false, keys: new Exhibit.Set() };
+        colorCodingFlags = { mixed: false, missing: false, others: false, keys: new Set() };
+        iconCodingFlags = { mixed: false, missing: false, others: false, keys: new Set() };
         events = [];
 
         addEvent = function(itemID, duration, color, icon, hoverText) {
@@ -462,7 +477,7 @@ Exhibit.TimelineView.prototype._reconstruct = function() {
                 icon = null;
                 hoverText = null;
                 if (hasColorKey) {
-                    colorKeys = new Exhibit.Set();
+                    colorKeys = new Set();
                     accessors.getColorKey(itemID, database, function(key) { colorKeys.add(key); });
 
                     color = self._colorCoder.translateSet(colorKeys, colorCodingFlags);
@@ -470,7 +485,7 @@ Exhibit.TimelineView.prototype._reconstruct = function() {
 
                 icon = null;
                 if (hasIconKey) {
-                    iconKeys = new Exhibit.Set();
+                    iconKeys = new Set();
                     accessors.getIconKey(itemID, database, function(key) { iconKeys.add(key); });
 
                     icon = self._iconCoder.translateSet(iconKeys, iconCodingFlags);
@@ -478,7 +493,7 @@ Exhibit.TimelineView.prototype._reconstruct = function() {
 
                 // deprecated, will be overwritten by caption if caption is used
                 if (hasHoverText) {
-                    hoverKeys = new Exhibit.Set();
+                    hoverKeys = new Set();
                     accessors.getHoverText(itemID, database, function(key) { hoverKeys.add(key); });
                     for (i in hoverKeys._hash) {
                         if (hoverKeys._hash.hasOwnProperty(i)) {
@@ -489,7 +504,7 @@ Exhibit.TimelineView.prototype._reconstruct = function() {
 
                 // caption supercedes hoverText
                 if (hasCaption) {
-                    hoverKeys = new Exhibit.Set();
+                    hoverKeys = new Set();
                     accessors.getCaption(itemID, database, function(key) { hoverKeys.add(key); });
                     for (i in hoverKeys._hash) {
                         if (hoverKeys._hash.hasOwnProperty(i)) {
@@ -579,7 +594,7 @@ Exhibit.TimelineView.prototype._reconstruct = function() {
  * @param {Object} selection
  * @param {Array} selection.itemIDs
  */
-Exhibit.TimelineView.prototype._select = function(selection) {
+TimelineView.prototype._select = function(selection) {
     var itemID, c, i, band, evt;
     itemID = selection.itemIDs[0];
     c = this._timeline.getBandCount();
@@ -599,6 +614,10 @@ Exhibit.TimelineView.prototype._select = function(selection) {
  * @param {Object} [theme] Ignored.
  * @param {Object} [labeller] Ignored.
  */
-Exhibit.TimelineView.prototype._fillInfoBubble = function(evt, elmt, theme, labeller) {
-    this.getUIContext().getLensRegistry().createLens(evt._itemID, Exhibit.jQuery(elmt), this.getUIContext());
+TimelineView.prototype._fillInfoBubble = function(evt, elmt, theme, labeller) {
+    this.getUIContext().getLensRegistry().createLens(evt._itemID, $(elmt), this.getUIContext());
 };
+
+    // end define
+    return TimelineView;
+});

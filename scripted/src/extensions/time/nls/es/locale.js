@@ -1,4 +1,4 @@
-Exhibit.Localization.importExtensionLocale("es", {
+define({
     "%TimelineView.label": "Diagrama Temporal",
     "%TimelineView.tooltip": "Ver elementos organizados temporalmente"
 });
