@@ -363,10 +363,10 @@ Exhibit.CloudFacet.prototype._computeFacet = function(items) {
         
         if (count > 0 || this._selectMissing) {
             span = Exhibit.jQuery("<span>");
-            Exhibit.jQuery(span).html((typeof this._settings.missingLabel !== "undefined") ? 
+            span.html((typeof this._settings.missingLabel !== "undefined") ? 
                          this._settings.missingLabel :
                          Exhibit._("%facets..missingThisField"));
-            Exhibit.jQuery(span).attr("class", "exhibit-facet-value-missingThisField");
+            span.attr("class", "exhibit-facet-value-missingThisField");
             
             entries.unshift({
                 value:          null, 
@@ -393,7 +393,7 @@ Exhibit.CloudFacet.prototype._notifyCollection = function() {
  */
 Exhibit.CloudFacet.prototype._initializeUI = function() {
     Exhibit.jQuery(this.getContainer()).empty();
-    Exhibit.jQuery(this.getContainer()).attr("class", "exhibit-cloudFacet");
+    Exhibit.jQuery(this.getContainer()).addClass("exhibit-cloudFacet");
 
     var dom = Exhibit.jQuery.simileDOM(
         "string",
