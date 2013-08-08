@@ -4,7 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(function() {
+define(["./expression/path"], function(Path) {
 /**
  * @class
  * @constructor
@@ -111,7 +111,7 @@ Expression.prototype.testExists = function(
  * @returns {Boolean}
  */
 Expression.prototype.isPath = function() {
-    return this._rootNode instanceof Expression.Path;
+    return this._rootNode instanceof Path;
 };
 
 /**

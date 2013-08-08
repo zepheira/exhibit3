@@ -6,79 +6,12 @@ define([
     "util/debug",
     "util/database",
     "util/ui",
-    "bc/bc",
     "data/collection",
     "ui/ui",
     "ui/ui-context",
     "ui/control-panel"
-], function($, Exhibit, Registry, _, Debug, DatabaseUtilities, UIUtilities, Backwards, Collection, UI, UIContext, ControlPanel) {
-    /**
-     * Code to automatically create the database, load the data links in
-     * <head>, and then to create an exhibit if there's no Exhibit ondataload 
-     * attribute on the body element.
-     *
-     * You can avoid running this code by adding the URL parameter
-     * autoCreate=false when you include exhibit-api.js.
-     * @public
-     * @see Exhibit.Database._LocalImpl.prototype._loadLinks
-     */
-    Exhibit.autoCreate = function() {
-        var s, f, fDone;
-
-        fDone = function() {
-            window.exhibit = Exhibit.create();
-            window.exhibit.configureFromDOM();
-            // The semantics of dataload indicate it should wholly replace the
-            // Exhibit initialization steps above; but if autoCreate is true,
-            // perhaps it should run in parallel with them or be fired after
-            // them.  It's unclear how widespread this is and how useful one
-            // alternative is over the other.  If in the future the below block
-            // is eliminated as it should be, wholesale replacement of this fDone
-            // would currently not be possible.
-        };
-        
-        try {
-            // Using functions embedded in elements is bad practice and support for
-            // it may disappear in the future.  Convert instances of this usage to
-            // attach to the dataload.exhibit event triggered on your own, as this
-            // now does (see line below this try-catch block).
-            s = Exhibit.getAttribute(document.body, "ondataload");
-            if (s !== null && typeof s === "string" && s.length > 0) {
-                // eval is evil, which is why this is going to disappear.
-                f = eval(s);
-                if (typeof f === "function") {
-                    fDone = f;
-                }
-            }
-        } catch (e) {
-            Debug.warn(_("%general.error.dataloadExecution"));
-            Debug.warn(e);
-        }
-        
-        $(document.body).one("dataload.exhibit", fDone);
-
-        window.database = DatabaseUtilities.create();
-        window.database.loadLinks();
-    };
-
-
-    /**
-     * Check for instances of ex:role and throw into backwards compatibility
-     * mode if any are found.  Authors are responsible for converting or using
-     * the HTML5 attributes correctly; backwards compatibility is only applicable
-     * when used with unconverted Exhibits.
-     * @static
-     * @see Exhibit.Backwards
-     */
-    Exhibit.checkBackwardsCompatibility = function() {
-        var exroles;
-        exroles = $("*").filter(function() {
-            return typeof $(this).attr("ex:role") !== "undefined";
-        });
-        if (exroles.length > 0) {
-            Backwards.enable("Attributes");
-        }
-    };
+], function($, Exhibit, Registry, _, Debug, DatabaseUtilities, UIUtilities, Collection, UI, UIContext, ControlPanel) {
+    var ExhibitImpl = {};
 
 /**
  * @public
@@ -86,7 +19,7 @@ define([
  * @constructor
  * @param {Exhibit.Database} database
  */
-Exhibit._Impl = function(database) {
+ExhibitImpl = function(database) {
     this._database = (database !== null && typeof database !== "undefined") ? 
         database : 
         (typeof window.database !== "undefined" ?
@@ -102,7 +35,7 @@ Exhibit._Impl = function(database) {
 /**
  * 
  */
-Exhibit._Impl.prototype.dispose = function() {
+ExhibitImpl.prototype.dispose = function() {
     var id;
 
     for (id in this._collectionMap) {
@@ -127,21 +60,21 @@ Exhibit._Impl.prototype.dispose = function() {
 /**
  * @returns {Exhibit.Database}
  */
-Exhibit._Impl.prototype.getDatabase = function() {
+ExhibitImpl.prototype.getDatabase = function() {
     return this._database;
 };
 
 /**
  * @returns {Exhibit.Registry}
  */
-Exhibit._Impl.prototype.getRegistry = function() {
+ExhibitImpl.prototype.getRegistry = function() {
     return this._registry;
 };
 
 /**
  * @returns {Exhibit.UIContext}
  */
-Exhibit._Impl.prototype.getUIContext = function() {
+ExhibitImpl.prototype.getUIContext = function() {
     return this._uiContext;
 };
 
@@ -149,7 +82,7 @@ Exhibit._Impl.prototype.getUIContext = function() {
  * @param {String} id
  * @returns {Exhibit.Collection}
  */
-Exhibit._Impl.prototype.getCollection = function(id) {
+ExhibitImpl.prototype.getCollection = function(id) {
     var collection = this._collectionMap[id];
     if ((typeof collection === "undefined" || collection === null) && id === "default") {
         collection = Collection.createAllItemsCollection(id, this._database);
@@ -161,7 +94,7 @@ Exhibit._Impl.prototype.getCollection = function(id) {
 /**
  * @returns {Exhibit.Collection}
  */
-Exhibit._Impl.prototype.getDefaultCollection = function() {
+ExhibitImpl.prototype.getDefaultCollection = function() {
     return this.getCollection("default");
 };
 
@@ -169,7 +102,7 @@ Exhibit._Impl.prototype.getDefaultCollection = function() {
  * @param {String} id
  * @param {Exhibit.Collection} c
  */
-Exhibit._Impl.prototype.setCollection = function(id, c) {
+ExhibitImpl.prototype.setCollection = function(id, c) {
     if (typeof this._collectionMap[id] !== "undefined") {
         try {
             this._collectionMap[id].dispose();
@@ -183,7 +116,7 @@ Exhibit._Impl.prototype.setCollection = function(id, c) {
 /**
  * @param {Exhibit.Collection} c
  */
-Exhibit._Impl.prototype.setDefaultCollection = function(c) {
+ExhibitImpl.prototype.setDefaultCollection = function(c) {
     this.setCollection("default", c);
 };
 
@@ -191,14 +124,14 @@ Exhibit._Impl.prototype.setDefaultCollection = function(c) {
  * @param {String} id
  * @returns {Object}
  */
-Exhibit._Impl.prototype.getComponent = function(id) {
+ExhibitImpl.prototype.getComponent = function(id) {
     return this.getRegistry().getID(id);
 };
 
 /**
  * @param {Object} configuration
  */
-Exhibit._Impl.prototype.configure = function(configuration) {
+ExhibitImpl.prototype.configure = function(configuration) {
     var i, config, id, component;
     if (typeof configuration.collections !== "undefined") {
         for (i = 0; i < configuration.collections.length; i++) {
@@ -223,7 +156,7 @@ Exhibit._Impl.prototype.configure = function(configuration) {
  * @param {Node} [root] optional root node, below which configuration gets read
  *                      (defaults to document.body, when none provided)
  */
-Exhibit._Impl.prototype.configureFromDOM = function(root) {
+ExhibitImpl.prototype.configureFromDOM = function(root) {
     var controlPanelElmts, collectionElmts, coderElmts, coordinatorElmts, lensElmts, facetElmts, otherElmts, f, uiContext, i, elmt, id, self, processElmts, panel, exporters, expr, exporter, hash, itemID;
 
     collectionElmts = [];
@@ -342,7 +275,7 @@ Exhibit._Impl.prototype.configureFromDOM = function(root) {
  * @private
  * @param {String} itemID
  */
-Exhibit._Impl.prototype._showFocusDialogOnItem = function(itemID) {
+ExhibitImpl.prototype._showFocusDialogOnItem = function(itemID) {
     var dom, itemLens;
     dom = $.simileDOM("string",
         "div",
@@ -368,14 +301,5 @@ Exhibit._Impl.prototype._showFocusDialogOnItem = function(itemID) {
     });
 };
 
-/**
- * @static
- * @param {Exhibit.Database} database
- * @returns {Exhibit._Impl}
- */
-Exhibit.create = function(database) {
-    return new Exhibit._Impl(database);
-};
-
-    return Exhibit;
+    return ExhibitImpl;
 });

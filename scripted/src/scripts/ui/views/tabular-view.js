@@ -7,6 +7,7 @@
 define([
     "lib/jquery",
     "exhibit",
+    "util/localizer",
     "util/date-time",
     "util/settings",
     "util/views",
@@ -20,7 +21,7 @@ define([
     "ui/views/ordered-view-frame",
     "ui/widgets/collection-summary-widget",
     "lib/jquery.simile.dom"
-], function($, Exhibit, DateTime, SettingsUtilities, ViewUtilities, EHistory, UIUtilities, ExpressionParser, UIContext, Lens, FormatParser, View, OrderedViewFrame, CollectionSummaryWidget) {
+], function($, Exhibit, _, DateTime, SettingsUtilities, ViewUtilities, EHistory, UIUtilities, ExpressionParser, UIContext, Lens, FormatParser, View, OrderedViewFrame, CollectionSummaryWidget) {
 /**
  * @constructor
  * @class

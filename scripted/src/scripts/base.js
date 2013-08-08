@@ -77,30 +77,28 @@ var Exhibit = {
     },
 
     /**
+     * The data type of each parameter
+     */
+    paramTypes: {
+        "bundle": Boolean,
+        "autoCreate": Boolean,
+        "safe": Boolean,
+        "babel": String,
+        "backstage": String,
+        "locale": String,
+        "persist": Boolean        
+    },
+    
+    /**
      * @namespace Prepare for official Exhibit extensions.
      */
     Extension: {},
 
     "styles": [
-        "styles/graphics.css",
-        "styles/exhibit.css",
-        "styles/browse-panel.css",
-        "styles/lens.css",
-        "styles/control-panel.css",
-        "styles/util/facets.css",
-        "styles/util/views.css",
-        "styles/views/view-panel.css",
-        "styles/views/tile-view.css",
-        "styles/views/tabular-view.css",
-        "styles/views/thumbnail-view.css",
-        "styles/widgets/collection-summary-widget.css",
-        "styles/widgets/resizable-div-widget.css",
-        "styles/widgets/bookmark-widget.css",
-        "styles/widgets/toolbox-widget.css",
-        "styles/widgets/legend-widget.css",
-        "styles/widgets/option-widget.css",
-        "styles/widgets/reset-history-widget.css"
+        "styles/main.css"
     ],
+
+    "bundledStyle": "styles/exhibit-bundle.css",
 
     /**
      * @constant An Exhibit.Registry of static components.
