@@ -1,7 +1,18 @@
 // Placeholder configuration for Exhibit RequireJS development
 requirejs.config({
-    "baseUrl": "http://localhost/~ryanlee/dev/src/scripts",
+    "baseUrl": "/exhibit/api/",
     "urlArgs": "bust=" + (new Date()).getTime(),
+    "config": {
+        "../exhibit": {
+            "prefix": "/exhibit/api/",
+            "bundle": false
+        },
+        "timeline": {
+            "prefix": "http://api.simile.zepheira.com/timeline/3.0.0/",
+            "ajax": "http://api.simile.zepheira.com/ajax/3.0.0/",
+            "bundle": true
+        }
+    },
     "paths": {
         "lib": "../lib",
         "nls": "../nls",
@@ -10,7 +21,9 @@ requirejs.config({
         "time": "../extensions/time/scripts",
         "invalid-json": "../extensions/invalid-json/scripts",
         "async": "../lib/async",
-        "i18n": "../lib/i18n"
+        "i18n": "../lib/i18n",
+        "timeline": "http://api.simile.zepheira.com/timeline/3.0.0/timeline-bundle",
+        "simile-ajax": "http://api.simile.zepheira.com/ajax/3.0.0/simile-ajax-bundle"
     },
     "shim": {
         "lib/jquery": {
@@ -28,17 +41,11 @@ requirejs.config({
         },
         "lib/jquery.history.shim": {
             "deps": ["lib/jquery.history"]
-        },
-        "simile-ajax": {
-            "exports": "SimileAjax"
-        },
-        "timeline": {
-            "deps": ["simile-ajax"],
-            "exports": "Timeline"
         }
     }
 });
 
+/**
 // Define Google Maps API v3
 define('gmaps', ['async!https://maps.googleapis.com/maps/api/js?v=3&sensor=false'],
     function() {
@@ -53,28 +60,11 @@ define('gmaps2', ['async!http://maps.googleapis.com/maps/api/js?v=2&sensor=false
     }
 );
 
-// Define SimileAjax API
-define('simile-ajax', ['http://api.simile-widgets.org/ajax/2.2.1/simile-ajax-api.js?bundle=true'],
-    function() {
-        return window.SimileAjax;
+require(["require", "lib/jquery", "exhibit", "ext/map/map-extension", "ext/time/time-extension"], function(require, $, Exhibit) {
+    if (typeof window.JSON === "undefined" || window.JSON === null) {
+        window.JSON = require("lib/json2");
     }
-);
-
-// Define Timeline API
-define('timeline', ['http://api.simile-widgets.org/timeline/2.3.1/timeline-api.js?bundle=true'],
-    function() {
-        return window.Timeline;
-    }
-);
-
-requirejs(
-    ["require", "lib/jquery", "exhibit", "final", "ext/map/map-extension", "ext/time/time-extension"],
-    function(require, $, Exhibit) {
-        if (typeof window.JSON === "undefined" || window.JSON === null) {
-            window.JSON = require("lib/json2");
-        }
-        Exhibit.initializeEvents();
-        $(document).trigger("scriptsLoaded.exhibit");
-        // window.Exhibit = Exhibit; // @@@ for debugging for now
-    }
-);
+    $(document).trigger("scriptsLoaded.exhibit");
+    window.Exhibit = Exhibit; // for debugging
+});
+*/
