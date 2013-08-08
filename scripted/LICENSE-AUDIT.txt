@@ -70,9 +70,9 @@ RequireJS
 jQuery
 ------
  * http://jquery.com/
- * 1.8.2
+ * 1.10.2
  * dual GPLv2/MIT
- * scripted/src/lib/jquery.min.js
+ * scripted/src/lib/jquery.js
 
 History.js
 ----------

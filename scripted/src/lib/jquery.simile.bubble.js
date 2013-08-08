@@ -7,7 +7,7 @@
 define(["lib/jquery"], function($) {
     var pngFail, defaultBubbleConfig, methods, _init;
 
-    pngFail = $.browser.msie && Number($.browser.version[0]).valueOf() <= 6;
+    pngFail = (/MSIE ((5\.5)|6)/.test(navigator.userAgent) && navigator.platform === "Win32");
 
     _init = false;
 
