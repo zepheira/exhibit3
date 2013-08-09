@@ -23,8 +23,8 @@ define([
     "require",
     "lib/jquery",
     "exhibit",
-    "time/base",
-    "time/timeline-view",
+    "./scripts/base",
+    "./scripts/timeline-view",
     "i18n!ext/time/nls/locale"
 ], function(require, $, Exhibit, TimeExtension, TimelineView, Locale) {
     var javascriptFiles, cssFiles, paramTypes, url, scriptURLs, cssURLs, ajaxURLs, i;

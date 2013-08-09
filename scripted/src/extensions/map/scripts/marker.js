@@ -4,7 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "exhibit", "map/base", "map/canvas", "map/painter"], function($, Exhibit, MapExtension, Canvas, Painter) {
+define(["lib/jquery", "scripts/exhibit-core", "./base", "./canvas", "./painter"], function($, Exhibit, MapExtension, Canvas, Painter) {
 /**
  * @class
  * @constructor

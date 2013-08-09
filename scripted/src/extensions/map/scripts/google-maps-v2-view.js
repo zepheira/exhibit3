@@ -4,7 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "exhibit", "gmaps2", "map/base", "map/marker"], function($, GMap2, Exhibit, MapExtension, Marker) {
+define(["lib/jquery", "scripts/exhibit-core", "gmaps2", "./base", "./marker"], function($, GMap2, Exhibit, MapExtension, Marker) {
 /**
  * @class
  * @constructor

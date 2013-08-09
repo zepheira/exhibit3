@@ -10,12 +10,12 @@ define([
     "require",
     "lib/jquery",
     "exhibit",
-    "map/base",
-    "map/marker",
-    "map/canvas",
-    "map/painter",
+    "./scripts/base",
+    "./scripts/marker",
+    "./scripts/canvas",
+    "./scripts/painter",
     "i18n!ext/map/nls/locale",
-    "map/map-view"
+    "./scripts/map-view"
     // @@@requirejs + multiple options for mapping = bad
     // "map/google-maps-v2-view"
 ], function(require, $, Exhibit, MapExtension, Painter, Marker, Canvas, Locale) {
@@ -75,12 +75,12 @@ define([
         }
         */
         //if (!Exhibit.MapExtension.params.bundle) {
-            Exhibit.GoogleMaps2View = require("map/google-maps-v2-view");
+            Exhibit.GoogleMaps2View = require("./scripts/google-maps-v2-view");
         //}
     } else {
         // if author is referring to an unknown service, default to google
         //if (!Exhibit.MapExtension.params.bundle) {
-            Exhibit.MapView = require("map/map-view");
+            Exhibit.MapView = require("./scripts/map-view");
         //}
     }
         

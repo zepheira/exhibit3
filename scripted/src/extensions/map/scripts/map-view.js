@@ -8,19 +8,19 @@
 
 define([
     "lib/jquery",
-    "exhibit",
+    "scripts/exhibit-core",
     "gmaps",
-    "map/base",
-    "map/marker",
-    "util/debug",
-    "util/set",
-    "util/accessors",
-    "util/settings",
-    "util/views",
-    "data/expression-parser",
-    "ui/ui-context",
-    "ui/views/view",
-    "ui/coders/default-color-coder"
+    "./base",
+    "./marker",
+    "scripts/util/debug",
+    "scripts/util/set",
+    "scripts/util/accessors",
+    "scripts/util/settings",
+    "scripts/util/views",
+    "scripts/data/expression-parser",
+    "scripts/ui/ui-context",
+    "scripts/ui/views/view",
+    "scripts/ui/coders/default-color-coder"
 ], function($, Exhibit, google, MapExtension, Marker, Debug, Set, AccessorsUtilities, SettingsUtilities, ViewUtilities, ExpressionParser, UIContext, View, DefaultColorCoder) {
 /**
  * @class

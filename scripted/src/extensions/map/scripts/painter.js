@@ -1,4 +1,4 @@
-define(["map/base"], function(MapExtension) {
+define(["./base"], function(MapExtension) {
 var Painter = {};
 
 /**

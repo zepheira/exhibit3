@@ -8,15 +8,15 @@ define([
     "lib/jquery",
     "exhibit",
     "timeline",
-    "time/base",
-    "util/set",
-    "util/date-time",
-    "util/accessors",
-    "util/settings",
-    "util/views",
-    "ui/ui-context",
-    "ui/views/view",
-    "ui/coders/default-color-coder"
+    "./scripts/base",
+    "scripts/util/set",
+    "scripts/util/date-time",
+    "scripts/util/accessors",
+    "scripts/util/settings",
+    "scripts/util/views",
+    "scripts/ui/ui-context",
+    "scripts/ui/views/view",
+    "scripts/ui/coders/default-color-coder"
 ], function($, Exhibit, Timeline, TimeExtension, Set, DateTime, AccessorsUtilities, SettingsUtilities, ViewUtilities, UIContext, View, DefaultColorCoder) {
     console.log(Timeline);
 /**
