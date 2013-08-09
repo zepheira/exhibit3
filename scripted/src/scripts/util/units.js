@@ -4,7 +4,7 @@
  * @fileOverview
  */
 
-define(["util/date-time"], function(DateTime) {
+define(["./date-time"], function(DateTime) {
 /**
  * @namespace Utility functions for working with built-in Date objects.
  */

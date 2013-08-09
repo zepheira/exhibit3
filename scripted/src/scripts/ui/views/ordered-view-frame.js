@@ -6,18 +6,18 @@
 
 define([
     "lib/jquery",
-    "exhibit",
-    "util/localizer",
-    "util/debug",
-    "util/set",
-    "util/date-time",
-    "util/settings",
-    "util/views",
-    "util/ui",
-    "data/expression-parser",
-    "ui/formatter",
-    "ui/widgets/option-widget",
-    "ui/widgets/collection-summary-widget",
+    "../../exhibit-core",
+    "../../util/localizer",
+    "../../util/debug",
+    "../../util/set",
+    "../../util/date-time",
+    "../../util/settings",
+    "../../util/views",
+    "../../util/ui",
+    "../../data/expression-parser",
+    "../formatter",
+    "../widgets/option-widget",
+    "../widgets/collection-summary-widget",
     "lib/jquery.simile.dom"
 ], function($, Exhibit, _, Debug, Set, DateTime, SettingsUtilities, ViewUtilities, UIUtilities, ExpressionParser, Formatter, OptionWidget, CollectionSummaryWidget) {
 /**

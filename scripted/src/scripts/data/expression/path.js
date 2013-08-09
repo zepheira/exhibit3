@@ -5,9 +5,9 @@
  */
 
 define([
-    "util/localizer",
-    "util/set",
-    "data/expression/collection"
+    "../../util/localizer",
+    "../../util/set",
+    "./collection"
 ], function(_, Set, ExpressionCollection) {
 /**
  * @class

@@ -1,10 +1,10 @@
 define([
     "lib/jquery",
-    "exhibit",
-    "util/util",
-    "util/localizer",
-    "util/debug",
-    "util/persistence",
+    "../exhibit-core",
+    "./util",
+    "./localizer",
+    "./debug",
+    "./persistence",
     "lib/jquery.simile.bubble"
 ], function($, Exhibit, Util, _, Debug, Persistence) {
 var UIUtilities = {

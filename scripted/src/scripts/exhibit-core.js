@@ -4,7 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "./base"], function($, Exhibit) {
+define(["lib/jquery", "./exhibit-base"], function($, Exhibit) {
 /**
  * Retrieve an Exhibit-specific attribute from an element.
  *

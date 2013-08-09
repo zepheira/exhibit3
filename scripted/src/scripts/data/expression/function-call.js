@@ -5,8 +5,8 @@
  */
 
 define([
-    "util/localizer",
-    "data/expression/functions"
+    "../../util/localizer",
+    "./functions"
 ], function(_, Functions) {
 /**
  * @class

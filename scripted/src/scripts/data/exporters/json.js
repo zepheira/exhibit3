@@ -6,8 +6,8 @@
 
 define([
     "lib/jquery",
-    "data/exporter",
-    "util/localizer"
+    "../exporter",
+    "../../util/localizer"
 ], function($, Exporter, _) {
     var ExhibitJSONExporter;
 

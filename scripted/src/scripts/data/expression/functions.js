@@ -5,11 +5,11 @@
  */
 
 define([
-    "util/util",
-    "util/set",
-    "util/settings",
-    "util/date-time",
-    "data/expression/collection"
+    "../../util/util",
+    "../../util/set",
+    "../../util/settings",
+    "../../util/date-time",
+    "./collection"
 ], function(Util, Set, SettingsUtilities, DateTime, ExpressionCollection) {
 /**
  * @namespace

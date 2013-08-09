@@ -1,6 +1,6 @@
 define([
-    "util/localizer",
-    "data/expression-parser"
+    "../util/localizer",
+    "../data/expression-parser"
 ], function(_, ExpressionParser) {
 /**
  * @class

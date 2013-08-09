@@ -3,7 +3,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["exhibit", "util/localizer"], function(Exhibit, _) {
+define(["./exhibit-core", "./util/localizer"], function(Exhibit, _) {
 /**
  * @namespace
  * @class

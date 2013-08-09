@@ -6,17 +6,17 @@
 
 define([
     "lib/jquery",
-    "exhibit",
-    "util/localizer",
-    "util/debug",
-    "util/set",
-    "util/settings",
-    "util/facets",
-    "util/history",
-    "data/database/range-index",
-    "data/expression-parser",
-    "ui/ui-context",
-    "ui/facets/facet"
+    "../../exhibit-core",
+    "../../util/localizer",
+    "../../util/debug",
+    "../../util/set",
+    "../../util/settings",
+    "../../util/facets",
+    "../../util/history",
+    "../../data/database/range-index",
+    "../../data/expression-parser",
+    "../ui-context",
+    "./facet"
 ], function($, Exhibit, _, Debug, Set, SettingsUtilities, FacetUtilities, EHistory, RangeIndex, ExpressionParser, UIContext, Facet) {
 /**
  * @class

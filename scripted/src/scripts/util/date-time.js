@@ -4,7 +4,7 @@
  * @fileOverview A collection of date/time utility functions.
  */
 
-define(["util/localizer"], function(_) {
+define(["./localizer"], function(_) {
 /**
  * @namespace A collection of date/time utility functions.
  */

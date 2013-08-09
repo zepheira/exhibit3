@@ -6,8 +6,8 @@
 
 define([
     "lib/jquery",
-    "util/localizer",
-    "data/exporter"
+    "../../util/localizer",
+    "../exporter"
 ], function($, _, Exporter) {
 /**
  * @namespace

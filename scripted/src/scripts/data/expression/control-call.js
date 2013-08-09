@@ -5,7 +5,7 @@
  */
 
 define([
-    "data/expression/controls"
+    "./controls"
 ], function(Controls) {
 /**
  * @class

@@ -7,11 +7,11 @@
 
 define([
     "lib/jquery",
-    "exhibit",
-    "util/localizer",
-    "util/bookmark",
-    "util/ui",
-    "ui/ui-context"
+    "../../exhibit-core",
+    "../../util/localizer",
+    "../../util/bookmark",
+    "../../util/ui",
+    "../ui-context"
 ], function($, Exhibit, _, Bookmark, UIUtilities, UIContext) {
 /**
  * @class

@@ -6,12 +6,12 @@
 
 define([
     "lib/jquery",
-    "exhibit",
-    "util/localizer",
-    "util/debug",
-    "util/settings",
-    "ui/ui-context",
-    "ui/coders/coder"
+    "../../exhibit-core",
+    "../../util/localizer",
+    "../../util/debug",
+    "../../util/settings",
+    "../ui-context",
+    "./coder"
 ], function($, Exhibit, _, Debug, SettingsUtilities, UIContext, Coder) {
 /**
  * @constructor

@@ -4,7 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["data/expression/collection"], function(ExpressionCollection) {
+define(["./collection"], function(ExpressionCollection) {
 /**
  * @class
  * @constructor

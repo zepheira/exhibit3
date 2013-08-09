@@ -6,11 +6,11 @@
 
 define([
     "lib/jquery",
-    "util/localizer",
-    "ui/widgets/collection-summary-widget",
-    "ui/widgets/resizable-div-widget",
-    "ui/widgets/legend-widget",
-    "ui/widgets/legend-gradient-widget"
+    "./localizer",
+    "../ui/widgets/collection-summary-widget",
+    "../ui/widgets/resizable-div-widget",
+    "../ui/widgets/legend-widget",
+    "../ui/widgets/legend-gradient-widget"
 ], function($, _, CollectionSummaryWidget, ResizableDivWidget, LegendWidget, LegendGradientWidget) {
 /**
  * @namespace

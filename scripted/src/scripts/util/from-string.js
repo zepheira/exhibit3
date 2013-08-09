@@ -5,9 +5,9 @@
  */
 
 define([
-    "util/localizer",
-    "util/debug",
-    "exhibit"
+    "./localizer",
+    "./debug",
+    "../exhibit-core"
 ], function(_, Debug, Exhibit) {
     var FromString = {};
 

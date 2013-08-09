@@ -5,8 +5,8 @@
  */
 
 define([
-    "util/date-time",
-    "data/database/range-index"
+    "../../util/date-time",
+    "./range-index"
 ], function(DateTime, RangeIndex) {
 /**
  * Represents a property within a database.

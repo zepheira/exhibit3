@@ -6,10 +6,10 @@
 
 define([
     "lib/jquery",
-    "exhibit",
-    "util/localizer",
-    "data/importer",
-    "util/ui"
+    "../../exhibit-core",
+    "../../util/localizer",
+    "../importer",
+    "../../util/ui"
 ], function($, Exhibit, _, Importer, UIUtilities) {
 /**
  * @namespace

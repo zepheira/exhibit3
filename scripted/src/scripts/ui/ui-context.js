@@ -6,13 +6,13 @@
 
 define([
     "lib/jquery",
-    "exhibit",
-    "util/localizer",
-    "util/debug",
-    "util/settings",
-    "ui/lens-registry",
-    "ui/format-parser",
-    "ui/formatter"
+    "../exhibit-core",
+    "../util/localizer",
+    "../util/debug",
+    "../util/settings",
+    "./lens-registry",
+    "./format-parser",
+    "./formatter"
 ], function($, Exhibit, _, Debug, SettingsUtilities, LensRegistry, FormatParser, Formatter) {
 /**
  * @class

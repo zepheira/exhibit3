@@ -3,7 +3,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "util/persistence"], function($, Persistence) {
+define(["lib/jquery", "../util/persistence"], function($, Persistence) {
 /**
  * @class
  * @constructor

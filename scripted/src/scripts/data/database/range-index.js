@@ -4,7 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["util/set"], function(Set) {
+define(["../../util/set"], function(Set) {
 /**
  * Builds a Exhibit.Database.RangeIndex object.
  *

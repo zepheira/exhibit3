@@ -1,8 +1,8 @@
 define([
     "lib/jquery",
-    "util/bookmark",
-    "util/history",
-    "util/persistence"
+    "./bookmark",
+    "./history",
+    "./persistence"
 ], function($, Bookmark, EHistory, Persistence) {
     /**
      * @depends History.js

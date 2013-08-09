@@ -6,12 +6,12 @@
 
 define([
     "lib/jquery",
-    "exhibit",
-    "ui/ui-context",
-    "util/settings",
-    "util/localizer",
-    "util/ui",
-    "data/exporter",
+    "../../exhibit-core",
+    "../ui-context",
+    "../../util/settings",
+    "../../util/localizer",
+    "../../util/ui",
+    "../../data/exporter",
     "lib/jquery.simile.dom"
 ], function($, Exhibit, UIContext, SettingsUtilities, _, UIUtilities, Exporter) {
 /**

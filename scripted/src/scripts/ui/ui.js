@@ -6,17 +6,17 @@
 
 define([
     "lib/jquery",
-    "util/localizer",
-    "exhibit",
-    "util/debug",
-    "util/settings",
-    "util/from-string",
-    "ui/ui-context",
-    "ui/lens",
-    "ui/coordinator",
-    "ui/control-panel",
-    "ui/views/view-panel",
-    "ui/widgets/logo",
+    "../util/localizer",
+    "../exhibit-core",
+    "../util/debug",
+    "../util/settings",
+    "../util/from-string",
+    "./ui-context",
+    "./lens",
+    "./coordinator",
+    "./control-panel",
+    "./views/view-panel",
+    "./widgets/logo",
     "lib/jquery.simile.dom",
     "lib/jquery.simile.bubble"
 ], function($, _, Exhibit, Debug, SettingUtilities, FromString, UIContext, Lens, Coordinator, ControlPanel, ViewPanel, Logo) {

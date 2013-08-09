@@ -5,7 +5,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["exhibit"], function(Exhibit) {
+define(["../exhibit-core"], function(Exhibit) {
 /**
  * @namespace
  */

@@ -12,13 +12,13 @@
 
 define([
     "lib/jquery",
-    "exhibit",
-    "util/localizer",
-    "util/debug",
-    "util/settings",
-    "util/coders",
-    "ui/ui-context",
-    "ui/coders/coder"
+    "../../exhibit-core",
+    "../../util/localizer",
+    "../../util/debug",
+    "../../util/settings",
+    "../../util/coders",
+    "../ui-context",
+    "./coder"
 ], function($, Exhibit, _, Debug, SettingsUtilities, Coders, UIContext, Coder) {
 /**
  * @constructor

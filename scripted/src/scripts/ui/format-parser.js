@@ -5,8 +5,8 @@
  */
 
 define([
-    "util/localizer",
-    "ui/format-scanner"
+    "../util/localizer",
+    "./format-scanner"
 ], function(_, FormatScanner) {
 /**
  * @namespace

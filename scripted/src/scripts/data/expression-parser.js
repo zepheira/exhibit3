@@ -5,17 +5,17 @@
  */
 
 define([
-    "exhibit",
-    "util/localizer",
-    "data/expression",
-    "data/expression-scanner",
-    "data/expression/path",
-    "data/expression/controls",
-    "data/expression/operator",
-    "data/expression/constant",
-    "data/expression/function-call",
-    "data/expression/control-call",
-    "data/expression/functions"
+    "../exhibit-core",
+    "../util/localizer",
+    "./expression",
+    "./expression-scanner",
+    "./expression/path",
+    "./expression/controls",
+    "./expression/operator",
+    "./expression/constant",
+    "./expression/function-call",
+    "./expression/control-call",
+    "./expression/functions"
 ], function(Exhibit, _, Expression, ExpressionScanner, Path, Controls, Operator, Constant, FunctionCall, ControlCall) {
 /**
  * @namespace

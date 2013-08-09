@@ -5,8 +5,8 @@
  */
 
 define([
-    "util/set",
-    "data/expression/collection"
+    "../../util/set",
+    "./collection"
 ], function(Set, ExpressionCollection) {
 /**
  * @namespace

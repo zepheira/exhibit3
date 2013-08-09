@@ -6,12 +6,12 @@
 
 define([
     "lib/jquery",
-    "exhibit",
-    "util/util",
-    "util/localizer",
-    "util/persistence",
-    "util/date-time",
-    "util/ui"
+    "../exhibit-core",
+    "../util/util",
+    "../util/localizer",
+    "../util/persistence",
+    "../util/date-time",
+    "../util/ui"
 ], function($, Exhibit, Util, _, Persistence, DateTime, UIUtilities) {
 /**
  * @namespace

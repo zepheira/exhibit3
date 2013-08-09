@@ -5,9 +5,9 @@
  */
 
 define([
-    "exhibit",
+    "../exhibit-core",
     "lib/base64",
-    "util/history"
+    "./history"
 ], function(Exhibit, Base64, EHistory) {
 /**
  * @namespace Bookmarking the current state of a browsing session.

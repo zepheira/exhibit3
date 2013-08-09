@@ -4,7 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "util/ui"], function($, UIUtilities) {
+define(["lib/jquery", "../../util/ui"], function($, UIUtilities) {
 /**
  * @param {Object} configuration
  * @param {Element} elmt

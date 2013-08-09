@@ -6,11 +6,11 @@
 
 define([
     "lib/jquery",
-    "exhibit",
-    "util/localizer",
-    "util/debug",
-    "util/history",
-    "util/from-string",
+    "../../exhibit-core",
+    "../../util/localizer",
+    "../../util/debug",
+    "../../util/history",
+    "../../util/from-string",
     "lib/jquery.simile.dom"
 ], function($, Exhibit, _, Debug, EHistory, FromString) {
 /**

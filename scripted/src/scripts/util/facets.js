@@ -6,12 +6,12 @@
 
 define([
     "lib/jquery",
-    "exhibit",
-    "util/util",
-    "util/localizer",
-    "util/set",
-    "util/ui",
-    "ui/widgets/resizable-div-widget",
+    "../exhibit-core",
+    "./util",
+    "./localizer",
+    "./set",
+    "./ui",
+    "../ui/widgets/resizable-div-widget",
     "lib/jquery.simile.dom",
     "lib/jquery.simile.bubble"
 ], function($, Exhibit, Util, _, Set, UIUtilities, ResizableDivWidget) {

@@ -5,7 +5,7 @@
 
 define([
     "lib/jquery",
-    "util/ui",
+    "./ui",
     "lib/jquery.history",
     "lib/jquery.history.shim"
 ], function($, UIUtilities) {

@@ -1,15 +1,15 @@
 define([
     "lib/jquery",
-    "exhibit",
-    "registry",
-    "util/localizer",
-    "util/debug",
-    "util/database",
-    "util/ui",
-    "data/collection",
-    "ui/ui",
-    "ui/ui-context",
-    "ui/control-panel"
+    "./exhibit-core",
+    "./registry",
+    "./util/localizer",
+    "./util/debug",
+    "./util/database",
+    "./util/ui",
+    "./data/collection",
+    "./ui/ui",
+    "./ui/ui-context",
+    "./ui/control-panel"
 ], function($, Exhibit, Registry, _, Debug, DatabaseUtilities, UIUtilities, Collection, UI, UIContext, ControlPanel) {
     var ExhibitImpl = {};
 

@@ -1,8 +1,8 @@
 define([
-    "exhibit",
-    "util/debug",
-    "util/settings",
-    "data/expression-parser"
+    "../exhibit-core",
+    "./debug",
+    "./settings",
+    "../data/expression-parser"
 ], function(Exhibit, Debug, SettingsUtilities, ExpressionParser) {
 var AccessorsUtilities = {};
 

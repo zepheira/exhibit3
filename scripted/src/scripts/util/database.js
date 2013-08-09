@@ -5,8 +5,8 @@
  */
 
 define([
-    "data/database",
-    "data/database/local"
+    "../data/database",
+    "../data/database/local"
 ], function(Database, DatabaseLocalImpl) {
     /**
      * @namespace Database utiltiies for Exhibit.

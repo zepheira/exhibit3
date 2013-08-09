@@ -6,12 +6,12 @@
 
 define([
     "lib/jquery",
-    "exhibit",
-    "util/set",
-    "util/facets",
-    "util/history",
-    "data/expression-parser",
-    "ui/facets/facet"
+    "../exhibit-core",
+    "../util/set",
+    "../util/facets",
+    "../util/history",
+    "./expression-parser",
+    "../ui/facets/facet"
 ], function($, Exhibit, Set, FacetUtilities, EHistory, ExpressionParser, Facet) {
 /**
  * Creates a new object with an identifier and the database it draws from. 

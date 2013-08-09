@@ -5,7 +5,7 @@
  */
 
 define([
-    "data/expression/collection"
+    "./collection"
 ], function(ExpressionCollection) {
 /**
  * @class

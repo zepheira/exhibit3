@@ -5,9 +5,9 @@
  */
 
 define([
-    "util/localizer",
-    "util/debug",
-    "ui/lens"
+    "../util/localizer",
+    "../util/debug",
+    "./lens"
 ], function(_, Debug, Lens) {
 /**
  * @constructor

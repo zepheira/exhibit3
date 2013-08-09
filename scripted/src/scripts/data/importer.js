@@ -5,7 +5,7 @@
 
 define([
     "lib/jquery",
-    "exhibit"
+    "../exhibit-core"
 ], function($, Exhibit) {
 /**
  * @class

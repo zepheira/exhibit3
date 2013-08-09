@@ -6,11 +6,11 @@
  */
 
 define([
-    "exhibit",
-    "util/localizer",
-    "util/debug",
-    "util/date-time",
-    "util/persistence"
+    "../exhibit-core",
+    "./localizer",
+    "./debug",
+    "./date-time",
+    "./persistence"
 ], function(Exhibit, _, Debug, DateTime, Persistence) {
 /**
  * @namespace

@@ -6,10 +6,10 @@
 
 define([
     "lib/jquery",
-    "exhibit",
-    "util/date-time",
-    "data/importer",
-    "data/importers/jsonp"
+    "../../exhibit-core",
+    "../../util/date-time",
+    "../importer",
+    "./jsonp"
 ], function($, Exhibit, DateTime, Importer, JSONP) {
     var GoogleSpreadsheet;
 

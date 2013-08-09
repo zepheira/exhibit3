@@ -3,7 +3,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "exhibit", "util/localizer"], function($, Exhibit, _) {
+define(["lib/jquery", "../../exhibit-core", "../../util/localizer"], function($, Exhibit, _) {
 /**
  * @class
  * @constructor

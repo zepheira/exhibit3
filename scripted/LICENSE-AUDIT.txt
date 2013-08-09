@@ -109,7 +109,7 @@ i18n RequireJS plugin
 i18n domReady plugin
 ----------------------
  * https://github.com/requirejs/domReady/
- * 2.0.2
+ * 2.0.1
  * Dual MIT/Modified BSD License
  * scripted/src/lib/domReady.js
 
@@ -119,6 +119,13 @@ async RequireJS plugin
  * 0.1.1
  * MIT License
  * scripted/src/lib/async.js
+
+almons RequireJS shim
+---------------------
+ * https://github.com/jrburke/almond
+ * 0.2.5
+ * Dual MIT/Modified BSD License
+ * scriped/src/lib/almond.js
 
 xrayquire RequireJS supplement
 ------------------------------

@@ -5,9 +5,9 @@
  */
 
 define([
-    "util/set",
-    "data/expression/collection",
-    "data/expression/functions"
+    "../../util/set",
+    "./collection",
+    "./functions"
 ], function(Set, ExpressionCollection, Functions) {
 /**
  * @namespace

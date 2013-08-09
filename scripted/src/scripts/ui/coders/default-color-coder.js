@@ -9,9 +9,9 @@
 
 define([
     "lib/jquery",
-    "exhibit",
-    "util/localizer",
-    "util/coders"
+    "../../exhibit-core",
+    "../../util/localizer",
+    "../../util/coders"
 ], function($, Exhibit, _, Coders) {
 /**
  * @class

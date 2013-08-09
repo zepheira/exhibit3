@@ -4,7 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["ui/ui-context"], function(UIContext) {
+define(["./ui-context"], function(UIContext) {
 /**
  * @constructor
  * @class

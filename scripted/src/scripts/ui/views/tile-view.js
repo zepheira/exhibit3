@@ -6,11 +6,11 @@
 
 define([
     "lib/jquery",
-    "exhibit",
-    "util/settings",
-    "util/history",
-    "ui/views/view",
-    "ui/views/ordered-view-frame",
+    "../../exhibit-core",
+    "../../util/settings",
+    "../../util/history",
+    "./view",
+    "./ordered-view-frame",
     "lib/jquery.simile.dom"
 ], function($, Exhibit, SettingsUtilities, EHistory, View, OrderedViewFrame) {
 /**

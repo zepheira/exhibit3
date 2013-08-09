@@ -5,13 +5,13 @@
 
 define([
     "lib/jquery",
-    "exhibit",
-    "util/settings",
-    "ui/ui-context",
-    "ui/views/view-panel",
-    "ui/views/view",
-    "ui/widgets/bookmark-widget",
-    "ui/widgets/reset-history-widget"
+    "../exhibit-core",
+    "../util/settings",
+    "../ui/ui-context",
+    "./views/view-panel",
+    "./views/view",
+    "./widgets/bookmark-widget",
+    "./widgets/reset-history-widget"
 ], function($, Exhibit, SettingsUtilities, UIContext, ViewPanel, View, BookmarkWidget, ResetHistoryWidget) {
 /**
  * @class

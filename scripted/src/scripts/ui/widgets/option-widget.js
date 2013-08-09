@@ -6,7 +6,7 @@
 
 define([
     "lib/jquery",
-    "exhibit",
+    "../../exhibit-core",
     "lib/jquery.simile.dom",
     "lib/jquery.simile.bubble"
 ], function($, Exhibit) {

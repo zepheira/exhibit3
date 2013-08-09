@@ -4,7 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "data/importer"], function($, Importer) {
+define(["lib/jquery", "../importer"], function($, Importer) {
     var JSONP;
 
 /**

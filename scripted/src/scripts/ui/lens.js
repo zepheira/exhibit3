@@ -6,14 +6,14 @@
 
 define([
     "lib/jquery",
-    "exhibit",
-    "util/util",
-    "util/localizer",
-    "util/debug",
-    "util/persistence",
-    "util/ui",
-    "data/expression-parser",
-    "ui/format-parser",
+    "../exhibit-core",
+    "../util/util",
+    "../util/localizer",
+    "../util/debug",
+    "../util/persistence",
+    "../util/ui",
+    "../data/expression-parser",
+    "./format-parser",
     "lib/jquery.simile.dom"
 ], function($, Exhibit, Util, _, Debug, Persistence, UIUtilities, ExpressionParser, FormatParser) {
 /**

@@ -1,4 +1,4 @@
-define(["util/localizer"], function(_) {
+define(["../util/localizer"], function(_) {
 
 /**
  * @class 

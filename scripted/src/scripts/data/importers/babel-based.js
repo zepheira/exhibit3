@@ -6,8 +6,8 @@
 
 define([
     "lib/jquery",
-    "exhibit",
-    "data/importer"
+    "../../exhibit-core",
+    "../importer"
 ], function($, Exhibit, Importer) {
     var BabelBased;
 /**

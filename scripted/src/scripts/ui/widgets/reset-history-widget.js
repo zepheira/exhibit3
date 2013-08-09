@@ -5,10 +5,10 @@
  */
 define([
     "lib/jquery",
-    "exhibit",
-    "util/history",
-    "util/ui",
-    "ui/ui-context"
+    "../../exhibit-core",
+    "../../util/history",
+    "../../util/ui",
+    "../ui-context"
 ], function($, Exhibit, EHistory, UIUtilities, UIContext) {
 /**
  * @constructor

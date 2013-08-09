@@ -5,8 +5,8 @@
 
 define([
     "lib/jquery",
-    "util/history",
-    "ui/widgets/toolbox-widget"
+    "../../util/history",
+    "../widgets/toolbox-widget"
 ], function($, EHistory, ToolboxWidget) {
 /**
  * @class

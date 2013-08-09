@@ -6,15 +6,15 @@
 
 define([
     "lib/jquery",
-    "base",
-    "util/localizer",
-    "util/set",
-    "util/debug",
-    "util/importers",
-    "data/database",
-    "data/database/type",
-    "data/database/property",
-    "data/importer"
+    "../../exhibit-base",
+    "../../util/localizer",
+    "../../util/set",
+    "../../util/debug",
+    "../../util/importers",
+    "../database",
+    "./type",
+    "./property",
+    "../importer"
 ], function($, Exhibit, _, Set, Debug, ImporterUtilities,Database, Type, Property, Importer) {
 /**
  * Local in-memory implementation of the Exhibit Database.  Other
