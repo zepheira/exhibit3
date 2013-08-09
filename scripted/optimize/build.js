@@ -2,15 +2,12 @@
     "baseUrl": "../src/",
     "name": "lib/almond",
     "include": ["exhibit"],
-    "out": "../build/exhibit-api.js",
     "wrap": {
         "startFile": "start.frag",
         "endFile": "end.frag"
     },
     "paths": {
-        "jquery": "lib/jquery",
-        "i18n": "lib/i18n",
-        "domReady": "lib/domReady",
+        "i18n": "lib/i18n"
     },
     // r.js does not provide a way to include all language bundles, so force
     "deps": [

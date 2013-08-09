@@ -1,4 +1,6 @@
 local.build.properties
 build/*
 dist/*
-
+src/exhibit-api.js
+src/exhibit-bundle.js
+src/styles/exhibit-bundle.css

@@ -4,7 +4,7 @@
     | Exhibit 3.0 build tasks
      -->
 
-<project name="exhibit3" basedir=".">
+<project name="exhibit3" basedir="." default="publish-local">
 
   <property name="tools" value="tools"/>
   <property name="src" value="src"/>
@@ -14,8 +14,8 @@
   <property name="docs" value="${build}/docs"/>
   <property name="demos" value="${build}/demos"/>
   <property name="bundle" value="${build}/bundle"/>
+  <property name="rjs.dir" value="optimize"/>
   <property name="bundleStyle" value="${bundle}/styles"/>
-  <property name="compress" value="${build}/compress"/>
   <property name="node" value="${build}/node"/>
   <property name="demosSrc" value="demos"/>
   <property name="testsOutput" value="${build}/tests"/>
@@ -47,12 +47,6 @@
       <file file="${lib}/jscoverage-report.js"/>
     </resourceexists>
   </condition>
-
-  <taskdef
-     name="yui-compressor"
-     classname="net.noha.tools.ant.yuicompressor.tasks.YuiCompressorTask"
-     classpath="${tools}/yuicompressor-ant/yui-compressor-ant-task.jar;${tools}/yuicompressor/yuicompressor.jar"
-     />
 
   <taskdef
      name="jsdoctoolkit"
@@ -95,104 +89,35 @@
 
 
 
-  <!-- Code concatenation in prep for compression -->
-  <target name="bundle" description="Combine source files in the right order">
-    <mkdir dir="${bundle}"/>
-    <mkdir dir="${bundleStyle}"/>
-
-    <concat destfile="${bundle}/exhibit-scripted-bundle.js" force="no">
-      <filelist dir="${src}/">
-        <file name="scripts/exhibit.js"/>
-        <file name="scripts/bc/bc.js"/>
-        <file name="scripts/bc/attributes.js"/>
-        <file name="scripts/registry.js"/>
-        <file name="scripts/util/util.js"/>
-      </filelist>
-      <fileset dir="${src}">
-        <include name="scripts/util/*.js"/>
-      </fileset>
-      <filelist dir="${src}/">
-        <file name="scripts/data/database.js"/>
-      </filelist>
-      <fileset dir="${src}/">
-        <include name="scripts/data/database/*.js"/>
-      </fileset>
-      <filelist dir="${src}/">
-        <file name="scripts/data/collection.js"/>
-        <file name="scripts/data/expression.js"/>
-      </filelist>
-      <fileset dir="${src}/">
-        <include name="scripts/data/expression/*.js"/>
-      </fileset>
-      <filelist dir="${src}/">
-        <file name="scripts/data/expression-parser.js"/>
-        <file name="scripts/data/exporter.js"/>
-      </filelist>
-      <fileset dir="${src}/">
-        <include name="scripts/data/exporters/*.js"/>
-      </fileset>
-      <filelist dir="${src}/">
-        <file name="scripts/data/importer.js"/>
-        <file name="scripts/data/importers/json.js"/>
-        <file name="scripts/data/importers/jsonp.js"/>
-        <file name="scripts/data/importers/google-spreadsheet.js"/>
-        <file name="scripts/data/importers/babel-based.js"/>
-      </filelist>
-      <fileset dir="${src}/">
-        <include name="scripts/ui/*.js"/>
-      </fileset>
-      <filelist dir="${src}/">
-        <file name="scripts/ui/facets/facet.js"/>
-        <file name="scripts/ui/facets/list-facet.js"/>
-        <file name="scripts/ui/facets/cloud-facet.js"/>
-        <file name="scripts/ui/facets/numeric-range-facet.js"/>
-        <file name="scripts/ui/facets/alpha-range-facet.js"/>
-        <file name="scripts/ui/facets/text-search-facet.js"/>
-        <file name="scripts/ui/facets/hierarchical-facet.js"/>
-      </filelist>
-      <fileset dir="${src}/">
-        <include name="scripts/ui/views/*.js"/>
-        <include name="scripts/ui/coders/*.js"/>
-        <include name="scripts/ui/widgets/*.js"/>
-      </fileset>
-      <filelist dir="${src}/">
-        <file name="locales/manifest.js"/>
-        <file name="scripts/final.js"/>
-      </filelist>
-    </concat>
-
-    <concat destfile="${bundleStyle}/exhibit-scripted-bundle.css" force="no">
-      <fileset dir="${src}/styles/">
-        <include name="**/*.css"/>
-      </fileset>
-    </concat>
+  <!-- Bundle code for RequireJS-unaware deployment -->
+  <target name="bundle" description="RequireJS-independent bundle">
+    <exec dir="." executable="node">
+      <arg line="${rjs.dir}/r.js -o ${rjs.dir}/build.js out=${bundle}/exhibit-api.js"/>
+    </exec>
   </target>
 
 
 
 
-  <!-- Code compressor -->
-  <target name="compress" depends="bundle" description="Compress source files">
-    <mkdir dir="${compress}"/>
 
-    <yui-compressor
-       munge="false"
-       warn="false"
-       jssuffix=".js"
-       fromdir="${bundle}/"
-       todir="${compress}/">
-      <include name="**/*.js"/>
-    </yui-compressor>
-
-    <yui-compressor
-       munge="true"
-       warn="false"
-       csssuffix=".css"
-       fromdir="${bundle}/"
-       todir="${compress}/">
-      <include name="**/*.css"/>
-    </yui-compressor>
+  <!-- Bundle code for RequireJS-aware environment -->
+  <target name="bundle-require" description="RequireJS bundle">
+    <exec dir="." executable="node">
+      <arg line="${rjs.dir}/r.js -o ${rjs.dir}/build-require.js out=${bundle}/exhibit-bundle.js"/>
+    </exec>
   </target>
+
+
+
+
+
+  <!-- Bundle stylesheets -->
+  <target name="bundle-css" description="CSS bundle">
+    <exec dir="." executable="node">
+      <arg line="${rjs.dir}/r.js -o ${rjs.dir}/build-css.js out=${bundle}/exhibit-bundle.css"/>
+    </exec>
+  </target>
+
 
 
 
@@ -226,13 +151,26 @@
   <!-- Bundle everything -->
   <target name="bundle-all">
     <antcall target="bundle"/>
-    <antcall target="extension-bundle">
+    <antcall target="bundle-require"/>
+    <antcall target="bundle-css"/>
+    <!--antcall target="extension-bundle">
       <param name="extension" value="time"/>
     </antcall>
     <antcall target="extension-bundle">
       <param name="extension" value="map"/>
-    </antcall>
+    </antcall-->
     <!-- invalid-json is self contained in one file, no need to add here -->
+  </target>
+
+
+
+
+
+  <!-- Publish built files locally for use -->
+  <target name="publish-local" depends="bundle-all" description="Publish within src/">
+    <copy file="${bundle}/exhibit-api.js" todir="${src}"/>
+    <copy file="${bundle}/exhibit-bundle.js" todir="${src}"/>
+    <copy file="${bundle}/exhibit-bundle.css" todir="${src}/styles"/>
   </target>
 
 
@@ -254,13 +192,13 @@
 
 
   <!-- Distribution builder -->
-  <target name="dist" description="Assemble existing and generated files into a directory that can be served online" depends="bundle-all,compress">
+  <target name="dist" description="Assemble existing and generated files into a directory that can be served online" depends="bundle-all">
     <mkdir dir="${dist}"/>
     <copy todir="${dist}">
       <fileset dir="${src}"/>
     </copy>
     <copy todir="${dist}">
-      <fileset dir="${compress}"/>
+      <fileset dir="${bundle}"/>
     </copy>
   </target>
 
@@ -374,8 +312,10 @@
     <delete dir="${bundle}" quiet="true"/>
   </target>
 
-  <target name="clean-compress">
-    <delete dir="${compress}/" quiet="true"/>
+  <target name="clean-publish">
+    <delete file="${src}/exhibit-api.js"/>
+    <delete file="${src}/exhibit-bundle.js"/>
+    <delete file="${src}/styles/exhibit-bundle.css"/>
   </target>
 
   <target name="clean-dist">
@@ -396,6 +336,6 @@
     <delete dir="${testsOutput}/" quiet="true"/>
   </target>
 
-  <target name="clean" depends="clean-demos,clean-node,clean-bundle,clean-compress,clean-dist,clean-docs,clean-jscoverage,clean-tests" description="Remove build artificats"/>
+  <target name="clean" depends="clean-demos,clean-node,clean-bundle,clean-publish,clean-dist,clean-docs,clean-jscoverage,clean-tests" description="Remove build artificats"/>
 
 </project>

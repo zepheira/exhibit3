@@ -1,4 +1,3 @@
 ({
-    "cssIn": "../src/styles/main.css",
-    "out": "../build/exhibit-bundle.css"
+    "cssIn": "../src/styles/main.css"
 })
