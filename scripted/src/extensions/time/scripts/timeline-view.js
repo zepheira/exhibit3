@@ -8,7 +8,7 @@ define([
     "lib/jquery",
     "exhibit",
     "timeline",
-    "./scripts/base",
+    "./base",
     "scripts/util/set",
     "scripts/util/date-time",
     "scripts/util/accessors",
