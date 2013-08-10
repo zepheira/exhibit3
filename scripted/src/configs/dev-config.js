@@ -1,9 +1,23 @@
-// Placeholder configuration for Exhibit RequireJS development
+/**
+ * Potentially re-usable config for Exhibit.  Include with the following
+ * require block:
+ *
+ * require(["require", "lib/jquery", "exhibit"],
+ *         function(require, $, Exhibit) {
+ *     if (typeof window.JSON === "undefined" || window.JSON === null) {
+ *         window.JSON = require("lib/json2");
+ *     }
+ *     $(document).trigger("scriptsLoaded.exhibit");
+ *     window.Exhibit = Exhibit; // for debugging
+ * });
+ *
+ */
+
 requirejs.config({
     "baseUrl": "/exhibit/api/",
     "urlArgs": "bust=" + (new Date()).getTime(),
     "config": {
-        "../exhibit": {
+        "exhibit": {
             "prefix": "/exhibit/api/",
             "bundle": false
         },
@@ -14,14 +28,14 @@ requirejs.config({
         }
     },
     "paths": {
-        "lib": "../lib",
-        "nls": "../nls",
-        "ext": "../extensions",
-        "map": "../extensions/map/scripts",
-        "time": "../extensions/time/scripts",
-        "invalid-json": "../extensions/invalid-json/scripts",
-        "async": "../lib/async",
-        "i18n": "../lib/i18n",
+        "lib": "lib",
+        "nls": "nls",
+        "ext": "extensions",
+        "map": "extensions/map/scripts",
+        "time": "extensions/time/scripts",
+        "invalid-json": "extensions/invalid-json/scripts",
+        "async": "lib/async",
+        "i18n": "lib/i18n",
         "timeline": "http://api.simile.zepheira.com/timeline/3.0.0/timeline-bundle",
         "simile-ajax": "http://api.simile.zepheira.com/ajax/3.0.0/simile-ajax-bundle"
     },
@@ -44,27 +58,3 @@ requirejs.config({
         }
     }
 });
-
-/**
-// Define Google Maps API v3
-define('gmaps', ['async!https://maps.googleapis.com/maps/api/js?v=3&sensor=false'],
-    function() {
-        return window.google;
-    }
-);
-
-// Define Google Maps API v2
-define('gmaps2', ['async!http://maps.googleapis.com/maps/api/js?v=2&sensor=false&async=2&key='],
-    function() {
-        return window.GMap2;
-    }
-);
-
-require(["require", "lib/jquery", "exhibit", "ext/map/map-extension", "ext/time/time-extension"], function(require, $, Exhibit) {
-    if (typeof window.JSON === "undefined" || window.JSON === null) {
-        window.JSON = require("lib/json2");
-    }
-    $(document).trigger("scriptsLoaded.exhibit");
-    window.Exhibit = Exhibit; // for debugging
-});
-*/
