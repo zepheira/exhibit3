@@ -484,6 +484,7 @@ define([
 
         Exhibit.urlPrefix = prefix;
         Exhibit.params.prefix = Exhibit.urlPrefix;
+        OptionWidget.config(Exhibit.urlPrefix);
         if (typeof Exhibit.params.babel !== "undefined") {
             Exhibit.babelPrefix = Exhibit.params.babel;
         }

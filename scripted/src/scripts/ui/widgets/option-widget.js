@@ -39,6 +39,22 @@ OptionWidget.create = function(configuration, containerElmt, uiContext) {
     return new OptionWidget(configuration, containerElmt, uiContext);
 };
 
+    /**
+     * Set up local constants based on Exhibit settings.
+     * @param {String} prefix
+     */
+    OptionWidget.config = function(prefix) {
+        /**
+         * @constant
+         */
+        OptionWidget.uncheckedImageURL = prefix + "images/option.png";
+
+        /**
+         * @constant
+         */
+        OptionWidget.checkedImageURL = prefix + "images/option-check.png";
+    };
+
 /**
  *
  */
@@ -49,16 +65,6 @@ OptionWidget.prototype.dispose = function() {
     this._containerElmt = null;
     this._uiContext = null;
 };
-
-/**
- * @constant
- */
-OptionWidget.uncheckedImageURL = Exhibit.urlPrefix + "images/option.png";
-
-/**
- * @constant
- */
-OptionWidget.checkedImageURL = Exhibit.urlPrefix + "images/option-check.png";
 
 /**
  * @constant
