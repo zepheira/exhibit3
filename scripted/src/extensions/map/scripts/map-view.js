@@ -8,7 +8,7 @@
 
 define([
     "lib/jquery",
-    "scripts/exhibit-core",
+    "exhibit",
     "gmaps",
     "./base",
     "./marker",

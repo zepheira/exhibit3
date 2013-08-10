@@ -8,6 +8,7 @@
 
 define([
     "require",
+    "module",
     "lib/jquery",
     "exhibit",
     "./scripts/base",
@@ -15,18 +16,16 @@ define([
     "./scripts/canvas",
     "./scripts/painter",
     "i18n!ext/map/nls/locale",
-    "./scripts/map-view"
-    // @@@requirejs + multiple options for mapping = bad
-    // "map/google-maps-v2-view"
-], function(require, $, Exhibit, MapExtension, Painter, Marker, Canvas, Locale) {
+    "./scripts/map-view" // @@@ will have to find a different solution for map provider instead of which file to include; require must list out all files it might access
+], function(require, module, $, Exhibit, MapExtension, Painter, Marker, Canvas, Locale, MapView) {
     var cssFiles, paramTypes, url, cssURLs, i;
 
     $(document).trigger("loadLocale.exhibit", Locale);
         
-    Exhibit.MapExtension = MapExtension;
-    Exhibit.MapExtension.Painter = Painter;
-    Exhibit.MapExtension.Canvas = Canvas;
-    Exhibit.MapExtension.Marker = Marker;
+    MapExtension.Painter = Painter;
+    MapExtension.Canvas = Canvas;
+    MapExtension.Marker = Marker;
+    MapExtension.MapView = MapView;
 
     cssFiles = [
         "map-view.css"
@@ -40,14 +39,7 @@ define([
         
     if (typeof Exhibit_MapExtension_urlPrefix === "string") {
         Exhibit.MapExtension.urlPrefix = Exhibit_MapExtension_urlPrefix;
-        if (typeof Exhibit_MapExtension_parameters !== "undefined") {
-            Exhibit.parseURLParameters(
-                Exhibit_MapExtension_parameters,
-                Exhibit.MapExtension.params,
-                paramTypes
-            );
-        }
-    } else {
+    }
         //url = Exhibit.findScript(document, "/map-extension.js");
         //if (url === null) {
         //    Exhibit.Debug.exception(new Error("Failed to derive URL prefix for SIMILE Exhibit Map Extension files"));
@@ -60,12 +52,19 @@ define([
         //    Exhibit.MapExtension.params,
         //    paramTypes
         //);
+
+    if (typeof Exhibit_MapExtension_parameters !== "undefined") {
+        Exhibit.parseURLParameters(
+            Exhibit_MapExtension_parameters,
+            Exhibit.MapExtension.params,
+            paramTypes
+        );
     }
         
     cssURLs = [];
 
-    if (Exhibit.MapExtension.params.service === "google2" &&
-        typeof GMap2 === "undefined") {
+    //if (Exhibit.MapExtension.params.service === "google2" &&
+    //    typeof GMap2 === "undefined") {
 /**        if (typeof Exhibit.params.gmapKey !== "undefined") {
             require("http://maps.google.com/maps?file=api&v=2&sensor=false&callback=Exhibit.MapExtension.noop&async=2&key=" + Exhibit.params.gmapKey);
         } else if (typeof Exhibit.MapExtension.params.gmapKey !== "undefined") {
@@ -75,14 +74,14 @@ define([
         }
         */
         //if (!Exhibit.MapExtension.params.bundle) {
-            Exhibit.GoogleMaps2View = require("./scripts/google-maps-v2-view");
+        //    Exhibit.GoogleMaps2View = require("./scripts/google-maps-v2-view");
         //}
-    } else {
+    //} else {
         // if author is referring to an unknown service, default to google
         //if (!Exhibit.MapExtension.params.bundle) {
-            Exhibit.MapView = require("./scripts/map-view");
+        //    Exhibit.MapView = require("./scripts/map-view");
         //}
-    }
+    //}
         
     // @@@ ideally these bundles would be service-specific instead of
     // loading everything
@@ -96,5 +95,5 @@ define([
     Exhibit.includeCssFiles(document, null, cssURLs);
 
     // end define
-    return Exhibit;
+    return MapExtension;
 });
