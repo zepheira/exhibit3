@@ -91,8 +91,13 @@
 
   <!-- Bundle code for RequireJS-unaware deployment -->
   <target name="bundle" description="RequireJS-independent bundle">
+    <fileset dir="${src}/nls/" includes="**/*.js" id="locales"/>
+    <pathconvert dirsep="/" refid="locales" property="localelist" pathsep=",">
+      <map from="${basedir}/${src}" to=""/>
+    </pathconvert>
+
     <exec dir="." executable="node">
-      <arg line="${rjs.dir}/r.js -o ${rjs.dir}/build.js out=${bundle}/exhibit-api.js"/>
+      <arg line="${rjs.dir}/r.js -o ${rjs.dir}/build.js out=${bundle}/exhibit-api.js deps=${localelist}"/>
     </exec>
   </target>
 
@@ -124,24 +129,21 @@
 
   <!-- Modular bundling of extensions -->
   <target name="extension-bundle" description="Combine extension source files">
+    <fileset dir="${src}/extensions/${extension}/nls/" includes="**/*.js" id="locales"/>
+    <pathconvert dirsep="/" refid="locales" property="localelist" pathsep=",">
+      <map from="${basedir}/${src}/extensions/${extension}" to="extensions/map"/>
+    </pathconvert>
+
     <mkdir dir="${bundle}/extensions/${extension}"/>
     <mkdir dir="${bundle}/extensions/${extension}/styles"/>
 
-    <concat destfile="${bundle}/extensions/${extension}/${extension}-extension-bundle.js" force="no">
-      <fileset dir="${src}/extensions/${extension}">
-        <exclude name="${extension}-extension.js"/>
-        <exclude name="styles/*"/>
-        <exclude name="locales/*"/>
-        <include name="*.js"/>
-        <include name="scripts/*.js"/>
-      </fileset>
-    </concat>
+    <exec dir="." executable="node">
+      <arg line="${rjs.dir}/r.js -o ${rjs.dir}/build-css.js cssIn=${src}/extensions/${extension}/styles/main.css out=${bundle}/extensions/${extension}/styles/${extension}-bundle.css"/>
+    </exec>
 
-    <concat destfile="${bundle}/extensions/${extension}/styles/${extension}-extension-bundle.css" force="no">
-      <fileset dir="${src}/extensions/${extension}">
-        <include name="**/*.css"/>
-      </fileset>
-    </concat>
+    <exec dir="." executable="node">
+      <arg line="${rjs.dir}/r.js -o ${rjs.dir}/build-extension.js name=ext/${extension}/${extension}-extension out=${bundle}/extensions/${extension}/${extension}-extension-bundle.js deps=${localelist}"/>
+    </exec>
   </target>
 
 
@@ -153,12 +155,12 @@
     <antcall target="bundle"/>
     <antcall target="bundle-require"/>
     <antcall target="bundle-css"/>
-    <!--antcall target="extension-bundle">
+    <antcall target="extension-bundle">
       <param name="extension" value="time"/>
     </antcall>
     <antcall target="extension-bundle">
       <param name="extension" value="map"/>
-    </antcall-->
+    </antcall>
     <!-- invalid-json is self contained in one file, no need to add here -->
   </target>
 
