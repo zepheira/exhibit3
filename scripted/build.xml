@@ -93,12 +93,32 @@
   <target name="bundle" description="RequireJS-independent bundle">
     <fileset dir="${src}/nls/" includes="**/*.js" id="locales"/>
     <pathconvert dirsep="/" refid="locales" property="localelist" pathsep=",">
-      <map from="${basedir}/${src}" to=""/>
+      <map from="${basedir}/${src}/" to=""/>
+      <globmapper from="*.js" to="*"/>
     </pathconvert>
 
     <exec dir="." executable="node">
       <arg line="${rjs.dir}/r.js -o ${rjs.dir}/build.js out=${bundle}/exhibit-api.js deps=${localelist}"/>
     </exec>
+  </target>
+
+
+
+
+
+  <!-- Bundle code for RequireJS-unaware deployment -->
+  <target name="bundle-debug" description="Bundle debug build">
+    <fileset dir="${src}/nls/" includes="**/*.js" id="locales"/>
+    <pathconvert dirsep="/" refid="locales" property="localelist" pathsep=",">
+      <map from="${basedir}/${src}/" to=""/>
+      <globmapper from="*.js" to="*"/>
+    </pathconvert>
+
+    <exec dir="." executable="node">
+      <arg line="${rjs.dir}/r.js -o ${rjs.dir}/build.js out=${bundle}/exhibit-api-debug.js deps=${localelist} optimize=none"/>
+    </exec>
+
+    <copy file="${bundle}/exhibit-api-debug.js" todir="${src}"/>
   </target>
 
 
@@ -131,14 +151,15 @@
   <target name="extension-bundle" description="Combine extension source files">
     <fileset dir="${src}/extensions/${extension}/nls/" includes="**/*.js" id="locales"/>
     <pathconvert dirsep="/" refid="locales" property="localelist" pathsep=",">
-      <map from="${basedir}/${src}/extensions/${extension}" to="extensions/map"/>
+      <map from="${basedir}/${src}/extensions/${extension}" to="ext/${extension}"/>
+      <globmapper from="*.js" to="*"/>
     </pathconvert>
 
     <mkdir dir="${bundle}/extensions/${extension}"/>
     <mkdir dir="${bundle}/extensions/${extension}/styles"/>
 
     <exec dir="." executable="node">
-      <arg line="${rjs.dir}/r.js -o ${rjs.dir}/build-css.js cssIn=${src}/extensions/${extension}/styles/main.css out=${bundle}/extensions/${extension}/styles/${extension}-bundle.css"/>
+      <arg line="${rjs.dir}/r.js -o ${rjs.dir}/build-css.js cssIn=${src}/extensions/${extension}/styles/main.css out=${bundle}/extensions/${extension}/styles/${extension}-extension-bundle.css"/>
     </exec>
 
     <exec dir="." executable="node">
@@ -173,6 +194,10 @@
     <copy file="${bundle}/exhibit-api.js" todir="${src}"/>
     <copy file="${bundle}/exhibit-bundle.js" todir="${src}"/>
     <copy file="${bundle}/exhibit-bundle.css" todir="${src}/styles"/>
+    <copy file="${bundle}/extensions/time/time-extension-bundle.js" todir="${src}/extensions/time"/>
+    <copy file="${bundle}/extensions/time/styles/time-extension-bundle.css" todir="${src}/extensions/time/styles"/>
+    <copy file="${bundle}/extensions/map/map-extension-bundle.js" todir="${src}/extensions/map"/>
+    <copy file="${bundle}/extensions/map/styles/map-extension-bundle.css" todir="${src}/extensions/map/styles"/>
   </target>
 
 
@@ -318,6 +343,10 @@
     <delete file="${src}/exhibit-api.js"/>
     <delete file="${src}/exhibit-bundle.js"/>
     <delete file="${src}/styles/exhibit-bundle.css"/>
+    <delete file="${src}/extensions/time/time-extension-bundle.js"/>
+    <delete file="${src}/extensions/time/styles/time-extension-bundle.css"/>
+    <delete file="${src}/extensions/map/map-extension-bundle.js"/>
+    <delete file="${src}/extensions/map/styles/map-extension-bundle.css"/>
   </target>
 
   <target name="clean-dist">

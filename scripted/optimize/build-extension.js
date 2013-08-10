@@ -10,5 +10,20 @@
         "gmaps": "empty:",
         "gmaps2": "empty:",
         "timeline": "empty:"
+    },
+    "shim": {
+        "lib/jquery": {
+            "exports": "jQuery"
+        },
+        "lib/sprintf": {
+            "exports": "vsprintf"
+        },
+        "lib/jquery.history": {
+            "deps": ["lib/jquery"],
+            "exports": "History"
+        },
+        "lib/jquery.history.shim": {
+            "deps": ["lib/jquery.history"]
+        }
     }
 })

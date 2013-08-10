@@ -2,7 +2,10 @@ local.build.properties
 build/*
 dist/*
 src/exhibit-api.js
+src/exhibit-api-debug.js
 src/exhibit-bundle.js
 src/styles/exhibit-bundle.css
+src/extensions/*/*-extension-bundle.js
+src/extensions/*/styles/*-extension-bundle.css
 tools/ajax
 tools/timeline
