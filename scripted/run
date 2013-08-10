@@ -1,0 +1,2 @@
+#!/bin/sh
+java -Djetty.home=tools/jetty/ -jar tools/jetty/start.jar tools/jetty/jetty.xml
