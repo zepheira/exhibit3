@@ -4,3 +4,5 @@ dist/*
 src/exhibit-api.js
 src/exhibit-bundle.js
 src/styles/exhibit-bundle.css
+tools/ajax
+tools/timeline
