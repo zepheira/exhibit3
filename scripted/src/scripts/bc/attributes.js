@@ -5,7 +5,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "../exhibit-core", "./bc"], function($, Exhibit, Backwards) {
+define(["lib/jquery", "../exhibit-base", "./bc"], function($, Exhibit, Backwards) {
     var Attributes;
 
     /**

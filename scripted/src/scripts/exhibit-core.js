@@ -4,7 +4,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-define(["lib/jquery", "./exhibit-base"], function($, Exhibit) {
+define(["lib/jquery", "./exhibit-base", "./bc/bc", "./bc/attributes"], function($, Exhibit, Backwards) {
 /**
  * Retrieve an Exhibit-specific attribute from an element.
  *
@@ -154,8 +154,8 @@ Exhibit.generateDelayID = function() {
     /**
      * Check for instances of ex:role and throw into backwards compatibility
      * mode if any are found.  Authors are responsible for converting or using
-     * the HTML5 attributes correctly; backwards compatibility is only applicable
-     * when used with unconverted Exhibits.
+     * the HTML5 attributes correctly; backwards compatibility is only
+     * applicable when used with unconverted Exhibits.
      * @static
      * @see Exhibit.Backwards
      */
