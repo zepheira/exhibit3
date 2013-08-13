@@ -9,10 +9,15 @@ define(function() {
     TimeExtension = {
         "params": {
             "bundle": true,
-            "timelinePrefix": "http://api.simile-widgets.org",
-            "timelineVersion": "2.3.1"
+            "prefix": null
         },
-        "urlPrefix": null
+        "paramTypes": {
+            "bundle": Boolean,
+            "prefix": String
+        },
+        "urlPrefix": null,
+        "cssFiles": ["styles/main.css"],
+        "bundledCssFile": "styles/time-extension-bundle.css"
     };
         
     return TimeExtension;

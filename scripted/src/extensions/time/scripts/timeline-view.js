@@ -18,7 +18,6 @@ define([
     "scripts/ui/views/view",
     "scripts/ui/coders/default-color-coder"
 ], function($, Exhibit, Timeline, TimeExtension, Set, DateTime, AccessorsUtilities, SettingsUtilities, ViewUtilities, UIContext, View, DefaultColorCoder) {
-    console.log(Timeline);
 /**
  * @class
  * @constructor
