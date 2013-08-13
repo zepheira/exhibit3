@@ -26,9 +26,9 @@ requirejs.config({
             "ajax": "/ajax/api/",
             "bundle": true
         },
-        "time-extension": {
+        "ext/time/time-extension": {
             "bundle": true,
-            "prefix": "/exhibit/api/extensions/time-extension"
+            "prefix": "/exhibit/api/extensions/time/"
         }
     },
     "paths": {
