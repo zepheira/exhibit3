@@ -22,9 +22,13 @@ requirejs.config({
             "bundle": false
         },
         "timeline": {
-            "prefix": "http://api.simile.zepheira.com/timeline/3.0.0/",
-            "ajax": "http://api.simile.zepheira.com/ajax/3.0.0/",
+            "prefix": "/timeline/api/",
+            "ajax": "/ajax/api/",
             "bundle": true
+        },
+        "time-extension": {
+            "bundle": true,
+            "prefix": "/exhibit/api/extensions/time-extension"
         }
     },
     "paths": {
@@ -36,8 +40,8 @@ requirejs.config({
         "invalid-json": "extensions/invalid-json/scripts",
         "async": "lib/async",
         "i18n": "lib/i18n",
-        "timeline": "http://api.simile.zepheira.com/timeline/3.0.0/timeline-bundle",
-        "simile-ajax": "http://api.simile.zepheira.com/ajax/3.0.0/simile-ajax-bundle"
+        "timeline": "/timeline/api/timeline-bundle",
+        "simile-ajax": "/ajax/api/simile-ajax-bundle"
     },
     "shim": {
         "lib/jquery": {
