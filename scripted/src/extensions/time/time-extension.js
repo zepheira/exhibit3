@@ -29,14 +29,13 @@
 
 define([
     "module",
-    "lib/domReady",
     "lib/jquery",
     "exhibit",
     "./scripts/base",
     "./scripts/timeline-view",
     "i18n!ext/time/nls/locale",
     "scripts/util/debug"
-], function(module, domReady, $, Exhibit, TimeExtension, TimelineView, Locale, Debug) {
+], function(module, $, Exhibit, TimeExtension, TimelineView, Locale, Debug) {
     var url, i, conf, prefix, targets;
 
     url = null;
@@ -81,7 +80,7 @@ define([
         }
     };
 
-    domReady(TimeExtension.setup);
+    $(document).ready(TimeExtension.setup);
 
     return TimeExtension;
 });

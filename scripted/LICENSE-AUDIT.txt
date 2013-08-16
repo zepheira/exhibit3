@@ -106,13 +106,6 @@ i18n RequireJS plugin
  * Dual MIT/Modified BSD License
  * scripted/src/lib/i18n.js
 
-i18n domReady plugin
-----------------------
- * https://github.com/requirejs/domReady/
- * 2.0.1
- * Dual MIT/Modified BSD License
- * scripted/src/lib/domReady.js
-
 async RequireJS plugin
 ----------------------
  * https://github.com/millermedeiros/requirejs-plugins
