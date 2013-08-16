@@ -149,9 +149,26 @@ UIUtilities.createBusyIndicator = function() {
         containerDiv.append(contentDiv);
     }
 
+    // This is redundant to the stylesheet, but the stylesheet
+    // may not be rendered in time for the often briefly displayed
+    // loader to catch the proper, intended styling.  The images
+    // may not even load in time.  Not much to be done about that
+    // in the present implementation.
+    containerDiv.css({
+        "position": "absolute",
+        "top": "30%",
+        "left": "35%",
+        "right": "35%",
+        "zIndex": 1000
+    });
+    contentDiv.css({
+        "font-size": "120%",
+        "font-weight": "bold"
+    });
+
     containerDiv.addClass("exhibit-busyIndicator");
     contentDiv.addClass("exhibit-busyIndicator-content");
-    
+
     img = $("<img />").attr("src", urlPrefix + "progress-running.gif");
     contentDiv.append(img);
     contentDiv.append(document.createTextNode(_("%general.busyIndicatorMessage")));

@@ -156,9 +156,11 @@ div.exhibit-focusDialog-controls {
  */
 .exhibit-busyIndicator {
     position:   absolute;
+    top:        30%;
     left:       35%;
-    width:      30%;
+    right:      35%;
     z-index:    1000;
+    display:    none;
 }
 .exhibit-busyIndicator-content {
     font-size:      120%;
