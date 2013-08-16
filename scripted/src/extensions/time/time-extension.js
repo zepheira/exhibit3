@@ -36,14 +36,14 @@ define([
     "i18n!ext/time/nls/locale",
     "scripts/util/debug"
 ], function(module, $, Exhibit, TimeExtension, TimelineView, Locale, Debug) {
-    var url, i, conf, prefix, targets;
-
-    url = null;
-    conf = module.config();
     TimeExtension.TimelineView = TimelineView;
 
     TimeExtension.setup = function() {
+        var url, i, conf, prefix, targets;
+
         $(document).trigger("loadLocale.exhibit", Locale);
+        url = null;
+        conf = module.config();
 
         if (typeof Exhibit_TimeExtension_urlPrefix === "string") {
             prefix = Exhibit_TimeExtension_urlPrefix;
