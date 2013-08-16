@@ -11,6 +11,14 @@ define(function() {
             "service": "google",
             "mapPrefix": "http://api.simile-widgets.org"
         },
+        "paramTypes": {
+            "bundle": Boolean,
+            "service": String,
+            "gmapKey": String,
+            "mapPrefix": String
+        },
+        "cssFiles": [ "styles/main.css" ],
+        "bundledCssFile": "styles/map-extension-bundle.css",
         "urlPrefix": null,
         "markerUrlPrefix" :"http://service.simile-widgets.org/painter/painter?",
         "initialized": false, // used in the view

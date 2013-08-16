@@ -29,6 +29,10 @@ requirejs.config({
         "ext/time/time-extension": {
             "bundle": true,
             "prefix": "/exhibit/api/extensions/time/"
+        },
+        "ext/map/map-extension": {
+            "bundle": true,
+            "prefix": "/exhibit/api/extensions/map/"
         }
     },
     "paths": {
