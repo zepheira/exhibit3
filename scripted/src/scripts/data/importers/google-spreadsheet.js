@@ -47,7 +47,7 @@ GoogleSpreadsheet._register = function(evt, reg) {
  * @returns {Object}
  */
 GoogleSpreadsheet.transformJSON = function(json, url, link) {
-    var separator, s, items, properties, types, valueTypes, entries, i, entry, id, c, r, cellIndex, getNextRow, propertyRow, propertiesByColumn, cell, fieldSpec, fieldName, fieldDetails, property, d, detail, row, fieldValues, v;
+    var separator, s, item, items, properties, types, valueTypes, entries, i, entry, id, c, r, cellIndex, getNextRow, propertyRow, propertiesByColumn, cell, fieldSpec, fieldName, fieldDetails, property, d, detail, row, fieldValues, v;
     separator = ";";
 
     if (typeof link !== "undefined" && link !== null && typeof link !== "string") {
