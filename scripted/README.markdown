@@ -9,12 +9,20 @@ Getting Started
 
 We are producing documentation for users.  We'll add a link here when it's ready.
 
+Licensing
+---------
+
+For historical reasons, the code is governed by both the modified BSD
+and the MIT licenses.  See the LICENSE.txt and ORIGINAL-LICENSE.txt files
+for the full license.
+
 Developers
 ----------
 
 Code is maintained in our [Github repostory][3].  Participating is welcome,
 please start by following the [fork-pull method][5] of git development to start
-contributing patches.
+contributing patches.  Note that your contributions are expected to be
+covered by the licensing as stated above.
 
 Check our [installation instructions][4] on our wiki for more on how to work
 with the code.
