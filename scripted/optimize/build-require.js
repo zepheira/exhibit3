@@ -15,6 +15,9 @@
         "lib/sprintf": {
             "exports": "vsprintf"
         },
+        "lib/base64": {
+            "exports": "Base64"
+        },
         "lib/jquery.history": {
             "deps": ["lib/jquery"],
             "exports": "History"
