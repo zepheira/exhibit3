@@ -507,7 +507,7 @@ define([
         }
 
         if (Exhibit.params.bundle) {
-            Exhibit.includeCssFile(document, Exhibit.bundledStyle);
+            Exhibit.includeCssFile(document, Exhibit.urlPrefix + Exhibit.bundledStyle);
         } else {
             Exhibit.includeCssFiles(document, Exhibit.urlPrefix, Exhibit.styles);
         }
