@@ -169,7 +169,9 @@ UIUtilities.createBusyIndicator = function() {
     containerDiv.addClass("exhibit-busyIndicator");
     contentDiv.addClass("exhibit-busyIndicator-content");
 
-    img = $("<img />").attr("src", urlPrefix + "progress-running.gif");
+    img = $("<img />").attr("src", urlPrefix + "progress-running.gif").css({
+        "vertical-align": "middle"
+    });
     contentDiv.append(img);
     contentDiv.append(document.createTextNode(_("%general.busyIndicatorMessage")));
     
