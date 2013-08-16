@@ -396,6 +396,11 @@ ViewPanel.prototype._createView = function() {
  * @param {Number} newIndex
  */
 ViewPanel.prototype._switchView = function(newIndex) {
+    // Warn if that view is gone or index is invalid
+    if (newIndex >= this._viewConstructors.length || newIndex < 0) {
+        Debug.warn(_("%viewPanel.error.outOfRange", newIndex));
+    }
+
     $(this.getContainer()).trigger(
         "onBeforeViewPanelSwitch.exhibit",
         [ this._viewIndex ]

@@ -146,6 +146,7 @@ define({
     "%viewPanel.noViewLabel": "[no view label set]",
     "%viewPanel.error.unknownView": "Unknown viewClass: %1$s",
     "%viewPanel.error.failedViewCreate": "Failed to create view %1$s (%2$d)",
+    "%viewPanel.error.outOfRange": "Cannot switch to non-existent view at index %1$d; did the Exhibit change?",
 
     "%TileView.label": "Tiles",
     "%TileView.tooltip": "View items as tiles in a list",
