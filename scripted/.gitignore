@@ -6,6 +6,7 @@ src/exhibit-api-debug.js
 src/exhibit-bundle.js
 src/styles/exhibit-bundle.css
 src/extensions/*/*-extension-bundle.js
+src/extensions/*/*-extension-bundle-debug.js
 src/extensions/*/styles/*-extension-bundle.css
 tools/ajax
 tools/timeline
