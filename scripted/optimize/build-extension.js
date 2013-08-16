@@ -18,6 +18,9 @@
         "lib/sprintf": {
             "exports": "vsprintf"
         },
+        "lib/base64": {
+            "exports": "Base64"
+        },
         "lib/jquery.history": {
             "deps": ["lib/jquery"],
             "exports": "History"
@@ -25,5 +28,13 @@
         "lib/jquery.history.shim": {
             "deps": ["lib/jquery.history"]
         }
-    }
+    },
+    "exclude": [
+        "lib/jquery",
+        "scripts/ui/views/view",
+        "scripts/util/views",
+        "scripts/util/coders",
+        "scripts/util/accessors",
+        "scripts/ui/coders/default-color-coder"
+    ]
 })

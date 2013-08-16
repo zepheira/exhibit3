@@ -163,7 +163,7 @@
     </exec>
 
     <exec dir="." executable="node">
-      <arg line="${rjs.dir}/r.js -o ${rjs.dir}/build-extension.js name=ext/${extension}/${extension}-extension out=${bundle}/extensions/${extension}/${extension}-extension-bundle.js deps=${localelist}"/>
+      <arg line="${rjs.dir}/r.js -o ${rjs.dir}/build-extension.js name=ext/${extension}/${extension}-extension out=${bundle}/extensions/${extension}/${extension}-extension-bundle.js include=${localelist}"/>
     </exec>
   </target>
 
