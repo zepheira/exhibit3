@@ -45,7 +45,8 @@ requirejs.config({
         "async": "lib/async",
         "i18n": "lib/i18n",
         "timeline": "/timeline/api/timeline-bundle",
-        "simile-ajax": "/ajax/api/simile-ajax-bundle"
+        "simile-ajax": "/ajax/api/simile-ajax-bundle",
+        "openlayers": "extensions/openlayers/lib/OpenLayers"
     },
     "shim": {
         "lib/jquery": {
@@ -66,6 +67,9 @@ requirejs.config({
         },
         "lib/jquery.history.shim": {
             "deps": ["lib/jquery.history"]
+        },
+        "openlayers": {
+            "exports": "OpenLayers"
         }
     }
 });
