@@ -801,8 +801,8 @@ MapView.prototype._rePlotItems = function(unplottableItems) {
 
         marker = self._makeMarker(
 	        point,
-            shape, 
-            color, 
+            shape,
+            color,
             iconSize,
             icon,
             itemCount === 1 ? "" : itemCount.toString(),
@@ -852,7 +852,7 @@ MapView.prototype._rePlotItems = function(unplottableItems) {
                 legendWidget.addEntry(color, key);
             }
             if (typeof settings.colorLegendLabel !== "undefined" && settings.colorLegendLabel !== null) {
-            legendWidget.addLegendLabel(settings.colorLegendLabel, "color");
+                legendWidget.addLegendLabel(settings.colorLegendLabel, "color");
             }
         }
 
