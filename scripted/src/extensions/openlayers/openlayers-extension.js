@@ -23,6 +23,7 @@ define([
     MapExtension.OLMapView = OLMapView;
 
     MapExtension.bundledCssFile = "styles/openlayers-extension-bundle.css";
+    MapExtension.openLayersVersion = "2.13.1";
 
     MapExtension.setup = function() {
         var prefix, url, i, conf, targets, keyArg;

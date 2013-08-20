@@ -18,8 +18,6 @@
 //  test cases
 //  incorporate an editor based on OL editing API
 
-// @@@ define openlayers requirement here?
-
 define([
     "lib/jquery",
     "exhibit",
@@ -31,14 +29,13 @@ define([
     "scripts/util/accessors",
     "scripts/util/settings",
     "scripts/util/views",
-    "scripts/util/persistence",
     "scripts/data/expression-parser",
     "scripts/ui/ui-context",
     "scripts/ui/views/view",
     "scripts/ui/formatter",
     "scripts/ui/coders/default-color-coder",
     "lib/jquery.simile.dom"
-], function($, Exhibit, OpenLayers, MapExtension, Marker, Debug, Set, AccessorsUtilities, SettingsUtilities, ViewUtilities, Persistence, ExpressionParser, UIContext, View, Formatter, DefaultColorCoder) {
+], function($, Exhibit, OpenLayers, MapExtension, Marker, Debug, Set, AccessorsUtilities, SettingsUtilities, ViewUtilities, ExpressionParser, UIContext, View, Formatter, DefaultColorCoder) {
     var OLMapView = function(containerElmt, uiContext) {
         OLMapView._initialize();
 
@@ -130,14 +127,15 @@ define([
         "sizeLegendLabel":  { "type": "text",     "defaultValue": null      },
         "colorLegendLabel": { "type": "text",     "defaultValue": null      },
         "iconLegendLabel":  { "type": "text",     "defaultValue": null      },
+        "markerFontFamily": { "type": "text",     "defaultValue": "12pt sans-serif" },
+        "markerFontColor":  { "type": "text",     "defaultValue": "black"   },
         "markerScale":      { "type": "text",     "defaultValue": null      },
         "showHeader":       { "type": "boolean",  "defaultValue": true      },
         "showSummary":      { "type": "boolean",  "defaultValue": true      },
         "showFooter":       { "type": "boolean",  "defaultValue": true      },
         "showToolbox":      { "type": "boolean",  "defaultValue": true      },
-        "osmURL":           { "type": "text",     "defaultValue": "http://a.tile.openstreetmap.org/${z}/${x}/${y}.png" },
-//        "osmURL":           { "type": "text",     "defaultValue": "http://otile1.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.png" },
-        "wmsURL":           { "type": "text",     "defaultValue": "http://vmap0.tiles.osgeo.org/wms/vmap0" }
+        "mapURL":           { "type": "text",     "defaultValue": "http://otile1.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.png" },
+        "aerialURL":        { "type": "text",     "defaultValue": "http://otile2.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg" }
     };
 
     /**
@@ -224,6 +222,15 @@ define([
             });
             
             Marker.detectCanvas();
+
+            if (MapExtension.urlPrefix !== null) {
+                OpenLayers.ImgPath = MapExtension.urlPrefix + "images/";
+            } else if (Exhibit.urlPrefix !== null) {
+                OpenLayers.ImgPath = Exhibit.urlPrefix + "extensions/openlayers/images/";
+            } else {
+                OpenLayers.ImgPath = "http://openlayers/org/api/" + MapExtension.openLayersVersion + "/img/";
+            }
+
             MapExtension.initialized = true;
         }
     };
@@ -392,7 +399,7 @@ define([
     };
 
     OLMapView.prototype._constructMap = function(mapDiv) {
-        var settings, map, osm, wms, markers, availableLayers, availability, vectors, self, selectControl;
+        var settings, map, osm, aerial, availableLayers, availability, vectors, self, selectControl;
 
         settings = this._settings;
 
@@ -413,41 +420,42 @@ define([
 	            "units": "m",
 	            "numZoomLevels": 18,
 	            "maxResolution": 156543.0339,
-	            "maxExtent": new OpenLayers.Bounds(-20037508.34, -20037508.34, 20037508.34, 20037508.34)});
+	            "maxExtent": new OpenLayers.Bounds(-20037508.34, -20037508.34, 20037508.34, 20037508.34),
+                "theme": null
+            });
 
 	        osm = new OpenLayers.Layer.OSM(
                 "Street",
-                settings.osmURL,
+                settings.mapURL,
                 { "wrapDateLine": true });
 	        osm.setVisibility(false);
 
-            wms = new OpenLayers.Layer.WMS(
-		        "World Map",
-		        settings.wmsURL,
-                {"layers": "basic" }, {"wrapDateLine": true});
-	        wms.setVisibility(false);
+            aerial = new OpenLayers.Layer.OSM(
+		        "Aerial",
+		        settings.aerialURL,
+                {"wrapDateLine": true});
+	        aerial.setVisibility(false);
 
-	        availableLayers = [osm, wms];
-	        availability = { "osm" : osm, "wms" : wms };
+	        availableLayers = [osm, aerial];
+	        availability = { "osm": osm, "aerial": aerial };
 
-            markers = new OpenLayers.Layer.Markers("Markers");
-            availableLayers.push(markers);
-            
-	        vectors = new OpenLayers.Layer.Vector("Features", { "wrapDateLine": true });
+            // Use Vector layer instead of Markers for markers, because
+            // markers can then be combined with polygons/polylines in the
+            // same map layer without needing to sort out which layer is
+            // receiving clicks.  Also simplifies matters.
+	        vectors = new OpenLayers.Layer.Vector("Features", { "wrapDateLine": true, "projection": new OpenLayers.Projection("EPSG:900913") });
 	        availableLayers.push(vectors);
             
-	        if (typeof availability[settings.type] != "undefined") {
+	        if (typeof availability[settings.type] !== "undefined") {
 	            availability[settings.type].setVisibility(true);
 	        } else {
 	            osm.setVisibility(true);
 	        }
 
             map.addLayers(availableLayers);
-	        availability = null;
-	        availableLayers = null;
 
-            if (settings.center != null && typeof settings.center[0] != "undefined" && typeof settings.center[1] != "undefined") {
-                if (settings.zoom != null) {
+            if (settings.center !== null && typeof settings.center[0] !== "undefined" && typeof settings.center[1] !== "undefined") {
+                if (settings.zoom !== null) {
                     map.setCenter(new OpenLayers.LonLat(settings.center[1], settings.center[0]).transform(this._projection, map.getProjectionObject()), settings.zoom);
                 } else {
                     map.setCenter(new OpenLayers.LonLat(settings.center[1], settings.center[0]).transform(this._projection, map.getProjectionObject()));
@@ -478,9 +486,8 @@ define([
             
             map.addControl(new OpenLayers.Control.LayerSwitcher());
 
-            /** @@@
-             * map.events.register("click", null, SimileAjax.WindowManager.cancelPopups);
-             */
+            // @@@ replace
+            // map.events.register("click", null, SimileAjax.WindowManager.cancelPopups);
 
             return map;
         }
@@ -535,16 +542,11 @@ define([
      * @private
      */
     OLMapView.prototype._clearOverlays = function() {
-        var vectorLayer, markerLayer;
+        var vectorLayer;
         vectorLayer = this._map.getLayersByClass("OpenLayers.Layer.Vector");
         if (vectorLayer.length === 1) {
             vectorLayer[0].destroyFeatures();
         }
-
-        markerLayer = this._map.getLayersByClass("OpenLayers.Layer.Markers");
-        if (markerLayer.length === 1) {
-        //@@@    markerLayer.clearMarkers();
-        };
 
         while (this._map.popups.length > 0) {
             this._map.removePopup(this._map.popups[0]);
@@ -729,7 +731,7 @@ define([
     
         maxAutoZoom = Infinity;
         addMarkerAtLocation = function(locationData) {
-            var itemCount, shape, color, iconSize, icon, point, layer, marker, popup, x;
+            var itemCount, shape, color, iconSize, icon, point, layer, marker, popup, popupContent, x;
             itemCount = locationData.items.length;
             if (typeof bounds === "undefined" || bounds === null) {
                 bounds = new OpenLayers.Bounds();
@@ -756,7 +758,7 @@ define([
             if (hasIconKey) {
                 icon = self._iconCoder.translateSet(locationData.iconKeys, iconCodingFlags);
             }
-            
+
             point = new OpenLayers.LonLat(locationData.latlng.lng, locationData.latlng.lat).transform(self._projection, self._map.getProjectionObject());
             marker = self._makeMarker(
                 point,
@@ -764,26 +766,30 @@ define([
                 color, 
                 iconSize,
                 icon,
-                itemCount == 1 ? "" : itemCount.toString(),
+                itemCount === 1 ? "" : itemCount.toString(),
                 self._settings
             );
-	        layer = self._map.getLayersByClass("OpenLayers.Layer.Markers")[0];
+            marker.map = self._map;
+            marker.attributes = { "locationData": locationData };
+	        layer = self._map.getLayersByClass("OpenLayers.Layer.Vector")[0];
+	        layer.addFeatures([marker]);
+
+            popupContent = self._createInfoWindow(locationData.items);
             popup = new OpenLayers.Popup.FramedCloud(
                 "markerPoup"+Math.floor(Math.random() * 10000),
-                new OpenLayers.LonLat(locationData.latlng.lng, locationData.latlng.lat).transform(self._projection, self._map.getProjectionObject()),
-		        null,
-                self._createInfoWindow(locationData.items).innerHTML,
-                icon,
-                true,
-                function() {
-                    //SimileAjax.WindowManager.cancelPopups();
-                    self._map.removePopup(this);
-                }
+                point,
+		        new OpenLayers.Size(200, 200), // arbitrary, autoresized later
+                $(popupContent).html(),
+                null,
+                true
             );
-	        marker.popup = popup;
-	        popup.feature = marker;
-            console.log(marker);
-	        layer.addMarker(marker);
+            // constructor only takes a string as opposed to adorned DOM,
+            // so until it can take a DOM element, pass in string and replace
+            // it underhandedly with DOM.
+            marker.attributes.dom = popupContent;
+            marker.popup = popup;
+            popup.feature = marker;
+            popup.autoSize = true;
 
             if (maxAutoZoom > locationData.latlng.maxAutoZoom) {
                 maxAutoZoom = locationData.latlng.maxAutoZoom;
@@ -933,6 +939,8 @@ define([
 	            "fillOpacity": settings.opacity
 	        };
 	        polygonFeature = new OpenLayers.Feature.Vector(polygon, null, polygonStyle);
+            polylineFeature.map = this._map;
+            polylineFeature.attributes = { "locationData": { "items" : [itemID] } };
             return this._addPolygonOrPolyline(itemID, polygonFeature);
         }
         return null;
@@ -959,6 +967,9 @@ define([
 	            "strokeOpacity": settings.borderOpacity
 	        };
 	        polylineFeature = new OpenLayers.Feature.Vector(polyline, null, polylineStyle);
+            polylineFeature.map = this._map;
+            polylineFeature.attributes = { "locationData": { "items" : [itemID] } };
+
             return this._addPolygonOrPolyline(itemID, polylineFeature);
         }
         return null;
@@ -987,13 +998,11 @@ define([
             null,
             self._createInfoWindow([ itemID ]).innerHTML,
             null,
-            true,
-            function() {
-                //SimileAjax.WindowManager.cancelPopups();
-                self._map.removePopup(this);
-            });
+            true
+        );
         poly.popup = popup;
         popup.feature = poly;
+        popup.autoSize = true;
 
         this._itemIDToMarker[itemID] = poly;
     
@@ -1024,6 +1033,7 @@ define([
      */
     OLMapView.prototype._onFeatureSelect = function(self, feature) {
         self._map.addPopup(feature.popup, true);
+        $(feature.popup.contentDiv).html(feature.attributes.dom);
         if (self._selectListener !== null) {
             self._selectListener.fire({
                 "itemIDs": feature.attributes.locationData.items
@@ -1036,7 +1046,8 @@ define([
      * @param {OpenLayers.Feature.Vector} feature
      */
     OLMapView.prototype._onFeatureUnselect = function(self, feature) {
-        //SimileAjax.WindowManager.cancelPopups();
+        // @@@ replace
+        // SimileAjax.WindowManager.cancelPopups();
         self._map.removePopup(feature.popup);
     };
 
@@ -1050,6 +1061,7 @@ define([
         marker = this._itemIDToMarker[itemID];
         if (typeof marker !== "undefined" && marker !== null) {
             self._map.addPopup(marker.popup, true);
+            marker.popup.show();
         }
     };
 
@@ -1058,52 +1070,11 @@ define([
      * @returns {Element}
      */
     OLMapView.prototype._createInfoWindow = function(items) {
-        var contextId, selfuic, selfdb, selfreg, olContext;
-        contextId = "context"+Math.random()*1000;
-        selfuic = this.getUIContext();
-        var selfdb = this.getUIContext().getDatabase();
-        var selfreg = this.getUIContext().getLensRegistry();
-        var olContext = {};
-        olContext.getSetting = function(setting) {
-	        return selfuic.getSetting(setting);
-        };
-        olContext.getDatabase = function() {
-	        return selfdb;
-        };
-        olContext.getLensRegistry = function() {
-	        return selfreg;
-        };
-        olContext.isBeingEdited = function(a) {
-	        return false;
-        };
-        olContext.formatList = function(iterator, count, valueType, appender) {
-	        return selfuic.formatList(iterator, count, valueType, appender);
-        };
-        olContext.format = function(value, valueType, appender) {
-            // assume this is the only thing being done with context,
-	        // and that the only thing be formmatted is items; currently
-	        // a safe assumption
-	        var f = new Formatter._ItemFormatter(olContext);
-            f.format = function(v, a) {
-                var title, anchor;
-	            title = this.formatText(v);
-	            OLMapView.contexts[contextId] = selfuic;
-                // @@@ use marker event handler
-	            // it seems OpenLayers quashes events that are
-	            // programatically registered?  sneaking it in as an
-	            // attribute is the only thing that works, sadly.
-	            // the contexts array is a hack to coordinate global
-	            // variables with a randomly ID'd view context.
-	            anchor = $("<a href=\"" + Persistence.getItemLink(v) + "\" class='exhibit-item' onclick='Exhibit.UI.showItemInPopup(\""+v+"\", this, Exhibit.OLMapView.contexts[\""+contextId+"\"]); return false;'>" + title + "</a>");
-	            a(anchor.get(0));
-	        };
-            f.format(value, appender);
-        };
         return ViewUtilities.fillBubbleWithItems(
             null, 
             items,
             items._markerLabelExpression,
-            olContext
+            this.getUIContext()
         );
     };
 
@@ -1114,15 +1085,21 @@ define([
      * @returns {OpenLayers.Marker}
      */
     OLMapView.markerToMap = function(marker, position) {
-        var icon, shadow;
+        var icon, shadow, m;
         icon = marker.getIcon();
-	    return new OpenLayers.Marker(
-            position,
-            new OpenLayers.Icon(
-		        icon.url,
-                new OpenLayers.Size(icon.size[0], icon.size[1]),
-                new OpenLayers.Pixel(icon.anchor[0], icon.anchor[1])
-            )
+	    return new OpenLayers.Feature.Vector(
+            new OpenLayers.Geometry.Point(position.lon, position.lat),
+            null,
+            {
+                "fill": false,
+                "stroke": false,
+                "graphic": true,
+                "externalGraphic": icon.url,
+                "graphicWidth": icon.size[0],
+                "graphicHeight": icon.size[1],
+                "graphicXOffset": -icon.anchor[0],
+                "graphicYOffset": -icon.anchor[1]
+            }
         );
     };
 
@@ -1135,7 +1112,11 @@ define([
         var cached;
         cached = this._markerCache[key];
         if (typeof cached !== "undefined" && cached !== null) {
-            cached.setUrl(iconURL);
+            cached.style.externalGraphic = iconURL;
+            // Suboptimal, hard to avoid.  At least it doesn't appear
+            // like it's being redrawn for every icon to the user, unless
+            // watching the CPU usage.
+            cached.layer.redraw();
         }
     };
 

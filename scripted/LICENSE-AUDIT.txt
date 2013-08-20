@@ -113,7 +113,7 @@ async RequireJS plugin
  * MIT License
  * scripted/src/lib/async.js
 
-almons RequireJS shim
+almond RequireJS shim
 ---------------------
  * https://github.com/jrburke/almond
  * 0.2.5
@@ -127,3 +127,14 @@ xrayquire RequireJS supplement
  * Modified BSD / MIT License
  * scripted/src/lib/xrayquire.js
  * This is NOT bundled for distribution and is used to detect depenency cycles
+
+OpenLayers
+----------
+ * http://openlayers.org/
+ * 2.13.1
+ * Apache 2.0 License
+ * scripted/src/extensions/openlayers/
+  * lib/OpenLayers.js
+  * styles/style.css
+  * styles/img/* (theme graphics)
+  * images/* (general theme-independent graphics)
