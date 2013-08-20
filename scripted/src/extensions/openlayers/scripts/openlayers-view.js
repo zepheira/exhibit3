@@ -427,13 +427,15 @@ define([
 	        osm = new OpenLayers.Layer.OSM(
                 "Street",
                 settings.mapURL,
-                { "wrapDateLine": true });
+                { "wrapDateLine": true,
+                  "attribution": "&copy; <a href='http://www.openstreetmap.org/copyright' target='_blank'>OpenStreetMap</a> contributors. Tiles Courtesy of <a href='http://www.mapquest.com/' target='_blank'>MapQuest</a> <img src='http://developer.mapquest.com/content/osm/mq_logo.png'>" });
 	        osm.setVisibility(false);
 
             aerial = new OpenLayers.Layer.OSM(
 		        "Aerial",
 		        settings.aerialURL,
-                {"wrapDateLine": true});
+                { "wrapDateLine": true,
+                  "attribution": "Portions Courtesy NASA/JPL-Caltech and U.S. Depart. of Agriculture, Farm Service Agency. Tiles Courtesy of <a href='http://www.mapquest.com/' target='_blank'>MapQuest</a> <img src='http://developer.mapquest.com/content/osm/mq_logo.png'>" });
 	        aerial.setVisibility(false);
 
 	        availableLayers = [osm, aerial];
@@ -485,6 +487,8 @@ define([
 	        map.addControl(new OpenLayers.Control.Navigation(settings.scrollWheelZoom, true, OpenLayers.Handler.MOD_SHIFT, true));
             
             map.addControl(new OpenLayers.Control.LayerSwitcher());
+
+            map.addControl(new OpenLayers.Control.Attribution());
 
             // @@@ replace
             // map.events.register("click", null, SimileAjax.WindowManager.cancelPopups);
