@@ -375,10 +375,12 @@ define([
             // perhaps it should run in parallel with them or be fired after
             // them.  It's unclear how widespread this is and how useful one
             // alternative is over the other.  If in the future the below block
-            // is eliminated as it should be, wholesale replacement of this fDone
-            // would currently not be possible.
+            // is eliminated as it should be, wholesale replacement of this
+            // fDone would currently not be possible.
         };
         
+        // 
+
         try {
             // Using functions embedded in elements is bad practice and support for
             // it may disappear in the future.  Convert instances of this usage to
@@ -404,37 +406,38 @@ define([
     };
 
     Exhibit.initializeEvents = function() {
-        $(document).ready(function() {
-            $(document).bind("error.exhibit", function(evt, e, msg) {
-                UIUtilities.hideBusyIndicator();
-                Debug.exception(e, msg);
-                alert(msg);
-            });
-
-            $(document).one("scriptsLoaded.exhibit", function(evt) {
-                $(document).trigger("registerStaticComponents.exhibit", Exhibit.staticRegistry);
-                $(document).trigger("staticComponentsRegistered.exhibit");
-            });
-
-            if (Exhibit.params.autoCreate) {
-                $(document).one("staticComponentsRegistered.exhibit", function(evt) {
-                    Exhibit.autoCreate();
-                });
-            }
-
-            $(document).one("exhibitConfigured.exhibit", function(evt, ex) {
-                Bookmark.init();
-                EHistory.init(ex, Exhibit.params.persist);
-            });
-            
-            // Signal recording
-            $(document).one("exhibitConfigured.exhibit", function(evt) {
-                Exhibit.signals["exhibitConfigured.exhibit"] = true;
-            });
-            
-            Exhibit.checkBackwardsCompatibility();
-            Exhibit.staticRegistry = new Registry(true);
+        $(document).bind("error.exhibit", function(evt, e, msg) {
+            UIUtilities.hideBusyIndicator();
+            Debug.exception(e, msg);
+            alert(msg);
         });
+        
+        $(document).one("scriptsLoaded.exhibit", function(evt) {
+            $(document).trigger("registerStaticComponents.exhibit", Exhibit.staticRegistry);
+            $(document).trigger("staticComponentsRegistered.exhibit");
+        });
+        
+        if (Exhibit.params.autoCreate) {
+            $(document).one("staticComponentsRegistered.exhibit", function(evt) {
+                Exhibit.autoCreate();
+            });
+        }
+        
+        $(document).one("exhibitConfigured.exhibit", function(evt, ex) {
+            Bookmark.init();
+            EHistory.init(ex, Exhibit.params.persist);
+        });
+        
+        // Signal recording
+        $(document).one("exhibitConfigured.exhibit", function(evt) {
+            Exhibit.signals["exhibitConfigured.exhibit"] = true;
+        });
+            
+        Exhibit.checkBackwardsCompatibility();
+        Exhibit.staticRegistry = new Registry(true);
+        if (Exhibit.signals["scriptsLoaded.exhibit"]) {
+            $(document).trigger("scriptsLoaded.exhibit");
+        }
     };
 
     /**
@@ -513,6 +516,12 @@ define([
         }
         Exhibit.initializeEvents();
     };
+
+    $(document).one("scriptsLoaded.exhibit", function(evt) {
+        // If this event gets triggered before setup runs, no good.  Catch
+        // it ASAP and register it for later replay.
+        Exhibit.signals["scriptsLoaded.exhibit"] = true;
+    });
 
     $(document).ready(Exhibit.setup);
 

@@ -38,6 +38,7 @@ var Exhibit = {
      * extensions.
      */
     signals: {
+        "scriptsLoaded.exhibit": false,
         "loadExtensions.exhibit": false,
         "exhibitConfigured.exhibit": false
     },
