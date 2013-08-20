@@ -1,9 +1,3 @@
-define('gmaps', ['async!https://maps.googleapis.com/maps/api/js?v=3&sensor=false'],
-    function() {
-        return window.google;
-    }
-);
-
 require(["../api/configs/dev-config.js"], function() {
     requirejs.config({
         "paths": {
