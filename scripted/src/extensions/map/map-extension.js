@@ -73,6 +73,10 @@ define([
             keyArg = "";
         }
 
+        if (typeof MapExtension.params.service === "string") {
+            Debug.warn(_("%MapExtension.error.serviceDeprecated"));
+        }
+
         /**
          * decent idea, doesn't work; back to the drawing board
         define("gmaps", ["async!https://maps.googleapis.com/maps/api/js?v=3&sensor=false" + keyArg], function() {
