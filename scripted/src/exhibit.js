@@ -412,9 +412,12 @@ define([
             alert(msg);
         });
         
-        $(document).one("scriptsLoaded.exhibit", function(evt) {
-            $(document).trigger("registerStaticComponents.exhibit", Exhibit.staticRegistry);
-            $(document).trigger("staticComponentsRegistered.exhibit");
+        $(document).bind("scriptsLoaded.exhibit scriptsLoadedReplay.exhibit", function(evt) {
+            if (!Exhibit.signals["scriptsLoaded.exhibit"]) {
+                $(document).trigger("registerStaticComponents.exhibit", Exhibit.staticRegistry);
+                $(document).trigger("staticComponentsRegistered.exhibit");
+                Exhibit.signals["scriptsLoaded.exhibit"] = true;
+            }
         });
         
         if (Exhibit.params.autoCreate) {
@@ -435,8 +438,10 @@ define([
             
         Exhibit.checkBackwardsCompatibility();
         Exhibit.staticRegistry = new Registry(true);
+
         if (Exhibit.signals["scriptsLoaded.exhibit"]) {
-            $(document).trigger("scriptsLoaded.exhibit");
+            Exhibit.signals["scriptsLoaded.exhibit"] = false;
+            $(document).trigger("scriptsLoadedReplay.exhibit");
         }
     };
 
