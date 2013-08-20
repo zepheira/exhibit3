@@ -171,6 +171,30 @@
 
 
 
+  <!-- Modular bundling of map extensions, adds shared locales -->
+  <target name="map-extension-bundle" description="Combine map-based extension source files">
+    <fileset dir="${src}/extensions/map/nls/" includes="**/*.js" id="locales"/>
+    <pathconvert dirsep="/" refid="locales" property="localelist" pathsep=",">
+      <map from="${basedir}/${src}/extensions/map" to="ext/map"/>
+      <globmapper from="*.js" to="*"/>
+    </pathconvert>
+
+    <mkdir dir="${bundle}/extensions/${extension}"/>
+    <mkdir dir="${bundle}/extensions/${extension}/styles"/>
+
+    <exec dir="." executable="node">
+      <arg line="${rjs.dir}/r.js -o ${rjs.dir}/build-css.js cssIn=${src}/extensions/${extension}/styles/main.css out=${bundle}/extensions/${extension}/styles/${extension}-extension-bundle.css"/>
+    </exec>
+
+    <exec dir="." executable="node">
+      <arg line="${rjs.dir}/r.js -o ${rjs.dir}/build-extension.js name=ext/${extension}/${extension}-extension out=${bundle}/extensions/${extension}/${extension}-extension-bundle.js include=${localelist}"/>
+    </exec>
+  </target>
+
+
+
+
+
   <!-- Bundle everything -->
   <target name="bundle-all">
     <antcall target="bundle"/>
@@ -179,8 +203,11 @@
     <antcall target="extension-bundle">
       <param name="extension" value="time"/>
     </antcall>
-    <antcall target="extension-bundle">
+    <antcall target="map-extension-bundle">
       <param name="extension" value="map"/>
+    </antcall>
+    <antcall target="map-extension-bundle">
+      <param name="extension" value="openlayers"/>
     </antcall>
     <!-- invalid-json is self contained in one file, no need to add here -->
   </target>
@@ -198,6 +225,8 @@
     <copy file="${bundle}/extensions/time/styles/time-extension-bundle.css" todir="${src}/extensions/time/styles"/>
     <copy file="${bundle}/extensions/map/map-extension-bundle.js" todir="${src}/extensions/map"/>
     <copy file="${bundle}/extensions/map/styles/map-extension-bundle.css" todir="${src}/extensions/map/styles"/>
+    <copy file="${bundle}/extensions/openlayers/openlayers-extension-bundle.js" todir="${src}/extensions/openlayers"/>
+    <copy file="${bundle}/extensions/openlayers/styles/openlayers-extension-bundle.css" todir="${src}/extensions/openlayers/styles"/>
   </target>
 
 
