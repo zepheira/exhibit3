@@ -7,7 +7,7 @@
     <link href="schema.js" type="application/json" rel="exhibit/data" />
     <link href="presidents.js" type="application/json" rel="exhibit/data" />
     
-    <script src="../api/lib/require.js" data-main="main"></script>        
+    <script src="../api/lib/require.js" data-main="main-openlayers"></script>
   </head>
 
   <body>
@@ -45,7 +45,7 @@
                 </div>
                 
                 <div class="item" ex:role="lens" style="display: none;">
-                    <table cellpadding="10" width="100%">
+                    <table cellpadding="10" width="100%"><tbody>
                         <tr>
                             <td width="1"><img ex:src-content=".imageURL" /></td>
                             <td>
@@ -57,7 +57,7 @@
                                 <div ex:control="item-link"></div>
                             </td>
                         </tr>
-                    </table>
+                    </tbody></table>
                 </div>
                 <div ex:role="coordinator" id="president"></div>
                 
