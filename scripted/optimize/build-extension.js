@@ -9,6 +9,7 @@
         "exhibit": "empty:",
         "gmaps": "empty:",
         "gmaps2": "empty:",
+        "openlayers": "empty:",
         "timeline": "empty:"
     },
     "shim": {
