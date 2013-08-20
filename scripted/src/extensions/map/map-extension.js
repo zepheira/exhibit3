@@ -75,6 +75,11 @@ define([
 
         if (typeof MapExtension.params.service === "string") {
             Debug.warn(_("%MapExtension.error.serviceDeprecated"));
+            if (MapExtension.params.service === "google2") {
+                Debug.warn(_("%MapExtension.error.otherExtension", "gmap2"));
+            } else if (MapExtension.params.service === "openlayers") {
+                Debug.warn(_("%MapExtension.error.otherExtension", "openlayers"));
+            }
         }
 
         /**

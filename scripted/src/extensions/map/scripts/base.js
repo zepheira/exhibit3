@@ -8,7 +8,7 @@ define(function() {
         "params": {
             "bundle": false,
             "gmapKey": null,
-            "service": "google",
+            "service": null,
             "mapPrefix": "http://api.simile-widgets.org"
         },
         "paramTypes": {
