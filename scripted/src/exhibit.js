@@ -413,7 +413,8 @@ define([
         });
         
         $(document).bind("scriptsLoaded.exhibit scriptsLoadedReplay.exhibit", function(evt) {
-            if (!Exhibit.signals["scriptsLoaded.exhibit"]) {
+            console.log("scriptsLoaded late");
+            if (!Exhibit.signals["scriptsLoaded.exhibit"] && !Exhibit.signals["scripsLoadedEarly.exhibit"]) {
                 $(document).trigger("registerStaticComponents.exhibit", Exhibit.staticRegistry);
                 $(document).trigger("staticComponentsRegistered.exhibit");
                 Exhibit.signals["scriptsLoaded.exhibit"] = true;
@@ -439,8 +440,8 @@ define([
         Exhibit.checkBackwardsCompatibility();
         Exhibit.staticRegistry = new Registry(true);
 
-        if (Exhibit.signals["scriptsLoaded.exhibit"]) {
-            Exhibit.signals["scriptsLoaded.exhibit"] = false;
+        if (Exhibit.signals["scriptsLoadedEarly.exhibit"]) {
+            console.log("scriptsLoaded check");
             $(document).trigger("scriptsLoadedReplay.exhibit");
         }
     };
@@ -521,12 +522,6 @@ define([
         }
         Exhibit.initializeEvents();
     };
-
-    $(document).one("scriptsLoaded.exhibit", function(evt) {
-        // If this event gets triggered before setup runs, no good.  Catch
-        // it ASAP and register it for later replay.
-        Exhibit.signals["scriptsLoaded.exhibit"] = true;
-    });
 
     $(document).ready(Exhibit.setup);
 
