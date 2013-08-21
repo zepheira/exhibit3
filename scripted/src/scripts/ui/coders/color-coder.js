@@ -119,7 +119,7 @@ ColorCoder._configure = function(coder, configuration) {
         coder._settings
     );
     
-    if (typeof configuration["entries"] !== "undefined") {
+    if (typeof configuration.entries !== "undefined") {
         entries = configuration.entries;
         for (i = 0; i < entries.length; i++) {
             coder._addEntry(entries[i].kase, entries[i].key, entries[i].color);

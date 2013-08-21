@@ -1,13 +1,14 @@
 define([
     "lib/jquery",
     "./localizer",
+    "../exhibit-core",
     "./debug",
     "./persistence",
     "./ui",
     "../data/importer",
     "../data/importers/jsonp",
     "../data/importers/babel-based"
-], function($, _, Debug, Persistence, UIUtilities, Importer, JSONP, BabelBased) {
+], function($, _, Exhibit, Debug, Persistence, UIUtilities, Importer, JSONP, BabelBased) {
 
 var ImporterUtilities = {};
 

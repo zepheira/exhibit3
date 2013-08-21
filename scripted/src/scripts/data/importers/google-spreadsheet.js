@@ -81,7 +81,7 @@ GoogleSpreadsheet.transformJSON = function(json, url, link) {
             "col": parseInt(id.substring(c + 1), 10) - 1,
             "val": entry.content.$t
         };
-    };
+    }
     
     cellIndex = 0;
     getNextRow = function() {
@@ -91,7 +91,7 @@ GoogleSpreadsheet.transformJSON = function(json, url, link) {
             row = [ firstEntry ];
             while (cellIndex < entries.length) {
                 nextEntry = entries[cellIndex];
-                if (nextEntry.row == firstEntry.row) {
+                if (nextEntry.row === firstEntry.row) {
                     row.push(nextEntry);
                     cellIndex++;
                 } else {
@@ -104,7 +104,7 @@ GoogleSpreadsheet.transformJSON = function(json, url, link) {
     };
     
     propertyRow = getNextRow();
-    if (propertyRow != null) {
+    if (propertyRow !== null) {
         propertiesByColumn = [];
         for (i = 0; i < propertyRow.length; i++) {
             cell = propertyRow[i];

@@ -142,16 +142,17 @@ Lens.prototype._constructDefaultEditingUI = function(itemID, div, uiContext) {
  * @param {Element} div
  * @param {Exhibit.UIContext} uiContext
  * @param {String} lensTemplateURL
+ * @param {Object} opts
  */
-Lens.prototype._constructFromLensTemplateURL = function(itemID, div, uiContext, lensTemplateURL) {
+Lens.prototype._constructFromLensTemplateURL = function(itemID, div, uiContext, lensTemplateURL, opts) {
     var job, compiledTemplate;
     
     job = {
-        lens:           this,
-        itemID:         itemID,
-        div:            div,
-        uiContext:      uiContext,
-        opts:           opts
+        "lens":           this,
+        "itemID":         itemID,
+        "div":            div,
+        "uiContext":      uiContext,
+        "opts":           opts
     };
     
     compiledTemplate = Lens._compiledTemplates[lensTemplateURL];
@@ -176,11 +177,11 @@ Lens.prototype._constructFromLensTemplateDOM = function(itemID, div, uiContext, 
     var job, id, compiledTemplate;
 
     job = {
-        lens:           this,
-        itemID:         itemID,
-        div:            div,
-        uiContext:      uiContext,
-        opts:           opts
+        "lens":           this,
+        "itemID":         itemID,
+        "div":            div,
+        "uiContext":      uiContext,
+        "opts":           opts
     };
     
     id = lensTemplateNode.id;
@@ -533,11 +534,11 @@ Lens._parseSubcontentAttribute = function(value) {
  */
 Lens.constructFromLensTemplate = function(itemID, templateNode, parentElmt, uiContext, opts) {
     return Lens._performConstructFromLensTemplateJob({
-        itemID:     itemID,
-        template:   { template: templateNode },
-        div:        parentElmt,
-        uiContext:  uiContext,
-        opts:       opts
+        "itemID":     itemID,
+        "template":   { "template": templateNode },
+        "div":        parentElmt,
+        "uiContext":  uiContext,
+        "opts":       opts
     });
 };
 
@@ -737,7 +738,7 @@ Lens._constructFromLensTemplateNode = function(
             elmt[handler.name] = handler.code;
         }
     }
-    itemID = roots["value"];
+    itemID = roots.value;
     if (typeof templateNode.control !== "undefined" &&
         templateNode.control !== null) {
         switch (templateNode.control) {

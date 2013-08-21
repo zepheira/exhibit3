@@ -261,9 +261,9 @@ define([
      */
     OLMapView.createFromDOM = function(configElmt, containerElmt, uiContext) {
         var configuration, view;
-         configuration = Exhibit.getConfigurationFromDOM(configElmt);
+        configuration = Exhibit.getConfigurationFromDOM(configElmt);
         view = new OLMapView(
-            containerElmt != null ? containerElmt : configElmt, 
+            (typeof containerElmt !== "undefined" && containerElmt !== null) ? containerElmt : configElmt, 
             UIContext.createFromDOM(configElmt, uiContext)
         );
     
@@ -287,7 +287,7 @@ define([
         SettingsUtilities.collectSettings(configuration, view.getSettingSpecs(), view._settings);
         
         accessors = view._accessors;
-        view._getLatlng = accessors.getLatlng != null ?
+        view._getLatlng = (typeof accessors.getLatLng !== "undefined" && accessors.getLatlng !== null) ?
             function(itemID, database, visitor) {
                 accessors.getProxy(itemID, database, function(proxy) {
                     accessors.getLatlng(proxy, database, visitor);
@@ -311,7 +311,7 @@ define([
         this._map.destroy();    
         this._map = null;
     
-        if (this._selectListener != null) {
+        if (this._selectListener !== null) {
             this._selectListener.dispose();
             this._selectListener = null;
         }
@@ -403,13 +403,13 @@ define([
 
         settings = this._settings;
 
-        if (settings.projection != null) {
+        if (typeof settings.projection !== "undefined" && settings.projection !== null) {
 	        this._projection = settings.projection();
         } else {
             this._projection = new OpenLayers.Projection("EPSG:4326");
         }
 
-        if (settings.mapConstructor != null) {
+        if (typeof settings.mapConstructor !== "undefined" && settings.mapConstructor !== null) {
             return settings.mapConstructor(mapDiv);
         } else {
             map = new OpenLayers.Map({
@@ -754,7 +754,7 @@ define([
             }
             
             icon = null;
-            if (itemCount == 1) {
+            if (itemCount === 1) {
                 if (hasIcon) {
                     accessors.getIcon(locationData.items[0], database, function(v) { icon = v; });
                 }
@@ -943,8 +943,8 @@ define([
 	            "fillOpacity": settings.opacity
 	        };
 	        polygonFeature = new OpenLayers.Feature.Vector(polygon, null, polygonStyle);
-            polylineFeature.map = this._map;
-            polylineFeature.attributes = { "locationData": { "items" : [itemID] } };
+            polygonFeature.map = this._map;
+            polygonFeature.attributes = { "locationData": { "items" : [itemID] } };
             return this._addPolygonOrPolyline(itemID, polygonFeature);
         }
         return null;
@@ -985,7 +985,7 @@ define([
      * @returns {OpenLayers.Feature.Vector}
      */
     OLMapView.prototype._addPolygonOrPolyline = function(itemID, poly) {
-        var vectors, vectorLayer, self, centroid, popup
+        var vectors, vectorLayer, self, centroid, popup;
         vectors = this._map.getLayersByClass("OpenLayers.Layer.Vector");
         if (vectors.length > 0) {
 	        vectorLayer = vectors[0];

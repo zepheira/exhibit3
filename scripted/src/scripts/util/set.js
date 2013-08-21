@@ -173,7 +173,7 @@ Set.prototype.visit = function(f) {
  *                        the intersection of sets.
  */
 Set.createIntersection = function(set1, set2, result) {
-    var setA, setB, set = (result) ? result : new Set();
+    var setA, setB, set = result || new Set();
     if (set1.size() < set2.size()) {
         setA = set1;
         setB = set2;

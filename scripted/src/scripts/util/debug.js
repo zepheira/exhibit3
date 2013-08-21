@@ -19,8 +19,8 @@ var Debug = {
  */
 Debug.log = function(msg) {
     var f;
-    if (typeof window["console"] !== "undefined" &&
-        typeof window.console["log"] === "function") {
+    if (typeof window.console !== "undefined" &&
+        typeof window.console.log === "function") {
         f = function(msg2) {
             console.log(msg2);
         };
@@ -41,8 +41,8 @@ Debug.log = function(msg) {
  */
 Debug.warn = function(msg) {
     var f;
-    if (typeof window["console"] !== "undefined" &&
-        typeof window.console["warn"] === "function") {
+    if (typeof window.console !== "undefined" &&
+        typeof window.console.warn === "function") {
         f = function(msg2) {
             console.warn(msg2);
         };
@@ -68,8 +68,8 @@ Debug.exception = function(e, msg) {
         f = function(e2, msg2) {
             throw(e2);
         };
-    } else if (typeof window["console"] !== "undefined" &&
-               typeof window.console["error"] !== "undefined") {
+    } else if (typeof window.console !== "undefined" &&
+               typeof window.console.error !== "undefined") {
         f = function(e2, msg2) {
             if (typeof msg2 !== "undefined" && msg2 !== null) {
                 console.error(msg2 + " %o", e2);
@@ -81,7 +81,7 @@ Debug.exception = function(e, msg) {
     } else {
         f = function(e2, msg2) {
             if (!Debug.silent) {
-                alert("Caught exception: " + msg2 + "\n\nDetails: " + (typeof e2["description"] !== "undefined" ? e2.description : e2));
+                alert("Caught exception: " + msg2 + "\n\nDetails: " + (typeof e2.description !== "undefined" ? e2.description : e2));
             }
             throw(e2); // do not hide from browser's native debugging features
         };

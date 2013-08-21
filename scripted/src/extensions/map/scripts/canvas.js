@@ -1,4 +1,4 @@
-define(["lib/jquery"], function() {
+define(["lib/jquery"], function($) {
     var Canvas = {};
 
     /**
@@ -108,8 +108,8 @@ define(["lib/jquery"], function() {
             context.globalAlpha = 1;
             context.translate(width / 2 + settings.iconOffsetX, 
                               height / 2 + settings.iconOffsetY);
-            heightScale = 1.0 * height / iconImg.naturalHeight;
-            widthScale = 1.0 * width / iconImg.naturalWidth;
+            heightScale = (1.0 * height) / iconImg.naturalHeight;
+            widthScale = (1.0 * width) / iconImg.naturalWidth;
             switch(settings.iconFit) {
             case "width":
                 scale = widthScale;

@@ -103,7 +103,7 @@ ToolboxWidget.prototype._initializeUI = function() {
     if (this._settings.toolboxHoverReveal) {
         $(this._containerElmt).bind("mouseover", function(evt) {
             self._onContainerMouseOver(evt);
-        })
+        });
         $(this._containerElmt).bind("mouseout", function(evt) {
             self._onContainerMouseOut(evt);
         });

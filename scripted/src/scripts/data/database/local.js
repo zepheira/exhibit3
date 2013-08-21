@@ -98,7 +98,7 @@ LocalImpl.prototype.loadLinks = function() {
  */
 LocalImpl.prototype.loadData = function(o, baseURI) {
     if (typeof o === "undefined" || o === null) {
-        throw Error(_("%database.error.unloadable"));
+        throw new Error(_("%database.error.unloadable"));
     }
     if (typeof baseURI === "undefined") {
         baseURI = location.href;
@@ -1107,14 +1107,14 @@ LocalImpl.prototype._getProperties = function(index, x) {
  */
 LocalImpl.prototype.labelItemsOfType = function(count, typeID, countStyleClass) {
     var label, type, pluralLabel, span;
-    label = _((count === 1) ? "" : "");
+    label = _((count === 1) ? "%database.itemType.label" : "%database.itemType.pluralLabel");
     type = this.getType(typeID);
     if (typeof type !== "undefined" && type !== null) {
         label = type.getLabel();
         if (count !== 1) {
             pluralLabel = type.getProperty("pluralLabel");
             if (typeof pluralLabel !== "undefined" && pluralLabel !== null) {
-                label = pluralLabel
+                label = pluralLabel;
             }
         }
     }

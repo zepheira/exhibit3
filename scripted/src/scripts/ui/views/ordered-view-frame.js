@@ -265,7 +265,7 @@ OrderedViewFrame.prototype.initializeUI = function() {
  *
  */
 OrderedViewFrame.prototype.reconstruct = function() {
-    var self, collection, database, originalSize, currentSize, hasSomeGrouping, currentSet, orderElmts, buildOrderElmt, orders;
+    var self, collection, database, originalSize, currentSize, hasSomeGrouping, currentSet, orderElmts, buildOrderElmt, orders, i;
     self = this;
     collection = this._uiContext.getCollection();
     database = this._uiContext.getDatabase();
@@ -480,7 +480,7 @@ OrderedViewFrame.prototype._internalReconstruct = function(allItems) {
     };
     
     processNumericLevel = function(items, index, values, valueType) {
-        var keys, keyMap, order, valueParser, key, k, v;
+        var keys, vals, keyMap, order, valueParser, key, k, v;
         keys = [];
         keyMap = {};
         order = orders[index];
@@ -514,7 +514,7 @@ OrderedViewFrame.prototype._internalReconstruct = function(allItems) {
         values.visit(function(value) {
             var sortkey, key;
             sortkey = valueParser(value);
-            if (typeof sortKey !== "undefined" && sortkey !== null) {
+            if (typeof sortkey !== "undefined" && sortkey !== null) {
                 key = keyMap[sortkey];
                 if (!key) {
                     key = { sortkey: sortkey, display: value, values: [], items: new Set() };
@@ -625,7 +625,7 @@ OrderedViewFrame.prototype._getPossibleOrders = function() {
  * @returns {Object}
  */
 OrderedViewFrame.prototype._openSortPopup = function(evt, index) {
-    var self, database, popupDom, configuredOrders, order, property, propertyLabel, valueType, sortLabels, orders, possibleOrders, possibleOrder, skip, j, existingOrder, appendOrder;
+    var self, database, popupDom, configuredOrders, order, property, propertyLabel, valueType, sortLabels, orders, possibleOrders, possibleOrder, skip, i, j, existingOrder, appendOrder;
     self = this;
     database = this._uiContext.getDatabase();
     
@@ -760,7 +760,7 @@ OrderedViewFrame.prototype._openSortPopup = function(evt, index) {
  * @param {Number} slice
  */
 OrderedViewFrame.prototype._reSort = function(index, propertyID, forward, ascending, slice) {
-    var newOrders, property, propertyLabel, valueType, sortLabels;
+    var oldOrders, newOrders, property, propertyLabel, valueType, sortLabels;
     oldOrders = this._getOrders();
     index = (index < 0) ? oldOrders.length : index;
     
@@ -938,7 +938,7 @@ OrderedViewFrame.createHeaderDom = function(
             UIUtilities.enableActionLink(dom.thenSortByAction, enabled);
         };
         dom.setOrders = function(orderElmts) {
-            var addDelimter, i;
+            var addDelimiter, i;
             $(dom.ordersSpan).empty();
             
             addDelimiter = Formatter.createListDelimiter(dom.ordersSpan, orderElmts.length, uiContext);
@@ -1158,7 +1158,7 @@ OrderedViewFrame.prototype.importState = function(state) {
         changed = true;
     }
     if (state.showDuplicates !== this._settings.showDuplicates) {
-        this._settings.showDuplicates = showDuplicates;
+        this._settings.showDuplicates = state.showDuplicates;
         changed = true;
     }
     if (state.page !== this._settings.page) {
@@ -1232,7 +1232,7 @@ OrderedViewFrame.prototype.makeState = function(
  * @returns {Boolean}
  */
 OrderedViewFrame.prototype.stateDiffers = function(state) {
-    var differs, currentOrders;
+    var differs, currentOrders, i;
     differs = false;
     differs = (state.page !== this._settings.page ||
                state.grouped !== this._settings.grouped ||

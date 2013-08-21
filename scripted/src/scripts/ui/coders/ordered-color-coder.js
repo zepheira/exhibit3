@@ -169,7 +169,7 @@ OrderedColorCoder.createFromDOM = function(configElmt, uiContext) {
  * @param {Object} configuration
  */
 OrderedColorCoder._configure = function(coder, configuration) {
-    var entires, i;
+    var entries, i;
 
     SettingsUtilities.collectSettings(
         configuration,

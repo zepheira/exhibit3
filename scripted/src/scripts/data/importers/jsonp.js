@@ -47,7 +47,7 @@ JSONP.parse = function(url, s, callback) {
  * @returns {Object}
  */
 JSONP.transformJSON = function(json, index, mapping, converters) {
-    var objects, items, i, object, item, name, index, property;
+    var objects, items, i, object, item, name, property;
     objects = json;
     items = [];
     if (typeof index !== "undefined" && index !== null) {

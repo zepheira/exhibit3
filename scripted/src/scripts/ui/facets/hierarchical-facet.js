@@ -70,7 +70,7 @@ HierarchicalFacet._settingSpecs = {
  * @returns {Exhibit.HierarchicalFacet}
  */
 HierarchicalFacet.create = function(configuration, containerElmt, uiContext) {
-    var uiContext, facet;
+    var facet;
     uiContext = UIContext.create(configuration, uiContext);
     facet = new HierarchicalFacet(containerElmt, uiContext);
     
@@ -91,7 +91,7 @@ HierarchicalFacet.create = function(configuration, containerElmt, uiContext) {
  * @returns {Exhibit.HierarchicalFacet}
  */
 HierarchicalFacet.createFromDOM = function(configElmt, containerElmt, uiContext) {
-    var configuration, uiContext, facet, expressionString, uniformGroupingString, selection, i, s;
+    var configuration, facet, expressionString, uniformGroupingString, selection, i, s;
     configuration = Exhibit.getConfigurationFromDOM(configElmt);
     uiContext = UIContext.createFromDOM(configElmt, uiContext);
     facet = new HierarchicalFacet(
@@ -269,7 +269,7 @@ HierarchicalFacet.prototype.setSelectOthers = function(value, selected) {
  * @returns {Exhibit.Set}
  */
 HierarchicalFacet.prototype.restrict = function(items) {
-    if (this._selections.length == 0) {
+    if (this._selections.length === 0) {
         return items;
     }
 
@@ -362,8 +362,8 @@ HierarchicalFacet.prototype._internalAddSelection = function(selection) {
     newSelections = [ selection ];
     for (i = 0; i < oldSelections.length; i++) {
         s = oldSelections[i];
-        if ((!(s.value in parentToClear) || s.selectOthers) && 
-            (!(s.value in childrenToClear))) {
+        if ((typeof parentToClear[s.value] === "undefined" || s.selectOthers) && 
+            (typeof childrenToClear[s.value] === "undefined")) {
             newSelections.push(s);
         }
     }
@@ -383,7 +383,7 @@ HierarchicalFacet.prototype._internalRemoveSelection = function(selection) {
     newSelections = [];
     for (i = 0; i < oldSelections.length; i++) {
         s = oldSelections[i];
-        if (s.value != selection.value || s.selectOthers != selection.selectOthers) {
+        if (s.value !== selection.value || s.selectOthers !== selection.selectOthers) {
             newSelections.push(s);
         }
     }
@@ -427,7 +427,7 @@ HierarchicalFacet.prototype._computeFacet = function(items) {
     
     processNode = function(node, resultNodes, superset) {
         var selected, resultNode, superset2, i, childNode, othersSelected, subset;
-        selected = (node.value in selectionMap && !selectionMap[node.value]);
+        selected = (typeof selectionMap[node.value] !== "undefined" && !selectionMap[node.value]);
         if (typeof node.children !== "undefined") {
             resultNode = {
                 "value":      node.value,
@@ -446,7 +446,7 @@ HierarchicalFacet.prototype._computeFacet = function(items) {
             resultNode.children.sort(sorter);
             
             if (node.others.size() > 0) {
-                othersSelected = (node.value in selectionMap && selectionMap[node.value]);
+                othersSelected = (typeof selectionMap[node.value] !== "undefined" && selectionMap[node.value]);
                 subset = Set.createIntersection(items, node.others);
                 if (subset.size() > 0 || othersSelected) {
                     resultNode.children.push({
@@ -464,7 +464,7 @@ HierarchicalFacet.prototype._computeFacet = function(items) {
             if (selected || resultNode.count > 0 || resultNode.children.length > 0) {
                 resultNodes.push(resultNode);
                 
-                if (superset != null && superset2.size() > 0) {
+                if (typeof superset !== "undefined" && superset !== null && superset2.size() > 0) {
                     superset.addSet(superset2);
                 }
             }
@@ -479,7 +479,7 @@ HierarchicalFacet.prototype._computeFacet = function(items) {
                     "areOthers":  false
                 });
                 
-                if (superset != null && subset.size() > 0) {
+                if (typeof superset !== "undefined" && superset !== null && subset.size() > 0) {
                     superset.addSet(subset);
                 }
             }
@@ -529,7 +529,7 @@ HierarchicalFacet.prototype._getValueSorter = function() {
     if (this._settings.sortMode === "count") {
         sortFunction = function(a, b) {
             var c = b.count - a.count;
-            return c != 0 ? c : sortValueFunction(a, b);
+            return c !== 0 ? c : sortValueFunction(a, b);
         };
     }
 
@@ -612,7 +612,7 @@ HierarchicalFacet.prototype._constructBody = function(tree) {
         dom = constructFacetItemFunction(
             node.label,
             node.count,
-            (self._colorCoder != null) ? self._colorCoder.translate(node.value) : null,
+            (typeof self._colorCoder !== "undefined" && self._colorCoder !== null) ? self._colorCoder.translate(node.value) : null,
             node.selected,
             hasChildren,
             typeof self._expanded[node.value] !== "undefined",
@@ -652,7 +652,7 @@ HierarchicalFacet.prototype._constructBody = function(tree) {
 HierarchicalFacet.prototype._filter = function(value, areOthers, label, wasSelected, selectOnly) {
     var self, wasSelectedAlone, selection, newRestrictions;
     self = this;
-    wasSelectedAlone = wasSelected && this._selections.length == 1;
+    wasSelectedAlone = wasSelected && this._selections.length === 1;
     
     selection = {
         "value":         value,
@@ -781,7 +781,7 @@ HierarchicalFacet.prototype._buildCache = function() {
             label = database.getObject(value, "label");
             node = {
                 "value":  value,
-                "label":  label != null ? label : value
+                "label":  label !== null ? label : value
             };
             nodes.push(node);
             valueToPath[value] = path;
@@ -793,7 +793,7 @@ HierarchicalFacet.prototype._buildCache = function() {
                 childrenValue = valueToChildren[value];
                 for (i = 0; i < childrenValue.length; i++) {
                     processValue(childrenValue[i], node.children, valueSet2, path.concat(i));
-                };
+                }
                 
                 node.others = new Set();
                 if (typeof valueToItem[value] !== "undefined") {
@@ -810,7 +810,7 @@ HierarchicalFacet.prototype._buildCache = function() {
                 valueSet.addSet(valueSet2);
             } else {
                 node.items = new Set();
-                if (value in valueToItem) {
+                if (typeof valueToItem[value] !== "undefined") {
                     items = valueToItem[value];
                     for (i = 0; i < items.length; i++) {
                         item = items[i];

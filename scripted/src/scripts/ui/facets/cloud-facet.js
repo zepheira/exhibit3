@@ -268,7 +268,7 @@ CloudFacet.prototype.update = function(items) {
  * @returns {Array}
  */
 CloudFacet.prototype._computeFacet = function(items) {
-    var database, entries, valueType, self, path, facetValueResult, itemSubcollection, value, itemA, count, i, item, sortValueFunction, orderMap, sortFunction, sortDirectionFunction;
+    var database, entries, valueType, self, path, facetValueResult, itemSubcollection, value, itemA, count, i, item, sortValueFunction, orderMap, sortFunction, sortDirectionFunction, selection, labeler, entry, span;
     database = this.getUIContext().getDatabase();
     entries = [];
     valueType = "text";
@@ -561,7 +561,7 @@ CloudFacet.prototype._clearSelections = function() {
 };
 
 CloudFacet.prototype._buildMaps = function() {
-    var itemToValue, valueToItem, missingItems, valueType, insert, expression, database;
+    var itemToValue, valueToItem, missingItems, valueType, orderMap, insert, expression, database;
 
     if (this._itemToValue === null) {
         itemToValue = {};

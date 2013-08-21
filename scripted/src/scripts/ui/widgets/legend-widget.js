@@ -157,7 +157,7 @@ LegendWidget.prototype.addEntry = function(value, label, type) {
  */
 LegendWidget._localeSort = function(a, b) {
     return a.localeCompare(b);
-}
+};
 
 /**
  * @static
@@ -189,7 +189,7 @@ LegendWidget._defaultSizeMarkerGenerator = function(value) {
         .css("background", "#C0C0C0")
         .html("&nbsp;&nbsp;");
     return span.get(0);
-}
+};
 
 /**
  * @static
@@ -202,7 +202,7 @@ LegendWidget._defaultIconMarkerGenerator = function(value) {
     span = $("<span>")
         .append('<img src="'+value+'"/>');
     return span.get(0);
-}
+};
 
 /**
  * @static

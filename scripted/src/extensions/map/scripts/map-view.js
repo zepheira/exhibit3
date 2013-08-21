@@ -28,7 +28,7 @@ define([
  * @param {Element} containerElmt
  * @param {Exhibit.UIContext} uiContext
  */
-MapView = function(containerElmt, uiContext) {
+var MapView = function(containerElmt, uiContext) {
     MapView._initialize();
 
     var view = this;
@@ -810,7 +810,7 @@ MapView.prototype._rePlotItems = function(unplottableItems) {
         );
 
         google.maps.event.addListener(marker, "click", function() { 
-	        self._showInfoWindow(locationData.items, null, marker)
+	        self._showInfoWindow(locationData.items, null, marker);
             if (self._selectListener !== null) {
                 self._selectListener.fire({ "itemIDs": locationData.items });
             }

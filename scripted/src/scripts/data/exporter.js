@@ -102,7 +102,7 @@ Exporter.prototype.getLabel = function() {
  * @returns {Object}
  */
 Exporter.prototype.exportOneFromDatabase = function(itemID, database) {
-    var allProperties, fn, i, propertyID, property, values, valueType, item;
+    var allProperties, fn, i, propertyID, property, values, valueType, item, strings;
 
     fn = function(vt, s) {
         if (vt === "item") {

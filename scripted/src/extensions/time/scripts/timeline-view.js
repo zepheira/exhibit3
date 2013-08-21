@@ -243,7 +243,7 @@ TimelineView.prototype._internalValidate = function() {
         }
     }
     if (typeof this._settings.selectCoordinator !== "undefined") {
-        selectCoordinator = exhibit.getComponent(this._settings.selectCoordinator);
+        selectCoordinator = this.getUIContext().getMain().getComponent(this._settings.selectCoordinator);
         if (selectCoordinator !== null) {
             self = this;
             this._selectListener = selectCoordinator.addListener(function(o) {

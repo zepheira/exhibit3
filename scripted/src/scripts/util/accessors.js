@@ -44,9 +44,9 @@ AccessorsUtilities._internalCreateAccessors = function(f, specs, accessors) {
 
     createOneAccessor = function(spec2) {
         isTuple = false;
-        if (typeof spec2["bindings"] !== "undefined") {
+        if (typeof spec2.bindings !== "undefined") {
             return AccessorsUtilities._createBindingsAccessor(f, spec2.bindings);
-        } else if (typeof spec2["bindingNames"] !== "undefined") {
+        } else if (typeof spec2.bindingNames !== "undefined") {
             isTuple = true;
             return AccessorsUtilities._createTupleAccessor(f, spec2);
         } else {
@@ -61,7 +61,7 @@ AccessorsUtilities._internalCreateAccessors = function(f, specs, accessors) {
             accessor = null;
             isTuple = false;
 
-            if (typeof spec["alternatives"] !== "undefined") {
+            if (typeof spec.alternatives !== "undefined") {
                 alternatives = spec.alternatives;
                 for (i = 0; i < alternatives.length; i++) {
                     accessor = createOneAccessor(alternatives[i]);
@@ -95,7 +95,7 @@ AccessorsUtilities._createBindingsAccessor = function(f, bindingSpecs) {
         accessor = null;
         isTuple = false;
         
-        if (typeof bindingSpec["bindingNames"] !== "undefined") {
+        if (typeof bindingSpec.bindingNames !== "undefined") {
             isTuple = true;
             accessor = AccessorsUtilities._createTupleAccessor(f, bindingSpec);
         } else {
@@ -103,7 +103,7 @@ AccessorsUtilities._createBindingsAccessor = function(f, bindingSpecs) {
         }
         
         if (typeof accessor === "undefined" || accessor === null) {
-            if (typeof bindingSpec["optional"] === "undefined" || !bindingSpec.optional) {
+            if (typeof bindingSpec.optional === "undefined" || !bindingSpec.optional) {
                 return null;
             }
         } else {
@@ -152,7 +152,7 @@ AccessorsUtilities._createTupleAccessor = function(f, spec) {
         bindingNames = spec.bindingNames;
         separator = ",";
 
-        if (typeof spec["separator"] !== "undefined") {
+        if (typeof spec.separator !== "undefined") {
             separator = spec.separator;
         }
         
@@ -211,7 +211,7 @@ AccessorsUtilities._createElementalAccessor = function(f, spec) {
     
     bindingType = "text";
 
-    if (typeof spec["type"] !== "undefined") {
+    if (typeof spec.type !== "undefined") {
         bindingType = spec.type;
     }
 

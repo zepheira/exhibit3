@@ -38,7 +38,7 @@ Controls["if"] = {
     }
 };
 
-Controls["foreach"] = {
+Controls.foreach = {
     f: function(
         args,
         roots, 
@@ -49,15 +49,15 @@ Controls["foreach"] = {
         var collection, oldValue, oldValueType, results, valueType;
         collection = args[0].evaluate(roots, rootValueTypes, defaultRootName, database);
         
-        oldValue = roots["value"];
-        oldValueType = rootValueTypes["value"];
-        rootValueTypes["value"] = collection.valueType;
+        oldValue = roots.value;
+        oldValueType = rootValueTypes.value;
+        rootValueTypes.value = collection.valueType;
         
         results = [];
         valueType = "text";
         
         collection.forEachValue(function(element) {
-            roots["value"] = element;
+            roots.value = element;
             
             var collection2 = args[1].evaluate(roots, rootValueTypes, defaultRootName, database);
             valueType = collection2.valueType;
@@ -67,8 +67,8 @@ Controls["foreach"] = {
             });
         });
         
-        roots["value"] = oldValue;
-        rootValueTypes["value"] = oldValueType;
+        roots.value = oldValue;
+        rootValueTypes.value = oldValueType;
         
         return new ExpressionCollection(results, valueType);
     }
@@ -93,7 +93,7 @@ Controls["default"] = {
     }
 };
 
-Controls["filter"] = {
+Controls.filter = {
     f: function(
         args,
         roots,
@@ -104,14 +104,14 @@ Controls["filter"] = {
         var collection, oldValue, oldValueType, results;
         collection = args[0].evaluate(roots, rootValueTypes, defaultRootName, database);
        
-        oldValue = roots["value"];
-        oldValueType = rootValueTypes["value"];
+        oldValue = roots.value;
+        oldValueType = rootValueTypes.value;
        
         results = new Set();
-        rootValueTypes["value"] = collection.valueType;
+        rootValueTypes.value = collection.valueType;
        
         collection.forEachValue(function(element) {
-            roots["value"] = element;
+            roots.value = element;
            
             var collection2 = args[1].evaluate(roots, rootValueTypes, defaultRootName, database);
             if (collection2.size > 0 && collection2.contains("true")) {
@@ -119,8 +119,8 @@ Controls["filter"] = {
             }
         });
        
-        roots["value"] = oldValue;
-        rootValueTypes["value"] = oldValueType;
+        roots.value = oldValue;
+        rootValueTypes.value = oldValueType;
        
         return new ExpressionCollection(results, collection.valueType);
     }

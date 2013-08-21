@@ -16,7 +16,7 @@ define([
 /**
  * @namespace
  */
-InvalidJSON = {};
+var InvalidJSON = {};
 
 /**
  * @param {String} url

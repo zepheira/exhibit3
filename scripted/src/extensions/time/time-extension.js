@@ -51,7 +51,7 @@ define([
             prefix = conf.prefix;
         } else {
             targets = ["time-extension.js", "time-extension-bundle.js"];
-            for (var i = 0; i < targets.length; i++) {
+            for (i = 0; i < targets.length; i++) {
                 url = Exhibit.findScript(document, targets[i]);
                 if (url !== null) {
                     prefix = url.substr(0, url.indexOf(targets[i]));

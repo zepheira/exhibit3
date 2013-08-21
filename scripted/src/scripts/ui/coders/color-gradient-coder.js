@@ -206,7 +206,7 @@ ColorGradientCoder.prototype.translate = function(key, flags) {
 		return "#" + decToHex(r) + decToHex(g) + decToHex(b);
 	};
 	
-    if (key >= gradientPoints[0].value & key <= gradientPoints[gradientPoints.length-1].value) {
+    if (key >= gradientPoints[0].value && key <= gradientPoints[gradientPoints.length-1].value) {
         if (typeof flags !== "undefined" && flags !==  null) {
             flags.keys.add(key);
         }

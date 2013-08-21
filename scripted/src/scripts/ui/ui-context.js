@@ -339,11 +339,11 @@ UIContext._createWithParent = function(parent) {
 UIContext._configure = function(context, configuration, ignoreLenses) {
     UIContext.registerLenses(configuration, context.getLensRegistry());
     
-    if (typeof configuration["collectionID"] !== "undefined") {
+    if (typeof configuration.collectionID !== "undefined") {
         context._collection = context._exhibit.getCollection(configuration.collectionID);
     }
     
-    if (typeof configuration["formats"] !== "undefined") {
+    if (typeof configuration.formats !== "undefined") {
         FormatParser.parseSeveral(context, configuration.formats, 0, {});
     }
     
@@ -367,7 +367,7 @@ UIContext.registerLens = function(configuration, lensRegistry) {
     var template, i;
     template = configuration.templateFile;
     if (typeof template !== "undefined" && template !== null) {
-        if (typeof configuration["itemTypes"] !== "undefined") {
+        if (typeof configuration.itemTypes !== "undefined") {
             for (i = 0; i < configuration.itemTypes.length; i++) {
                 lensRegistry.registerLensForType(template, configuration.itemTypes[i]);
             }
@@ -419,12 +419,12 @@ UIContext.registerLensFromDOM = function(elmt, lensRegistry) {
  */
 UIContext.registerLenses = function(configuration, lensRegistry) {
     var i, lensSelector;
-    if (typeof configuration["lenses"] !== "undefined") {
+    if (typeof configuration.lenses !== "undefined") {
         for (i = 0; i < configuration.lenses.length; i++) {
             UIContext.registerLens(configuration.lenses[i], lensRegistry);
         }
     }
-    if (typeof configuration["lensSelector"] !== "undefined") {
+    if (typeof configuration.lensSelector !== "undefined") {
         lensSelector = configuration.lensSelector;
         if (typeof lensSelector === "function") {
             lensRegistry.addLensSelector(lensSelector);

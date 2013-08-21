@@ -194,7 +194,7 @@ var Facet = function(key, div, uiContext) {
         _uiContext = null;
         _expression = null;
         _expressionString = null;
-        _settings = null;
+        this._settings = null;
         this._settingSpecs = null;
         self = null;
     };

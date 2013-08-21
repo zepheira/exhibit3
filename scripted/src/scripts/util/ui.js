@@ -5,8 +5,9 @@ define([
     "./localizer",
     "./debug",
     "./persistence",
+    "../ui/lens",
     "lib/jquery.simile.bubble"
-], function($, Exhibit, Util, _, Debug, Persistence) {
+], function($, Exhibit, Util, _, Debug, Persistence, Lens) {
 var UIUtilities = {
     /*----------------------------------------------------------------------
      *  Status Indication and Feedback
@@ -32,7 +33,7 @@ UIUtilities.showJsonFileValidation = function(message, url) {
     var target = "_blank";
     if (typeof Exhibit.babelPrefix !== "undefined" && url.indexOf("file:") === 0) {
         if (window.confirm(_("%general.showJsonValidationFormMessage", message))) {
-            window.open(UIUtilites.validator, target);
+            window.open(UIUtilities.validator, target);
         }
     } else {
         if (window.confirm(_("%general.showJsonValidationMessage", message))) {
@@ -57,12 +58,12 @@ UIUtilities.showBusyIndicator = function() {
     }
     
     // @@@ jQuery simplification?
-    scrollTop = typeof document.body["scrollTop"] !== "undefined" ?
+    scrollTop = typeof document.body.scrollTop !== "undefined" ?
         document.body.scrollTop :
         document.body.parentNode.scrollTop;
-    height = typeof window["innerHeight"] !== "undefined" ?
+    height = typeof window.innerHeight !== "undefined" ?
         window.innerHeight :
-        (typeof document.body["clientHeight"] !== "undefined" ?
+        (typeof document.body.clientHeight !== "undefined" ?
             document.body.clientHeight :
             document.body.parentNode.clientHeight);
         
@@ -498,9 +499,9 @@ UIUtilities.createPopupMenuDom = function(element) {
  * @param {Element} [dialogParent] The element containing the parent dialog.
  */
 UIUtilities.setupDialog = function(dom, modal, dialogParent) {
-    var clickHandler, cancelHandler, cancelAllHandler, createdHandler, i, trap;
+    var clickHandler, cancelHandler, cancelAllHandler, createdHandler, i, trap, closedHandler, supersededHandler;
 
-    if (typeof parentDialog !== "undefined" && parentDialog !== null) {
+    if (typeof dialogParent !== "undefined" && dialogParent !== null) {
         dom._dialogParent = dialogParent;
     }
 
@@ -606,9 +607,10 @@ UIUtilities.setupDialog = function(dom, modal, dialogParent) {
  * @returns {Boolean}
  */
 UIUtilities._clickInElement = function(x, y, elmt) {
-    var offset = $(elmt).offset();
-    var dims = { "w": $(elmt).outerWidth(),
-                 "h": $(elmt).outerHeight() };
+    var offset, dims;
+    offset = $(elmt).offset();
+    dims = { "w": $(elmt).outerWidth(),
+             "h": $(elmt).outerHeight() };
     return (x < offset.left &&
             x > offset.left + dims.w &&
             y < offset.top &&

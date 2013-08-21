@@ -67,8 +67,8 @@ ViewPanel.create = function(configuration, div, uiContext) {
         for (i = 0; i < configuration.views.length; i++) {
             viewConfig = configuration.views[i];
             
-            viewClass = (typeof view.viewClass !== "undefined") ?
-                view.viewClass :
+            viewClass = (typeof viewConfig.viewClass !== "undefined") ?
+                viewConfig.viewClass :
                 "TileView";
             if (typeof viewClass === "string") {
                 viewClassName = viewClass;

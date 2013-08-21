@@ -63,7 +63,7 @@ AlphaRangeFacet._settingSpecs = {
  * @returns {Exhibit.AlphaRangeFacet}
  */
 AlphaRangeFacet.create = function(configuration, containerElmt, uiContext) {
-    var uiContext, facet;
+    var facet;
     uiContext = UIContext.create(configuration, uiContext);
     facet = new AlphaRangeFacet(
         containerElmt,
@@ -87,7 +87,7 @@ AlphaRangeFacet.create = function(configuration, containerElmt, uiContext) {
  * @returns {Exhibit.AlphaRangeFacet}
  */
 AlphaRangeFacet.createFromDOM = function(configElmt, containerElmt, uiContext) {
-    var configuration, uiContext, facet, expressionString;
+    var configuration, facet, expressionString;
     configuration = Exhibit.getConfigurationFromDOM(configElmt);
     uiContext = UIContext.createFromDOM(configElmt, uiContext);
     facet = new AlphaRangeFacet(
@@ -264,6 +264,7 @@ AlphaRangeFacet.prototype._reconstruct = function(items) {
     alphaList = [];
         
     alphaInList = function(a) {
+        var x;
         for (x in alphaList) {
             if (alphaList.hasOwnProperty(x)) {
                 if (alphaList[x] === a) {
@@ -317,7 +318,7 @@ AlphaRangeFacet.prototype._reconstruct = function(items) {
             evt.preventDefault();
             evt.stopPropagation();
         };
-        var elmt = constructFacetItemFunction(
+        elmt = constructFacetItemFunction(
             _("%facets.alpha.rangeShort", from.substr(0, 1), to.substr(0, 1)),
             count, 
             null,
@@ -419,7 +420,7 @@ AlphaRangeFacet.prototype._clearSelections = function() {
  * @private
  */
 AlphaRangeFacet.prototype._buildRangeIndex = function() {
-    var expression, database, segment, property, getter
+    var expression, database, segment, property, getter;
     if (typeof this._rangeIndex === "undefined") {
         expression = this.getExpression();
         database = this.getUIContext().getDatabase();

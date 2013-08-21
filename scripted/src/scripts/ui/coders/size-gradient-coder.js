@@ -207,7 +207,7 @@ SizeGradientCoder.prototype.translate = function(key, flags) {
 		}
 	};
 	
-    if (key >= gradientPoints[0].value & key <= gradientPoints[gradientPoints.length-1].value) {
+    if (key >= gradientPoints[0].value && key <= gradientPoints[gradientPoints.length-1].value) {
         if (typeof flags !== "undefined" && flags !== null) {
             flags.keys.add(key);
         }

@@ -528,7 +528,7 @@ FacetUtilities.Cache.prototype.getItemsFromValues = function(values, filter) {
         valueToItem = this._valueToItem;
         values.visit(function(value) {
             var itemA, i, item;
-            if (typeof valuetoItem[value] !== "undefined") {
+            if (typeof valueToItem[value] !== "undefined") {
                 itemA = valueToItem[value];
                 for (i = 0; i < itemA.length; i++) {
                     item = itemA[i];
@@ -613,7 +613,7 @@ FacetUtilities.Cache.prototype.getValuesFromItems = function(items) {
     var set, itemToValue;
 
     if (this._expression.isPath()) {
-        return this._expression.getPath().walkForward(items, "item", database).getSet();
+        return this._expression.getPath().walkForward(items, "item", this._database).getSet();
     } else {
         this._buildMaps();
         

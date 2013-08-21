@@ -107,7 +107,7 @@ DateTime.setIso8601Date = function(dateObject, string) {
     date = d[7];
     dayofyear = d[9];
     week = d[11];
-    dayofweek = (d[13]) ? d[13] : 1;
+    dayofweek = d[13] || 1;
     
     dateObject.setUTCFullYear(year);
     if (dayofyear) { 
@@ -117,7 +117,7 @@ DateTime.setIso8601Date = function(dateObject, string) {
         dateObject.setUTCMonth(0);
         dateObject.setUTCDate(1);
         gd = dateObject.getUTCDay();
-        day =  (gd) ? gd : 7;
+        day = gd || 7;
         offset = Number(dayofweek) + (7 * Number(week));
         
         if (day <= 4) { 
@@ -158,8 +158,8 @@ DateTime.setIso8601Time = function(dateObject, string) {
         throw new Error(_("%datetime.error.invalidTime", string));
     }
     hours = d[1];
-    mins = Number((d[3]) ? d[3] : 0);
-    secs = (d[5]) ? d[5] : 0;
+    mins = Number(d[3] || 0);
+    secs = d[5] || 0;
     ms = d[7] ? (Number("0." + d[7]) * 1000) : 0;
     
     dateObject.setUTCHours(hours);
@@ -242,7 +242,7 @@ DateTime.parseIso8601DateTime = function(string) {
 DateTime.toISODateString = function(d) {
     var s, f;
     if (typeof Date.prototype.toISOString !== "undefined") {
-        s = date.toISOString().split("T")[0];
+        s = d.toISOString().split("T")[0];
     } else {
         f = function(i) {
             return i < 10 ? '0' + i : i;
@@ -430,7 +430,7 @@ DateTime.roundDownToInterval = function(date, intervalUnit, timeZone, multiple, 
  * @see Exhibit.DateTime.roundDownToInterval
  */
 DateTime.roundUpToInterval = function(date, intervalUnit, timeZone, multiple, firstDayOfWeek) {
-    var originalTime, useRoundDown, usedRoundDown, date2, first, x, clearInYear;
+    var originalTime, useRoundDown, usedRoundDown, date2, first, x, clearInYear, timeShift;
     originalTime = date.getTime();
     clearInYear = function(d) {
         DateTime.zeroTimeUTC(d);

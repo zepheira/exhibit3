@@ -16,7 +16,7 @@ define([
  */
 var Functions = {};
 
-Functions["union"] = {
+Functions.union = {
     f: function(args) {
         var set, valueType, i, arg;
         set = new Set();
@@ -38,7 +38,7 @@ Functions["union"] = {
     }
 };
 
-Functions["contains"] = {
+Functions.contains = {
     f: function(args) {
         var result, set;
         result = args[0].size > 0;
@@ -55,25 +55,25 @@ Functions["contains"] = {
     }
 };
 
-Functions["exists"] = {
+Functions.exists = {
     f: function(args) {
         return new ExpressionCollection([ args[0].size > 0 ], "boolean");
     }
 };
 
-Functions["count"] = {
+Functions.count = {
     f: function(args) {
         return new ExpressionCollection([ args[0].size ], "number");
     }
 };
 
-Functions["not"] = {
+Functions.not = {
     f: function(args) {
         return new ExpressionCollection([ !args[0].contains(true) ], "boolean");
     }
 };
 
-Functions["and"] = {
+Functions.and = {
     f: function(args) {
         var r = true, i;
         for (i = 0; r && i < args.length; i++) {
@@ -83,7 +83,7 @@ Functions["and"] = {
     }
 };
 
-Functions["or"] = {
+Functions.or = {
     f: function(args) {
         var r = false, i;
         for (i = 0; !r && i < args.length; i++) {
@@ -93,7 +93,7 @@ Functions["or"] = {
     }
 };
 
-Functions["add"] = {
+Functions.add = {
     f: function(args) {
         var total, i, fn;
         total = 0;
@@ -120,7 +120,7 @@ Functions["add"] = {
 };
 
 // Note: arguments expanding to multiple items get concatenated in random order
-Functions["concat"] = {
+Functions.concat = {
     f: function(args) {
         var result = [], i, fn;
         fn = function() {
@@ -138,7 +138,7 @@ Functions["concat"] = {
     }
 };
 
-Functions["multiply"] = {
+Functions.multiply = {
     f: function(args) {
         var product = 1, i, fn;
         fn = function() {
@@ -211,7 +211,8 @@ Functions["date-range"] = {
     }
 };
 
-Functions["distance"] = {
+// @@@ This is dependent on Google Maps v2; excise it
+Functions.distance = {
     _units: {
         km:         1e3,
         mile:       1609.344
@@ -230,7 +231,7 @@ Functions["distance"] = {
         return null;
     },
     f: function(args) {
-        var self = this, data, name, i, latlng, from, to, range, fn;
+        var self = this, data, name, n, i, latlng, from, to, range, fn;
         data = {};
         name = ["origo", "lat", "lng", "unit", "round"];
         fn = function(nm) {
@@ -238,20 +239,21 @@ Functions["distance"] = {
                 data[nm] = v;
             };
         };
-        for (i = 0, n = name[i]; i < name.length; i++) {
+        for (i = 0; i < name.length; i++) {
+            n = name[i];
             args[i].forEachValue(fn(n));
         }
 
         latlng = data.origo.split(",");
-        from = new GLatLng( latlng[0], latlng[1] );
-        to = new GLatLng( data.lat, data.lng );
+        from = new NOSUCHGLatLng( latlng[0], latlng[1] );
+        to = new NOSUCHGLatLng( data.lat, data.lng );
         
         range = this._computeDistance(from, to, data.unit, data.round);
         return new ExpressionCollection((typeof range !== "undefined" && range !== null) ? [ range ] : [], "number");
     }
 };
 
-Functions["min"] = {
+Functions.min = {
     f: function(args) {
         /** @ignore */
         var returnMe = function (val) { return val; }, min, valueType, i, arg, currentValueType, parser, fn;
@@ -269,7 +271,7 @@ Functions["min"] = {
         };
         for (i = 0; i < args.length; i++) {
             arg = args[i];
-            currentValueType = arg.valueType ? arg.valueType : 'text';
+            currentValueType = arg.valueType || 'text';
             parser = SettingsUtilities._typeToParser(currentValueType);
                 
             arg.forEachValue(fn(parser, currentValueType));
@@ -279,9 +281,12 @@ Functions["min"] = {
     }
 };
 
-Functions["max"] = {
+Functions.max = {
     f: function(args) {
-        var returnMe = function (val) { return val; }, max, valueType, i, arg, currentValueType, parser, fn;
+        var returnMe, max, valueType, i, arg, currentValueType, parser, fn;
+        returnMe = function(val) {
+            return val;
+        };
         max = Number.NEGATIVE_INFINITY;
         valueType = null;
         fn = function(p, c) {
@@ -297,16 +302,16 @@ Functions["max"] = {
         
         for (i = 0; i < args.length; i++) {
             arg = args[i];
-            currentValueType = arg.valueType ? arg.valueType : 'text';
+            currentValueType = arg.valueType || 'text';
             parser = SettingsUtilities._typeToParser(currentValueType);
             
-            arg.forEachValue(fn(parser, c));
+            arg.forEachValue(fn(parser, currentValueType));
         }
         return new ExpressionCollection([ max ], (typeof valueType !== "undefined" && valueType !== null) ? valueType : "text");
     }
 };
 
-Functions["remove"] = {
+Functions.remove = {
     f: function(args) {
         var set, valueType, i, arg;
         set = args[0].getSet();
@@ -321,7 +326,7 @@ Functions["remove"] = {
     }
 };
 
-Functions["now"] = {
+Functions.now = {
     f: function(args) {
         return new ExpressionCollection([ new Date() ], "date");
     }

@@ -6,9 +6,10 @@
 
 define([
     "../util/localizer",
+    "../exhibit-core",
     "../util/debug",
     "./lens"
-], function(_, Debug, Lens) {
+], function(_, Exhibit, Debug, Lens) {
 /**
  * @constructor
  * @class

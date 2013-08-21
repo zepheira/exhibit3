@@ -58,9 +58,9 @@ RDFXML.wrapOne = function(s, first, last) {
  * @returns {String}
  */
 RDFXML.exportOne = function(itemID, o, properties, propertyIDToQualifiedName, prefixToBase) {
-    var s = "", uri, i, propertyID, valueType, propertyString, j, values;
-    uri = o["uri"];
-    s += "<rdf:Description rdf:about=\"" + uri + "\">\n";
+    var s, uri, i, propertyID, valueType, propertyString, j, values, qname;
+    uri = o.uri;
+    s = "<rdf:Description rdf:about=\"" + uri + "\">\n";
 
     for (propertyID in o) {
         if (o.hasOwnProperty(propertyID) && typeof properties[propertyID] !== "undefined") {
@@ -103,7 +103,7 @@ RDFXML.exportMany = function(set, database) {
     ps = database.getAllProperties();
     for (i = 0; i < ps.length; i++) {
         p = database.getProperty(ps[i]);
-        properties[ps[i]] = {}
+        properties[ps[i]] = {};
         properties[ps[i]].valueType = p.getValueType();
         properties[ps[i]].uri = p.getURI();
     }

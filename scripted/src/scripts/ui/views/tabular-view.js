@@ -381,7 +381,7 @@ TabularView.prototype._reconstruct = function() {
 
             td = $("<th>");
             TabularView.createColumnHeader(
-                exhibit, td.get(0), column.label, i === self._settings.sortColumn, self._settings.sortAscending,
+                td.get(0), column.label, i === self._settings.sortColumn, self._settings.sortAscending,
                 function(evt) {
                     self._doSort(i);
                     evt.preventDefault();
@@ -775,7 +775,6 @@ TabularView.createDom = function(div) {
 };
 
 /**
- * @param {Exhibit._Impl} exhibit
  * @param {Element} th
  * @param {String} label
  * @param {Boolean} sort
@@ -784,7 +783,6 @@ TabularView.createDom = function(div) {
  * @returns {Element}
  */
 TabularView.createColumnHeader = function(
-    exhibit, 
     th,
     label,
     sort,

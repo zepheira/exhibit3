@@ -33,7 +33,7 @@ Type.prototype.getID = function() {
  * @returns {String} The item type URI.
  */
 Type.prototype.getURI = function() {
-    return this._custom["uri"];
+    return this._custom.uri;
 };
 
 /**
@@ -42,7 +42,7 @@ Type.prototype.getURI = function() {
  * @returns {String} The item type label.
  */
 Type.prototype.getLabel = function() {
-    return this._custom["label"];
+    return this._custom.label;
 };
 
 /**
@@ -51,7 +51,7 @@ Type.prototype.getLabel = function() {
  * @returns {String} The item type origin.
  */
 Type.prototype.getOrigin = function() {
-    return this._custom["origin"];
+    return this._custom.origin;
 };
 
 /**

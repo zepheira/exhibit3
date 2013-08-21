@@ -262,7 +262,7 @@ ThumbnailView.prototype._reconstructWithFloats = function() {
     this._orderedViewFrame.onNewItem = function(itemID, index) {
         //if (index > 10) return;
 
-        var i, itemLensItem, itemLens;
+        var i, itemLensItem, itemLens, itemLensDiv;
         if (typeof state.itemContainer === "undefined" || state.itemContainer === null) {
             state.itemContainer = ThumbnailView.constructItemContainer();
             $(state.div).append(state.itemContainer);
@@ -335,7 +335,7 @@ ThumbnailView.prototype._reconstructWithTable = function() {
     this._orderedViewFrame.onNewItem = function(itemID, index) {
         //if (index > 10) return;
 
-        var i, td, itemLensDiv, ItemLens;
+        var i, td, itemLensDiv, itemLens;
         if (state.columnIndex >= view._settings.columnCount) {
             state.columnIndex = 0;
         }

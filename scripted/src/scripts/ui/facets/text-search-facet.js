@@ -58,8 +58,9 @@ TextSearchFacet._settingSpecs = {
  * @returns {Exhibit.TextSearchFacet}
  */
 TextSearchFacet.create = function(configuration, containerElmt, uiContext) {
-    var uiContext = UIContext.create(configuration, uiContext);
-    var facet = new TextSearchFacet(containerElmt, uiContext);
+    var facet;
+    uiContext = UIContext.create(configuration, uiContext);
+    facet = new TextSearchFacet(containerElmt, uiContext);
     
     TextSearchFacet._configure(facet, configuration);
     
@@ -77,9 +78,10 @@ TextSearchFacet.create = function(configuration, containerElmt, uiContext) {
  * @returns {Exhibit.TextSearchFacet}
  */
 TextSearchFacet.createFromDOM = function(configElmt, containerElmt, uiContext) {
-    var configuration = Exhibit.getConfigurationFromDOM(configElmt);
-    var uiContext = UIContext.createFromDOM(configElmt, uiContext);
-    var facet = new TextSearchFacet(
+    var configuration, facet, s, query;
+    configuration = Exhibit.getConfigurationFromDOM(configElmt);
+    uiContext = UIContext.createFromDOM(configElmt, uiContext);
+    facet = new TextSearchFacet(
         (typeof containerElmt !== "undefined" && containerElmt !== null) ? containerElmt : configElmt, 
         uiContext
     );
@@ -87,13 +89,13 @@ TextSearchFacet.createFromDOM = function(configElmt, containerElmt, uiContext) {
     SettingsUtilities.collectSettingsFromDOM(configElmt, facet.getSettingSpecs(), facet._settings);
     
     try {
-        var s = Exhibit.getAttribute(configElmt, "expressions");
+        s = Exhibit.getAttribute(configElmt, "expressions");
         if (typeof s !== "undefined" && s !== null && s.length > 0) {
             facet.setExpressionString(s);
             facet.setExpression(ExpressionParser.parseSeveral(s));
         }
         
-        var query = Exhibit.getAttribute(configElmt, "query");
+        query = Exhibit.getAttribute(configElmt, "query");
         if (typeof query !== "undefined" && query !== null && query.length > 0) {
             facet._text = query;
         }
@@ -114,22 +116,22 @@ TextSearchFacet.createFromDOM = function(configElmt, containerElmt, uiContext) {
  * @param {Object} configuration
  */
 TextSearchFacet._configure = function(facet, configuration) {
-    var expressions, expressionsStrings;
+    var expressions, expressionsStrings, i, selection, params;
     SettingsUtilities.collectSettings(configuration, facet.getSettingSpecs(), facet._settings);
     
     if (typeof configuration.expressions !== "undefined") {
         expressions = [];
         expressionsStrings = [];
-        for (var i = 0; i < configuration.expressions.length; i++) {
+        for (i = 0; i < configuration.expressions.length; i++) {
             expressionsStrings.push(configuration.expressions[i]);
             expressions.push(ExpressionParser.parse(configuration.expressions[i]));
         }
-        facet.setExpressionString(expressionStrings.join(",").replace(/ /g, ""));
+        facet.setExpressionString(expressionsStrings.join(",").replace(/ /g, ""));
         facet.setExpression(expressions);
     }
     if (typeof configuration.selection !== "undefined") {
-        var selection = configuration.selection;
-        for (var i = 0; i < selection.length; i++) {
+        selection = configuration.selection;
+        for (i = 0; i < selection.length; i++) {
             facet._valueSet.add(selection[i]);
         }
     }
@@ -137,7 +139,7 @@ TextSearchFacet._configure = function(facet, configuration) {
         facet._text = configuration.query;
     }
     if (typeof facet._settings.queryParamName !== "undefined") {
-        var params = Exhibit.parseURLParameters();
+        params = Exhibit.parseURLParameters();
         if (typeof params[facet._settings.queryParamName] !== "undefined") {
             facet._text = params[facet._settings.queryParamName];
         }

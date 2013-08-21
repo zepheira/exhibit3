@@ -66,7 +66,7 @@ NumericRangeFacet._settingSpecs = {
  * @returns {Exhibit.NumericRangeFacet}
  */
 NumericRangeFacet.create = function(configuration, containerElmt, uiContext) {
-    var uiContext, facet;
+    var facet;
     uiContext = UIContext.create(configuration, uiContext);
     facet = new NumericRangeFacet(
         containerElmt,
@@ -90,7 +90,7 @@ NumericRangeFacet.create = function(configuration, containerElmt, uiContext) {
  * @returns {Exhibit.NumericRangeFacet}
  */
 NumericRangeFacet.createFromDOM = function(configElmt, containerElmt, uiContext) {
-    var configuration, uiContext, facet, expressionString;
+    var configuration, facet, expressionString;
     configuration = Exhibit.getConfigurationFromDOM(configElmt);
     uiContext = UIContext.createFromDOM(configElmt, uiContext);
     facet = new NumericRangeFacet(
@@ -262,7 +262,7 @@ NumericRangeFacet.prototype.update = function(items) {
  * @returns {Array}
  */
 NumericRangeFacet.prototype._reconstruct = function(items) {
-    var self, ranges, rangeIndex, computeItems, database, path, propertyId, property, min, max, x, range, i, range2, facetHasSelection, containerDiv, constructFacetItemFunction, makeFacetValue;
+    var self, ranges, rangeIndex, countItems, database, path, propertyID, property, min, max, x, range, i, range2, facetHasSelection, containerDiv, constructFacetItemFunction, makeFacetValue;
     self = this;
     ranges = [];
 
@@ -279,14 +279,14 @@ NumericRangeFacet.prototype._reconstruct = function(items) {
         rangeIndex = property.getRangeIndex();
         countItems = function(range) {
             return path.rangeBackward(range.from, range.to, false, items, database).values.size();
-        }
+        };
     } else {
         this._buildRangeIndex();
         
         rangeIndex = this._rangeIndex;
         countItems = function(range) {
             return rangeIndex.getSubjectsInRange(range.from, range.to, false, null, items).size();
-        }
+        };
     }
     
     min = rangeIndex.getMin();
@@ -296,9 +296,9 @@ NumericRangeFacet.prototype._reconstruct = function(items) {
     
     for (x = min; x < max; x += this._settings.interval) {
         range = { 
-            from:       x, 
-            to:         x + this._settings.interval, 
-            selected:   false
+            "from":       x, 
+            "to":         x + this._settings.interval, 
+            "selected":   false
         };
         range.count = countItems(range);
         

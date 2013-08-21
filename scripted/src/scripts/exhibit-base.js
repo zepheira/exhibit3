@@ -111,7 +111,6 @@ var Exhibit = {
     $(document).one("scriptsLoaded.exhibit", function(evt) {
         // If this event gets triggered before setup runs, no good.  Catch
         // it ASAP and register it for later replay.
-        console.log("scriptsLoaded early");
         Exhibit.signals["scriptsLoadedEarly.exhibit"] = true;
     });
 

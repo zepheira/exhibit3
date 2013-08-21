@@ -65,7 +65,7 @@ Collection.create = function(id, configuration, database) {
     var collection = new Collection(id, database);
     collection._setElement();
    
-    if (typeof configuration["itemTypes"] !== "undefined") {
+    if (typeof configuration.itemTypes !== "undefined") {
         collection._itemTypes = configuration.itemTypes;
         collection._update = Collection._typeBasedCollection_update;
     } else {
@@ -118,16 +118,16 @@ Collection.create2 = function(id, configuration, uiContext) {
 
     database = uiContext.getDatabase();
     
-    if (typeof configuration["expression"] !== "undefined") {
+    if (typeof configuration.expression !== "undefined") {
         collection = new Collection(id, database);
         collection._setElement();
         
         collection._expression = ExpressionParser.parse(configuration.expression);
-        collection._baseCollection = (typeof configuration["baseCollectionID"] !== "undefined") ? 
+        collection._baseCollection = (typeof configuration.baseCollectionID !== "undefined") ? 
             uiContext.getMain().getCollection(configuration.baseCollectionID) : 
             uiContext.getCollection();
             
-        collection._restrictBaseCollection = (typeof configuration["restrictBaseCollection"] !== "undefined") ? 
+        collection._restrictBaseCollection = (typeof configuration.restrictBaseCollection !== "undefined") ? 
             configuration.restrictBaseCollection : false;
             
         if (collection._restrictBaseCollection) {
@@ -404,7 +404,7 @@ Collection.prototype.equals = function(collection) {
  * Handle removing the collection from the local context.
  */
 Collection.prototype.dispose = function() {
-    if (typeof this["_baseCollection"] !== "undefined") {
+    if (typeof this._baseCollection !== "undefined") {
         this._baseCollection = null;
         this._expression = null;
     }

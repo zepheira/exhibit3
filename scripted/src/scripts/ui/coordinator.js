@@ -14,10 +14,11 @@ define(["lib/jquery", "./ui-context"], function($, UIContext) {
         this._uiContext = uiContext;
         this._listeners = [];
 
-        var _div, _id, _registered, self;
+        var _div, _id, _uiContext, _registered, self, _setIdentifier;
         self = this;
         _div = div;
         _id = null;
+        _uiContext = null;
         _registered = false;
 
         this.getID = function() {
@@ -25,7 +26,7 @@ define(["lib/jquery", "./ui-context"], function($, UIContext) {
         };
 
         this.getUIContext = function() {
-            return this._uiContext;
+            return _uiContext;
         };
 
         this.getContainer = function() {

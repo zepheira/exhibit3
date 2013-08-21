@@ -125,9 +125,9 @@ Bookmark.init = function() {
         try {
             state = Bookmark.interpretBookmarkHash(hash.substr(1));
             if (typeof state === "object" &&
-                typeof state["data"] !== "undefined" &&
-                typeof state["title"] !== "undefined" &&
-                typeof state["url"] !== "undefined") {
+                typeof state.data !== "undefined" &&
+                typeof state.title !== "undefined" &&
+                typeof state.url !== "undefined") {
                 Bookmark.state = state;
                 Bookmark._shouldRun = true;
             } else {

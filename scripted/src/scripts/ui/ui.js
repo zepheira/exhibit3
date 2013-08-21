@@ -19,7 +19,7 @@ define([
     "./widgets/logo",
     "lib/jquery.simile.dom",
     "lib/jquery.simile.bubble"
-], function($, _, Exhibit, Debug, SettingUtilities, FromString, UIContext, Lens, Coordinator, ControlPanel, ViewPanel, Logo) {
+], function($, _, Exhibit, Debug, SettingsUtilities, FromString, UIContext, Lens, Coordinator, ControlPanel, ViewPanel, Logo) {
 /**
  * @namespace
  */
@@ -59,7 +59,7 @@ UI.registerComponent = function(name, comp) {
 UI.create = function(configuration, elmt, uiContext) {
     var role, createFunc;
 
-    if (typeof configuration["role"] !== "undefined") {
+    if (typeof configuration.role !== "undefined") {
         role = configuration.role;
         if (typeof role !== "undefined" && role !== null && role.startsWith("exhibit-")) {
             role = role.substr("exhibit-".length);
@@ -176,7 +176,7 @@ UI.generateCreationMethods = function(constructor) {
  * @returns {Object}
  */
 UI.createView = function(configuration, elmt, uiContext) {
-    var viewClass = typeof configuration["viewClass"] !== "undefined" ?
+    var viewClass = typeof configuration.viewClass !== "undefined" ?
         configuration.viewClass :
         "TileView";
     if (typeof viewClass === "string") {
@@ -203,7 +203,7 @@ UI.createViewFromDOM = function(elmt, container, uiContext) {
  * @returns {Object}
  */
 UI.createFacet = function(configuration, elmt, uiContext) {
-    var facetClass = typeof configuration["facetClass"] !== "undefined" ?
+    var facetClass = typeof configuration.facetClass !== "undefined" ?
         configuration.facetClass :
         "ListFacet";
     if (typeof facetClass === "string") {
@@ -229,7 +229,7 @@ UI.createFacetFromDOM = function(elmt, container, uiContext) {
  * @returns {Object}
  */
 UI.createCoder = function(configuration, uiContext) {
-    var coderClass = typeof configuration["coderClass"] !== "undefined" ?
+    var coderClass = typeof configuration.coderClass !== "undefined" ?
         configuration.coderClass :
         "ColorCoder";
     if (typeof coderClass === "string") {
@@ -278,7 +278,7 @@ UI.createCoordinatorFromDOM = function(elmt, uiContext) {
  * @param {String} target
  */
 UI.showHelp = function(message, url, target) {
-    target = (target) ? target : "_blank";
+    target = target || "_blank";
     if (typeof url !== "undefined" && url !== null) {
         if (window.confirm(_("%general.showDocumentationMessage", message))) {
             window.open(url, target);
