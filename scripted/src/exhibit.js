@@ -503,6 +503,7 @@ define([
             } else if (link.rel.search(/\b(exhibit-extension)\b/) > 0) {
                 // @@@ ditch this? or figure out how to accommodate it?
                 // ExhibitLoader.extensions.push(link.href);
+                Debug.warn("Loading extensions through link rel currently not supported"); // temporary warning message
             }
         }
         
