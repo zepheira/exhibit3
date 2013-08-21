@@ -28,6 +28,23 @@ Exhibit.ViewUtilities.openBubbleForItems = function(anchorElmt, arrayOfItemIDs, 
 };
 
 /**
+ * @static
+ * @param {Number} x
+ * @param {Number} y
+ * @param {Array} arrayOfItemIDs
+ * @param {Exhibit.UIContext} uiContext
+ */
+Exhibit.ViewUtilities.openBubbleWithCoords = function(x,y, arrayOfItemIDs, uiContext){
+    var bubble = Exhibit.jQuery.simileBubble("createBubbleForPoint",
+        x , 
+        y , 
+        uiContext.getSetting("bubbleWidth"), // px
+        uiContext.getSetting("bubbleHeight") // px
+    );
+    Exhibit.ViewUtilities.fillBubbleWithItems(bubble.content, arrayOfItemIDs, uiContext);
+}
+
+/**
  * @@@ possibly take and return jQuery instead of elements
  * @static
  * @param {Element} bubbleElmt
