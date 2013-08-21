@@ -16,12 +16,11 @@
   <property name="bundle" value="${build}/bundle"/>
   <property name="rjs.dir" value="optimize"/>
   <property name="bundleStyle" value="${bundle}/styles"/>
-  <property name="node" value="${build}/node"/>
   <property name="demosSrc" value="demos"/>
   <property name="testsOutput" value="${build}/tests"/>
   <property name="instrument" value="${build}/instrument"/>
   <property name="coverage" value="${build}/coverage"/>
-  <property name="dist" value="dist"/>
+  <property name="dist" value="${build}/dist"/>
 
   <property name="modules" value=""/>
   <property name="lintfile" value=""/>
@@ -60,31 +59,6 @@
      classpath="${tools}/jslint4java/jslint4java.jar"
      />
 
-
-
-
-
-  <!-- node.js code compressor - unused -->
-  <target name="node" description="Combine source files as a Node module">
-    <mkdir dir="${node}"/>
-
-    <concat destfile="${node}/exhibit-api.js" force="no">
-      <filelist dir="${src}/"
-                files="node/exhibit.js"/>
-      <filelist dir="${src}/"
-                files="scripts/util/util.js"/>
-      <fileset dir="${src}/">
-        <exclude name="lib/*.js"/>
-        <exclude name="exhibit-api.js"/>
-        <exclude name="scripts/util/util.js"/>
-        <include name="scripts/util/*.js"/>
-        <include name="scripts/data/*.js"/>
-        <include name="scripts/ui/*.js"/>
-      </fileset>
-      <filelist dir="${src}/"
-                files="node/exhibit-post.js"/>
-    </concat>
-  </target>
 
 
 
@@ -195,7 +169,7 @@
 
 
 
-  <!-- Bundle everything -->
+  <!-- Bundle each piece -->
   <target name="bundle-all">
     <antcall target="bundle"/>
     <antcall target="bundle-require"/>
@@ -216,17 +190,38 @@
 
 
 
+  <target name="omnibundle" description="Bundle everything, standalone">
+    <!-- @@@ to do -->
+  </target>
+
+
+
+
+
+  <!-- Publish built files locally for use -->
+  <target name="publish-extension-local" description="Publish extension within src/">
+    <copy file="${bundle}/extensions/${extension}/${extension}-extension-bundle.js" todir="${src}/extensions/${extension}"/>
+    <copy file="${bundle}/extensions/${extension}/styles/${extension}-extension-bundle.css" todir="${src}/extensions/${extension}/styles"/>
+  </target>
+
+
+
+
+
   <!-- Publish built files locally for use -->
   <target name="publish-local" depends="bundle-all" description="Publish within src/">
     <copy file="${bundle}/exhibit-api.js" todir="${src}"/>
     <copy file="${bundle}/exhibit-bundle.js" todir="${src}"/>
     <copy file="${bundle}/exhibit-bundle.css" todir="${src}/styles"/>
-    <copy file="${bundle}/extensions/time/time-extension-bundle.js" todir="${src}/extensions/time"/>
-    <copy file="${bundle}/extensions/time/styles/time-extension-bundle.css" todir="${src}/extensions/time/styles"/>
-    <copy file="${bundle}/extensions/map/map-extension-bundle.js" todir="${src}/extensions/map"/>
-    <copy file="${bundle}/extensions/map/styles/map-extension-bundle.css" todir="${src}/extensions/map/styles"/>
-    <copy file="${bundle}/extensions/openlayers/openlayers-extension-bundle.js" todir="${src}/extensions/openlayers"/>
-    <copy file="${bundle}/extensions/openlayers/styles/openlayers-extension-bundle.css" todir="${src}/extensions/openlayers/styles"/>
+    <antcall target="publish-extension-local">
+      <param name="extension" value="time"/>
+    </antcall>
+    <antcall target="publish-extension-local">
+      <param name="extension" value="map"/>
+    </antcall>
+    <antcall target="publish-extension-local">
+      <param name="extension" value="openlayers"/>
+    </antcall>
   </target>
 
 
@@ -238,7 +233,7 @@
     <copy todir="${demos}">
       <fileset dir="${demosSrc}"/>
     </copy>
-    <copy todir="${demos}/src">
+    <copy todir="${demos}/api">
       <fileset dir="${dist}"/>
     </copy>
   </target>
@@ -248,13 +243,10 @@
 
 
   <!-- Distribution builder -->
-  <target name="dist" description="Assemble existing and generated files into a directory that can be served online" depends="bundle-all">
+  <target name="dist" description="Assemble existing and generated files into a directory that can be served online" depends="publish-local">
     <mkdir dir="${dist}"/>
     <copy todir="${dist}">
       <fileset dir="${src}"/>
-    </copy>
-    <copy todir="${dist}">
-      <fileset dir="${bundle}"/>
     </copy>
   </target>
 
@@ -360,22 +352,28 @@
     <delete dir="${docs}/" quiet="true"/>
   </target>
 
-  <target name="clean-node">
-    <delete dir="${node}" quiet="true"/>
-  </target>
-
   <target name="clean-bundle">
     <delete dir="${bundle}" quiet="true"/>
+  </target>
+
+  <target name="clean-publish-extension">
+    <delete file="${src}/extensions/${extension}/${extension}-extension-bundle.js"/>
+    <delete file="${src}/extensions/${extension}/styles/${extension}-extension-bundle.css"/>
   </target>
 
   <target name="clean-publish">
     <delete file="${src}/exhibit-api.js"/>
     <delete file="${src}/exhibit-bundle.js"/>
     <delete file="${src}/styles/exhibit-bundle.css"/>
-    <delete file="${src}/extensions/time/time-extension-bundle.js"/>
-    <delete file="${src}/extensions/time/styles/time-extension-bundle.css"/>
-    <delete file="${src}/extensions/map/map-extension-bundle.js"/>
-    <delete file="${src}/extensions/map/styles/map-extension-bundle.css"/>
+    <antcall target="clean-publish-extension">
+      <param name="extension" value="time"/>
+    </antcall>
+    <antcall target="clean-publish-extension">
+      <param name="extension" value="map"/>
+    </antcall>
+    <antcall target="clean-publish-extension">
+      <param name="extension" value="openlayers"/>
+    </antcall>
   </target>
 
   <target name="clean-dist">
@@ -396,6 +394,6 @@
     <delete dir="${testsOutput}/" quiet="true"/>
   </target>
 
-  <target name="clean" depends="clean-demos,clean-node,clean-bundle,clean-publish,clean-dist,clean-docs,clean-jscoverage,clean-tests" description="Remove build artificats"/>
+  <target name="clean" depends="clean-demos,clean-bundle,clean-publish,clean-dist,clean-docs,clean-jscoverage,clean-tests" description="Remove build artificats"/>
 
 </project>
