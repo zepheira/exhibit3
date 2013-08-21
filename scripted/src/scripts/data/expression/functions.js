@@ -211,48 +211,6 @@ Functions["date-range"] = {
     }
 };
 
-// @@@ This is dependent on Google Maps v2; excise it
-Functions.distance = {
-    _units: {
-        km:         1e3,
-        mile:       1609.344
-    },
-    _computeDistance: function(from, to, unit, roundTo) {
-        var range = from.distanceFrom(to);
-        if (!roundTo) {
-            roundTo = 1;
-        }
-        if (isFinite(range)) {
-            if (typeof this._units[unit] !== "undefined") {
-                range = range / this._units[unit];
-            }
-            return Util.round(range, roundTo);
-        }
-        return null;
-    },
-    f: function(args) {
-        var self = this, data, name, n, i, latlng, from, to, range, fn;
-        data = {};
-        name = ["origo", "lat", "lng", "unit", "round"];
-        fn = function(nm) {
-            return function(v) {
-                data[nm] = v;
-            };
-        };
-        for (i = 0; i < name.length; i++) {
-            n = name[i];
-            args[i].forEachValue(fn(n));
-        }
-
-        latlng = data.origo.split(",");
-        from = new NOSUCHGLatLng( latlng[0], latlng[1] );
-        to = new NOSUCHGLatLng( data.lat, data.lng );
-        
-        range = this._computeDistance(from, to, data.unit, data.round);
-        return new ExpressionCollection((typeof range !== "undefined" && range !== null) ? [ range ] : [], "number");
-    }
-};
-
 Functions.min = {
     f: function(args) {
         /** @ignore */
