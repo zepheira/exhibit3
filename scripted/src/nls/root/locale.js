@@ -25,6 +25,7 @@ define({
     "%general.error.lensSelectorExpressionNotFunction": "lensSelector expression %1$s is not a function",
     "%general.error.badLensSelectorExpression": "Bad lensSelector expression: %1$s",
     "%general.error.dataloadExecution": "Could not run your ondataload function; consider using a jQuery event listener for 'dataload.exhibit' instead of embedding it in the document body.",
+    "%general.error.deprecatedBackstage": "Using the 'backstage' parameter is deprecated andn will not be used.  Use RequireJS.",
 
     "%lens.error.unknownLensType": "Unknown lens type: %1$s",
     "%lens.error.failedToLoad": "Failed to load view template from %1$s\n%2$s",

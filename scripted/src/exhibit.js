@@ -413,7 +413,6 @@ define([
         });
         
         $(document).bind("scriptsLoaded.exhibit scriptsLoadedReplay.exhibit", function(evt) {
-            console.log("scriptsLoaded late");
             if (!Exhibit.signals["scriptsLoaded.exhibit"] && !Exhibit.signals["scripsLoadedEarly.exhibit"]) {
                 $(document).trigger("registerStaticComponents.exhibit", Exhibit.staticRegistry);
                 $(document).trigger("staticComponentsRegistered.exhibit");
@@ -441,7 +440,6 @@ define([
         Exhibit.staticRegistry = new Registry(true);
 
         if (Exhibit.signals["scriptsLoadedEarly.exhibit"]) {
-            console.log("scriptsLoaded check");
             $(document).trigger("scriptsLoadedReplay.exhibit");
         }
     };
@@ -513,6 +511,7 @@ define([
         if (typeof Exhibit.params.backstage !== "undefined") {
             // Exhibit.params.autoCreate = false;
             // require(Exhibit.params.backstage)
+            Debug.warn(_("%general.error.deprecatedBackstage"));
         }
 
         if (Exhibit.params.bundle) {
