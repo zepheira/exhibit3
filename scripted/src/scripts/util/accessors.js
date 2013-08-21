@@ -173,7 +173,9 @@ AccessorsUtilities._createTupleAccessor = function(f, spec) {
 
                         for (j = 0; j < bindingNames.length; j++) {
                             tuple2[bindingNames[j]] = null;
-                            parsers[j](a[j], function(v) { tuple2[bindingNames[j]] = v; });
+                            parsers[j](a[j], function(v) {
+                                tuple2[bindingNames[j]] = v;
+                            });
                         }
                         visitor(tuple2);
                     }

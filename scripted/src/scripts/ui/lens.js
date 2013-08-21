@@ -1029,7 +1029,7 @@ Lens._constructDefaultValueList = function(values, valueType, parentElmt, uiCont
  */
 Lens._attributeValueIsSafe = function(name, value) {
     if (Exhibit.params.safe) {
-        if ((name === "href" && value.startsWith("javascript:")) ||
+        if ((name === "href" && Util.isUnsafeLink(value)) ||
             (name.startsWith("on"))) {
             return false;
         }

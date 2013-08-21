@@ -261,7 +261,7 @@ Formatter._ImageFormatter = function(uiContext) {
  */
 Formatter._ImageFormatter.prototype.format = function(value, appender) {
     if (Exhibit.params.safe) {
-        value = value.trim().startsWith("javascript:") ? "" : value;
+        value = Util.isUnsafeLink(value.trim()) ? "" : value;
     }
     
     var img = $("<img>").attr("src", value);
@@ -322,7 +322,7 @@ Formatter._URLFormatter.prototype.format = function(value, appender) {
  */
 Formatter._URLFormatter.prototype.formatText = function(value) {
     if (Exhibit.params.safe) {
-        value = value.trim().startsWith("javascript:") ? "" : value;
+        value = Util.isUnsafeLink(value.trim()) ? "" : value;
     }
     return value;
 };

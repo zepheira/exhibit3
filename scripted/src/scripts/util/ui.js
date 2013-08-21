@@ -190,7 +190,7 @@ UIUtilities.makeValueSpan = function(label, valueType) {
     span = $("<span>").addClass("exhibit-value");
     if (valueType === "url") {
         url = label;
-        if (Exhibit.params.safe && url.trim().startsWith("javascript:")) {
+        if (Exhibit.params.safe && Util.isUnsafeLink(url)) {
             span.text(url);
         } else {
             span.html("<a href=\"" + url + "\" target=\"_blank\">" +

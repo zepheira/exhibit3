@@ -91,6 +91,14 @@ Util.encodeAngleBrackets = function(s) {
         };
     }
 
+    /**
+     * Given a string intended to be made into a link, check if it's
+     * a script.
+     */
+    Util.isUnsafeLink = function(link) {
+        return (/(?:javascript|jscript|ecmascript|vbscript|mocha|livescript)\s*:/i).test(link);
+    };
+
     // end define
     return Util;
 });
