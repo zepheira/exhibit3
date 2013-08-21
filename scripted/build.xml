@@ -323,7 +323,7 @@
     <jslint haltOnFailure="false" options="evil,sloppy,white,plusplus,browser,nomen,devel">
       <predef>define, require, requirejs, sprintf, History, GMarker, GLatLng, unescape, Exhibit_parameters, Exhibit_urlPrefix, GClientGeocoder, GUnload ,GSmallMapControl, GLargeMapControl, GOverviewMapControl, GScaleControl, GMapTypeControl, G_NORMAL_MAP, G_SATELLITE_MAP, G_HYBRID_MAP, GLatLngBounds, GEvent, GPolygon, GPolyline, GIcon, GSize, GPoint, Exhibit_MapExtension_urlPrefix, Exhibit_MapExtension_parameters, Exhibit_TimeExtension_urlPrefix, Exhibit_TimeExtension_parameters</predef>
       <formatter type="plain" />
-      <fileset dir="${src}" includes="*.js,**/*.js" excludes="lib/*.js,**/lib/*.js" />
+      <fileset dir="${src}" includes="*.js,**/*.js" excludes="lib/*.js,**/lib/*.js,exhibit-api.js,*-bundle.js,**/*-bundle.js" />
     </jslint>
   </target>
 
