@@ -5,9 +5,8 @@ define([
     "./localizer",
     "./debug",
     "./persistence",
-    "../ui/lens",
     "lib/jquery.simile.bubble"
-], function($, Exhibit, Util, _, Debug, Persistence, Lens) {
+], function($, Exhibit, Util, _, Debug, Persistence) {
 var UIUtilities = {
     /*----------------------------------------------------------------------
      *  Status Indication and Feedback
@@ -395,9 +394,7 @@ UIUtilities.createFocusDialogBox = function(itemID, exhibit, configuration) {
      * @ignore Can't get JSDocTK to ignore this one method for some reason.
      */
     dom.open = function() {
-        var lens;
         $(document).trigger("modalSuperseded.exhibit");
-        lens = new Lens(itemID, dom.viewContainer, exhibit, configuration);
         
         $(dom.elmt).css("top", (document.body.scrollTop + 100) + "px");
         $(document.body).append(dom.elmt);
