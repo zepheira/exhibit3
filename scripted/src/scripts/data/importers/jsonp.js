@@ -62,19 +62,16 @@ JSONP.transformJSON = function(json, index, mapping, converters) {
             if (mapping.hasOwnProperty(name)) {
                 index = mapping[name];
                 // gracefully handle poisoned Object.prototype
-                if (!mapping.hasOwnProperty(name) ||
-                    !object.hasOwnProperty(index)) {
-                    continue;
-                }
-
-                property = object[index];
-                if (typeof converters !== "undefined"
-                    && converters !== null
-                    && converters.hasOwnProperty(name)) {
-                    property = converters[name](property, object, i, objects, json);
-                }
-                if (typeof property !== "undefined") {
-                    item[name] = property;
+                if (object.hasOwnProperty(index)) {
+                    property = object[index];
+                    if (typeof converters !== "undefined"
+                        && converters !== null
+                        && converters.hasOwnProperty(name)) {
+                        property = converters[name](property, object, i, objects, json);
+                    }
+                    if (typeof property !== "undefined") {
+                        item[name] = property;
+                    }
                 }
             }
         }
