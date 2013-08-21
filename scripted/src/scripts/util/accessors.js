@@ -159,7 +159,7 @@ AccessorsUtilities._createTupleAccessor = function(f, spec) {
         return function(itemID, database, visitor, tuple) {
             expression.evaluateOnItem(itemID, database).values.visit(
                 function(v) {
-                    var a, tuple2, n, j;
+                    var a, tuple2, n, j, makeSetter;
                     a = v.split(separator);
                     if (a.length === parsers.length) {
                         tuple2 = {};
@@ -171,11 +171,14 @@ AccessorsUtilities._createTupleAccessor = function(f, spec) {
                             }
                         }
 
+                        makeSetter = function(k) {
+                            return function(v) {
+                                tuple2[k] = v;
+                            };
+                        };
                         for (j = 0; j < bindingNames.length; j++) {
                             tuple2[bindingNames[j]] = null;
-                            parsers[j](a[j], function(v) {
-                                tuple2[bindingNames[j]] = v;
-                            });
+                            parsers[j](a[j], makeSetter(bindingNames[j]));
                         }
                         visitor(tuple2);
                     }

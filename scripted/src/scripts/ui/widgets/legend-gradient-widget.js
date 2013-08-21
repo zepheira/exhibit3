@@ -59,7 +59,7 @@ LegendGradientWidget.prototype._makeRGB = function(point) {
  * @param {Array} configuration
  */
 LegendGradientWidget.prototype.addGradient = function(configuration) {
-    var row1, row2, row3, sortObj, stepSize, counter, i, j, fraction;
+    var row1, row2, row3, sortObj, stepSize, counter, i, j, fraction, makeMouseoverHandler, makeMouseoutHandler;
     if (configuration.length < 2) {
         return;
     }
@@ -76,18 +76,40 @@ LegendGradientWidget.prototype.addGradient = function(configuration) {
     
     stepSize = (configuration[configuration.length - 1].value - configuration[0].value) / 50;
     counter = 0;
+
+    makeMouseoverHandler = function(el, changeData) {
+        return function(evt) {
+            if (changeData) {
+                $(row1).find("td").filter(function(i, e) {
+                    return $(e).data("count") === $(el).data("count");
+                })
+                    .css("visibility", "visible")
+                    .css("overflow", "visible");
+            }
+            $(el).css("border", "1.2px solid");
+        };
+    };
+
+    makeMouseoutHandler = function(el, changeData) {
+        return function(evt) {
+            if (changeData) {
+                $(row1).find("td").filter(function(i, e) {
+                    return $(e).data("count") === $(el).data("count");
+                })
+                    .css("visibility", "hidden")
+                    .css("overflow", "hidden");
+            }
+            $(el).css("border", "none");
+        };
+    };
     
     for (i = 0; i < configuration.length; i++) {
         $("<td>").appendTo(row1);
 
         $("<td>")
             .css("background-color", this._makeRGB(configuration[i]))
-            .bind("mouseover", function(evt) {
-                $(this).css("border", "1.2px solid");
-            })
-            .bind("mouseout", function(evt) {
-                $(this).css("border", "none");
-            })
+            .bind("mouseover", makeMouseoverHandler(this, false))
+            .bind("mouseout", makeMouseoutHandler(this, false))
             .appendTo(row2);
 
         $("<td><div>" + configuration[i].value + "</div></td>")
@@ -115,24 +137,8 @@ LegendGradientWidget.prototype.addGradient = function(configuration) {
                          "green": Math.floor(configuration[i].green + fraction*(configuration[i+1].green - configuration[i].green)),
                          "blue": Math.floor(configuration[i].blue + fraction*(configuration[i+1].blue - configuration[i].blue))
                      }))
-                .bind("mouseover", function(evt) {
-                    var self = $(this);
-                    $(row1).find("td").filter(function(i, el) {
-                        return $(el).data("count") === self.data("count");
-                    })
-                        .css("visibility", "visible")
-                        .css("overflow", "visible");
-                    $(this).css("border", "1.2px solid");
-                })
-                .bind("mouseout", function(evt) {
-                    var self = $(this);
-                    $(row1).find("td").filter(function(i, el) {
-                        return $(el).data("count") === self.data("count");
-                    })
-                        .css("visibility", "hidden")
-                        .css("overflow", "hidden");
-                    $(this).css("border", "none");
-                })
+                .bind("mouseover", makeMouseoverHandler(this, true))
+                .bind("mouseout", makeMouseoutHandler(this, true))
                 .appendTo(row2);
 
             $("<td>").appendTo(row3);

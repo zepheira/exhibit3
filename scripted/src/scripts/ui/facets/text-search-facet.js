@@ -353,7 +353,7 @@ TextSearchFacet.prototype._onTimeout = function() {
  *
  */
 TextSearchFacet.prototype._buildMaps = function() {
-    var itemToValue, allItems, database, expressions, propertyIDs;
+    var itemToValue, allItems, database, expressions, propertyIDs, visitor;
     if (typeof this._itemToValue === "undefined") {
         itemToValue = {};
         allItems = this.getUIContext().getCollection().getAllItems();
@@ -364,9 +364,12 @@ TextSearchFacet.prototype._buildMaps = function() {
             allItems.visit(function(item) {
                 var values, x, expression;
                 values = [];
+                visitor = function(v) {
+                    values.push(v.toLowerCase());
+                };
                 for (x = 0; x < expressions.length; x++) {
                     expression = expressions[x];
-                    expression.evaluateOnItem(item, database).values.visit(function(v) { values.push(v.toLowerCase()); });
+                    expression.evaluateOnItem(item, database).values.visit(visitor);
                 }
                 itemToValue[item] = values;
             });
@@ -375,8 +378,11 @@ TextSearchFacet.prototype._buildMaps = function() {
             allItems.visit(function(item) {
                 var values, p;
                 values = [];
+                visitor = function(v) {
+                    values.push(v.toLowerCase());
+                };
                 for (p = 0; p < propertyIDs.length; p++) {
-                    database.getObjects(item, propertyIDs[p]).visit(function(v) { values.push(v.toLowerCase()); });
+                    database.getObjects(item, propertyIDs[p]).visit(visitor);
                 }
                 itemToValue[item] = values;
             });
