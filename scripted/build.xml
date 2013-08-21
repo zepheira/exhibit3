@@ -321,9 +321,9 @@
   <target name="lint">
     <!-- see http://happygiraffe.github.com/jslint4java/ant.html -->
     <jslint haltOnFailure="false" options="evil,sloppy,white,plusplus,browser,nomen,devel">
-      <predef>jQuery, $$, Exhibit</predef>
+      <predef>define, require, requirejs, Exhibit</predef>
       <formatter type="plain" />
-      <fileset dir="${src}" includes="*.js,**/*.js" excludes="lib/*.js,exhibit-api.js" />
+      <fileset dir="${src}" includes="*.js,**/*.js" excludes="lib/*.js,**/lib/*.js" />
     </jslint>
   </target>
 
