@@ -307,7 +307,7 @@
   <target name="lintone" description="Run lint on one file">
     <!-- see http://happygiraffe.github.com/jslint4java/ant.html -->
     <jslint haltOnFailure="false" options="evil,sloppy,white,plusplus,browser,nomen,devel">
-      <predef>jQuery, $$</predef>
+      <predef>define, require, requirejs, sprintf, History, GMarker, GLatLng, unescape, Exhibit_parameters, Exhibit_urlPrefix, GClientGeocoder, GUnload ,GSmallMapControl, GLargeMapControl, GOverviewMapControl, GScaleControl, GMapTypeControl, G_NORMAL_MAP, G_SATELLITE_MAP, G_HYBRID_MAP, GLatLngBounds, GEvent, GPolygon, GPolyline, GIcon, GSize, GPoint, Exhibit_MapExtension_urlPrefix, Exhibit_MapExtension_parameters, Exhibit_TimeExtension_urlPrefix, Exhibit_TimeExtension_parameters</predef>
       <formatter type="plain" />
       <fileset dir="." includes="${lintfile}" />
     </jslint>
@@ -321,7 +321,7 @@
   <target name="lint">
     <!-- see http://happygiraffe.github.com/jslint4java/ant.html -->
     <jslint haltOnFailure="false" options="evil,sloppy,white,plusplus,browser,nomen,devel">
-      <predef>define, require, requirejs, Exhibit</predef>
+      <predef>define, require, requirejs, sprintf, History, GMarker, GLatLng, unescape, Exhibit_parameters, Exhibit_urlPrefix, GClientGeocoder, GUnload ,GSmallMapControl, GLargeMapControl, GOverviewMapControl, GScaleControl, GMapTypeControl, G_NORMAL_MAP, G_SATELLITE_MAP, G_HYBRID_MAP, GLatLngBounds, GEvent, GPolygon, GPolyline, GIcon, GSize, GPoint, Exhibit_MapExtension_urlPrefix, Exhibit_MapExtension_parameters, Exhibit_TimeExtension_urlPrefix, Exhibit_TimeExtension_parameters</predef>
       <formatter type="plain" />
       <fileset dir="${src}" includes="*.js,**/*.js" excludes="lib/*.js,**/lib/*.js" />
     </jslint>
