@@ -287,7 +287,7 @@ define([
         SettingsUtilities.collectSettings(configuration, view.getSettingSpecs(), view._settings);
         
         accessors = view._accessors;
-        view._getLatlng = (typeof accessors.getLatLng !== "undefined" && accessors.getLatlng !== null) ?
+        view._getLatlng = (typeof accessors.getLatlng !== "undefined" && accessors.getLatlng !== null) ?
             function(itemID, database, visitor) {
                 accessors.getProxy(itemID, database, function(proxy) {
                     accessors.getLatlng(proxy, database, visitor);
