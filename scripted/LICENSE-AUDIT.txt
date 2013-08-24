@@ -138,3 +138,12 @@ OpenLayers
   * styles/style.css
   * styles/img/* (theme graphics)
   * images/* (general theme-independent graphics)
+
+Flot
+----
+ * http://flotcharts.org/
+ * 0.8.1
+ * MIT License
+ * scripted/src/extensions/flot/lib/
+  * jquery.flot.js
+  * jquery.flot.pie.js
