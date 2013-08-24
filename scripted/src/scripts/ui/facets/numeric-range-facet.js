@@ -420,7 +420,7 @@ NumericRangeFacet.prototype._toggleRange = function(from, to, wasSelected, singl
  * @private
  */
 NumericRangeFacet.prototype._clearSelections = function() {
-    History.pushComponentState(
+    EHistory.pushComponentState(
         this,
         Facet.getRegistryKey(),
         this.exportEmptyState(),
