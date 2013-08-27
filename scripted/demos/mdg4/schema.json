@@ -1,0 +1,16 @@
+{
+    "properties": {
+        "mortality1990": {
+            "valueType": "number",
+            "label": "mortality (1990)"
+        },
+        "mortality2011": {
+            "valueType": "number",
+            "label": "mortality (2011)"
+        },
+        "delta": {
+            "valueType": "number",
+            "label": "Percentage change from 1990 to 2011"
+        }
+    }
+}
