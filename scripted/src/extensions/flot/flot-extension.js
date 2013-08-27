@@ -9,10 +9,12 @@ define([
     "exhibit",
     "./scripts/flot-base",
     "./scripts/piechart-view",
+    "./scripts/barchart-view",
     "i18n!ext/flot/nls/locale",
     "scripts/util/debug"
-], function(module, $, Exhibit, FlotExtension, PieChartView, Locale, Debug) {
+], function(module, $, Exhibit, FlotExtension, PieChartView, BarChartView, Locale, Debug) {
     FlotExtension.PieChartView = PieChartView;
+    FlotExtension.BarChartView = BarChartView;
 
     FlotExtension.setup = function() {
         var url, i, conf, prefix, targets;

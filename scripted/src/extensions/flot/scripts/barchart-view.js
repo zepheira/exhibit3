@@ -3,8 +3,13 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-// @@@ Break out to common utilities as other chart types are added.
+// @@@ x-axis label
+// @@@ y-axis label
+// @@@ highlight? don't really care
+// @@@ click pops up list of items?
 // @@@ ordering - alpha, numeric, or explicit
+// @@@ coordinator
+// @@@ use with raw data mode, not grouping mode
 
 define([
     "lib/jquery",
@@ -26,14 +31,14 @@ define([
      * @param {Element} containerElmt
      * @param {Exhibit.UIContext} uiContext
      */
-    var PieChartView = function(containerElmt, uiContext) {
+    var BarChartView = function(containerElmt, uiContext) {
         var view = this;
         $.extend(this, new View(
             "flot",
             containerElmt,
             uiContext
         ));
-        this.addSettingSpecs(PieChartView._settingSpecs);
+        this.addSettingSpecs(BarChartView._settingSpecs);
 
         this._accessors = {
             "getProxy": function(itemID, database, visitor) {
@@ -62,10 +67,9 @@ define([
     /**
      * @constant
      */
-    PieChartView._settingSpecs = {
+    BarChartView._settingSpecs = {
         "height": { "type": "int", "defaultValue": 640 },
         "width": { "type": "int", "defaultValue": 480 },
-        "threshold": { "type": "int", "defaultValue": 1 },
         "hoverEffect": { "type": "boolean", "defaultValue": true },
         "colorCoder": { "type": "text", "defaultValue": null },
         "selectCoordinator": { "type": "text",  "defaultValue": null },
@@ -77,7 +81,7 @@ define([
     /**
      * @constant
      */
-    PieChartView._accessorSpecs = [
+    BarChartView._accessorSpecs = [
         {   "accessorName":   "getProxy",
             "attributeName":  "proxy"
         },
@@ -94,14 +98,14 @@ define([
      * @param {Object} configuration
      * @param {Element} containerElmt
      * @param {Exhibit.UIContext} uiContext
-     * @returns {Exhibit.PieChartView}
+     * @returns {Exhibit.BarChartView}
      */
-    PieChartView.create = function(configuration, containerElmt, uiContext) {
-        var view = new PieChartView(
+    BarChartView.create = function(configuration, containerElmt, uiContext) {
+        var view = new BarChartView(
             containerElmt,
             UIContext.create(configuration, uiContext)
         );
-        PieChartView._configure(view, configuration);
+        BarChartView._configure(view, configuration);
         
         view._internalValidate();
         view._initializeUI();
@@ -112,19 +116,19 @@ define([
      * @param {Element} configElmt
      * @param {Element} containerElmt
      * @param {Exhibit.UIContext} uiContext
-     * @returns {Exhibit.PieChartView}
+     * @returns {Exhibit.BarChartView}
      */
-    PieChartView.createFromDOM = function(configElmt, containerElmt, uiContext) {
+    BarChartView.createFromDOM = function(configElmt, containerElmt, uiContext) {
         var configuration, view;
         configuration = Exhibit.getConfigurationFromDOM(configElmt);
-        view = new PieChartView(
+        view = new BarChartView(
             containerElmt !== null ? containerElmt : configElmt, 
             UIContext.createFromDOM(configElmt, uiContext)
         );
     
-        AccessorsUtilities.createAccessorsFromDOM(configElmt, PieChartView._accessorSpecs, view._accessors);
+        AccessorsUtilities.createAccessorsFromDOM(configElmt, BarChartView._accessorSpecs, view._accessors);
         SettingsUtilities.collectSettingsFromDOM(configElmt, view.getSettingSpecs(), view._settings);
-        PieChartView._configure(view, configuration);
+        BarChartView._configure(view, configuration);
         
         view._internalValidate();
         view._initializeUI();
@@ -133,12 +137,12 @@ define([
     };
 
     /**
-     * @param {Exhibit.PieChartView} view
+     * @param {Exhibit.BarChartView} view
      * @param {Object} configuration
      */
-    PieChartView._configure = function(view, configuration) {
+    BarChartView._configure = function(view, configuration) {
         var accessors;
-        AccessorsUtilities.createAccessors(configuration, PieChartView._accessorSpecs, view._accessors);
+        AccessorsUtilities.createAccessors(configuration, BarChartView._accessorSpecs, view._accessors);
         SettingsUtilities.collectSettings(configuration, view.getSettingSpecs(), view._settings);
         
         accessors = view._accessors;
@@ -147,7 +151,7 @@ define([
     /**
      *
      */
-    PieChartView.prototype.dispose = function() {
+    BarChartView.prototype.dispose = function() {
         $(this.getUIContext().getCollection().getElement()).unbind(
             "onItemsChanged.exhibit",
             this._onItemsChanged
@@ -169,7 +173,7 @@ define([
     /**
      *
      */
-    PieChartView.prototype._internalValidate = function() {
+    BarChartView.prototype._internalValidate = function() {
         var selectCoordinator, self;
         if (typeof this._accessors.getColorKey !== "undefined") {
             if (typeof this._settings.colorCoder !== "undefined") {
@@ -194,7 +198,7 @@ define([
     /**
      *
      */
-    PieChartView.prototype._initializeUI = function() {
+    BarChartView.prototype._initializeUI = function() {
         var self, plotDiv;
         self = this;
         legendWidgetSettings = {};
@@ -225,45 +229,36 @@ define([
     /**
      * @param {Array} chartData
      */
-    PieChartView.prototype._reconstructChart = function(chartData) {
-        var self, settings, plotDiv, opts, showTooltip, moveTooltip, colorCoder, columns;
+    BarChartView.prototype._reconstructChart = function(chartData) {
+        var self, settings, plotDiv, opts, showTooltip, moveTooltip, colorCoder;
 
         self = this;
         settings = self._settings;
         plotDiv = self._dom.plotContainer;
         colorCoder = self._colorCoder;
-        columns = (chartData.length > 15) ? 2 : 1;
         opts = {
-            "series": {},
             "legend": {
-                "show": true,
-                "noColumns": columns
+                "show": false
             },
             "grid": {
                 "hoverable": true
+            },
+            "xaxis": {
+                "ticks": chartData.labels,
+                "tickLength": 0
             }
         };
-
-        opts.series["pie"] = {
-            "show": true,
-            "radius": 1,
-            "combine": {
-                "threshold": settings.threshold / 100.0,
-                "label": colorCoder.getOthersLabel() + " (&lt;" + settings.threshold + "%)"
-            }
-        };
-        
-        self._plot = $.plot($(plotDiv), chartData, opts);
-
-        showTooltip = function(x, y, label, pct) {
-            $('<div id="exhibit-piechartview-tooltip"><strong>' + label + '</strong> (' + pct + '%)</div>').css({
+        console.log(chartData);
+        self._plot = $.plot($(plotDiv), chartData.data, opts);
+        showTooltip = function(x, y, label, value) {
+            $('<div id="exhibit-barchartview-tooltip"><strong>' + label + '</strong> (' + value + ')</div>').css({
                 "top": y + 5,
                 "left": x + 5,
             }).appendTo("body");
         };
 
         moveTooltip = function(x, y) {
-            $("#exhibit-piechartview-tooltip").css({
+            $("#exhibit-barchartview-tooltip").css({
                 "top": y + 5,
                 "left": x + 5
             });
@@ -272,28 +267,26 @@ define([
         if (settings.hoverEffect) {
             $(plotDiv).data("previous", -1);
             $(plotDiv).bind("plothover", function(evt, pos, obj) {
-                var pct;
                 if (obj) {
                     if ($(plotDiv).data("previous") !== obj.seriesIndex) {
                         $(plotDiv).data("previous", obj.seriesIndex);
-                        $("#exhibit-piechartview-tooltip").remove();
+                        $("#exhibit-barchartview-tooltip").remove();
                         self._plot.unhighlight();
                         self._plot.highlight(obj.series, obj.datapoint);
-                        pct = parseFloat(obj.series.percent).toFixed(2);
-                        showTooltip(pos.pageX, pos.pageY, obj.series.label, pct);
+                        showTooltip(pos.pageX, pos.pageY, obj.series.label, obj.datapoint[1]);
                     } else {
                         moveTooltip(pos.pageX, pos.pageY);
                     }
                 } else {
                     self._plot.unhighlight();
-                    $("#exhibit-piechartview-tooltip").remove();
+                    $("#exhibit-barchartview-tooltip").remove();
                     $(plotDiv).data("previous", -1); 
                 }
             });
             
             $(plotDiv).bind("mouseout", function(evt) {
                 self._plot.unhighlight();
-                $("#exhibit-piechartview-tooltip").remove();
+                $("#exhibit-barchartview-tooltip").remove();
                 $(plotDiv).data("previous", -1);
             });
 
@@ -304,8 +297,8 @@ define([
     /**
      *
      */
-    PieChartView.prototype._reconstruct = function() {
-        var self, collection, database, settings, accessors, currentSize, unplottableItems, currentSet, colorCoder, chartData, plottableData, k;
+    BarChartView.prototype._reconstruct = function() {
+        var self, collection, database, settings, accessors, currentSize, unplottableItems, currentSet, colorCoder, chartData, plottableData, k, i;
 
         self = this;
         collection = this.getUIContext().getCollection();
@@ -315,7 +308,7 @@ define([
         colorCoder = this._colorCoder;
 
         chartData = {};
-        plottableData = [];
+        plottableData = {"labels": [], "data": []};
 
         /*
          *  Get the current collection and check if it's empty
@@ -333,12 +326,22 @@ define([
                 if (v !== null) {
                     if (typeof chartData[v] === "undefined") {
                         color = colorCoder.translate(v);
-                        chartData[v] = {"label": v, "data": 1 };
+                        chartData[v] = {
+                            "label": v,
+                            "data": [[0, 1]],
+                            "bars": {
+                                "show": true,
+                                "fill": true,
+                                "align": "center",
+                                "lineWidth": 0
+                            }
+                        };
                         if (color !== null) {
                             chartData[v].color = color;
+                            chartData[v].bars.fillColor = color;
                         }
                     } else {
-                        chartData[v].data++;
+                        chartData[v].data[0][1] = chartData[v].data[0][1] + 1;
                     }
                 } else {
                     unplottableItems.push(itemID);
@@ -346,9 +349,12 @@ define([
             });
         });
 
+        i = 0;
         for (k in chartData) {
             if (chartData.hasOwnProperty(k)) {
-                plottableData.push(chartData[k]);
+                plottableData.labels.push([i, k]);
+                chartData[k].data[0][0] = i++;
+                plottableData.data.push(chartData[k]);
             }
         }
         this._reconstructChart(plottableData);
@@ -359,11 +365,11 @@ define([
      * @param {Object} selection
      * @param {Array} selection.itemIDs
      */
-    PieChartView.prototype._select = function(selection) {
+    BarChartView.prototype._select = function(selection) {
         // @@@ Cannot really fire off a selector from the chart side, but
         //     if a selector from another view is fired off, show which
         //     slice it belongs to, in some fashion.
     };
 
-    return PieChartView;
+    return BarChartView;
 });
