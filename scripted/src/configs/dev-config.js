@@ -70,6 +70,12 @@ requirejs.config({
         },
         "openlayers": {
             "exports": "OpenLayers"
+        },
+        "extensions/flot/lib/jquery.flot": {
+            "deps": ["lib/jquery"]
+        },
+        "extensions/flot/lib/jquery.flot.pie": {
+            "deps": ["extensions/flot/lib/jquery.flot.pie"]
         }
     }
 });
