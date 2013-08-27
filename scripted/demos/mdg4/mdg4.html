@@ -44,7 +44,7 @@
                 <h1>Exhibit 3.0 Scripted Demo: UN Millennium Development Goal 4</h1>
                 <div id="content-area">
                   <p>Millennium Development Goal Target 4.A: Reduce by two thirds, between 1990 and 2015, the under-five mortality rate.</p>
-                  </p>As of 2011, this is the status of achieving MDG4A by country.  Countries that have cut their rate by the goal already are meets or exceeds (over 75%); countries above a 50% cut are close; countries above a 33% cut are half way to the goal; countries below that are poor, and some have gotten worse.  Developed countries are not included in regional or other groupings, only in the Developed grouping; regions may overlap (Landlocked and Least Developed share a number of members).  <a href="http://mdgs.un.org/unsd/mdg/Data.aspx">Data source</a>.</p>
+<!--                  <p>As of 2011, this is the status of achieving MDG4A by country.  Countries that have cut their rate by the goal already are meets or exceeds (over 75%); countries above a 50% cut are close; countries above a 33% cut are half way to the goal; countries below that are poor, and some have gotten worse.  Developed countries are not included in regional or other groupings, only in the Developed grouping; regions may overlap (Landlocked and Least Developed share a number of members).  <a href="http://mdgs.un.org/unsd/mdg/Data.aspx">Data source</a>.</p>-->
                   <div data-ex-role="exhibit-controlPanel" data-ex-developer-mode="true" data-ex-hover-reveal="true"></div>
                     <div class="item" data-ex-role="exhibit-lens" data-ex-item-types="Country" style="display: none">
                         <span data-ex-content=".label"></span>: <span data-ex-content=".status"></span>
@@ -53,12 +53,21 @@
                     <div data-ex-role="exhibit-viewPanel">
                         <div id="pie-chart"
                              data-ex-role="view"
+                             data-ex-label="Status Pie Chart"
                              data-ex-view-class="PieChart"
                              data-ex-width="800"
                              data-ex-height="480"
                              data-ex-grouping=".status"
                              data-ex-color-coder="status-color">
-                             <!--data-ex-threshold="6"-->
+                        </div>
+                        <div id="bar-chart"
+                             data-ex-role="view"
+                             data-ex-label="Status Bar Chart"
+                             data-ex-view-class="BarChart"
+                             data-ex-width="800"
+                             data-ex-height="480"
+                             data-ex-grouping=".status"
+                             data-ex-color-coder="status-color">
                         </div>
                     </div>
                 </div>

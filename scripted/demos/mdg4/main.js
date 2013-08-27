@@ -11,6 +11,7 @@ require(["../api/configs/dev-config.js"], function() {
         Exhibit.OLMapView = MapExtension.OLMapView;
         Exhibit.FlotExtension = FlotExtension;
         Exhibit.PieChartView = FlotExtension.PieChartView;
+        Exhibit.BarChartView = FlotExtension.BarChartView;
         $(document).trigger("scriptsLoaded.exhibit");
     });
 });
