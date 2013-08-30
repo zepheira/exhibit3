@@ -248,7 +248,7 @@ define([
                 "tickLength": 0
             }
         };
-        console.log(chartData);
+
         self._plot = $.plot($(plotDiv), chartData.data, opts);
         showTooltip = function(x, y, label, value) {
             $('<div id="exhibit-barchartview-tooltip"><strong>' + label + '</strong> (' + value + ')</div>').css({
