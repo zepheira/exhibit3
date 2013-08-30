@@ -322,6 +322,25 @@ div.countBackground { /* this class makes a window partially transparent */
 	background: #fcc;
 }
 
- .exhibit-imageFacet-value-selected {
+.exhibit-imageFacet-value-selected {
 	background: #fcc;
+}
+
+div.exhibit-slider-histogram {
+    background: #eee;
+    position: relative;
+}
+
+div.exhibit-slider-histogram div { 
+    background: #999;
+}
+
+div.exhibit-slider-display {
+    font-size: 16px;
+}
+
+.exhibit-slider-display input { 
+    background: #eee;
+    font-size: 10px;
+    width: 40px;
 }

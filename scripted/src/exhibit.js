@@ -77,6 +77,7 @@ define([
     "./scripts/ui/facets/numeric-range-facet",
     "./scripts/ui/facets/hierarchical-facet",
     "./scripts/ui/facets/cloud-facet",
+    "./scripts/ui/facets/slider-facet",
     "./scripts/ui/views/view",
     "./scripts/ui/views/view-panel",
     "./scripts/ui/views/ordered-view-frame",
@@ -92,7 +93,7 @@ define([
     "./scripts/ui/widgets/legend-gradient-widget",
     "./scripts/ui/widgets/bookmark-widget",
     "./scripts/ui/widgets/collection-summary-widget"
-], function(module, $, Exhibit, Impl, Registry, Util, Coders, Debug, DateTime, Entities, FacetUtilities, Set, Bookmark, EHistory, SettingsUtilities, AccessorsUtilities, Persistence, NativeDateUnit, ViewUtilities, _, DatabaseUtilities, UIUtilities, FromString, Backwards, Attributes, Collection, Database, LocalImpl, Type, Property, RangeIndex, Importer, BabelBased, JSONP, GoogleSpreadsheet, ExhibitJSONImporter, Exporter, ExhibitJSONExporter, TSV, SemanticWikiText, RDFXML, BibTex, ExpressionParser, ExpressionScanner, Expression, ExpressionCollection, Path, Operator, FunctionCall, ControlCall, Constant, Controls, FunctionUtilities, Functions, UI, UIContext, Lens, LensRegistry, ControlPanel, Formatter, FormatParser, FormatScanner, Coordinator, Coder, ColorCoder, DefaultColorCoder, OrderedColorCoder, SizeCoder, ColorGradientCoder, SizeGradientCoder, IconCoder, Facet, ListFacet, TextSearchFacet, AlphaRangeFacet, NumericRangeFacet, HierarchicalFacet, CloudFacet, View, ViewPanel, OrderedViewFrame, TileView, ThumbnailView, TabularView, ToolboxWidget, ResizableDivWidget, ResetHistoryWidget, OptionWidget, Logo, LegendWidget, LegendGradientWidget, BookmarkWidget, CollectionSummaryWidget) {
+], function(module, $, Exhibit, Impl, Registry, Util, Coders, Debug, DateTime, Entities, FacetUtilities, Set, Bookmark, EHistory, SettingsUtilities, AccessorsUtilities, Persistence, NativeDateUnit, ViewUtilities, _, DatabaseUtilities, UIUtilities, FromString, Backwards, Attributes, Collection, Database, LocalImpl, Type, Property, RangeIndex, Importer, BabelBased, JSONP, GoogleSpreadsheet, ExhibitJSONImporter, Exporter, ExhibitJSONExporter, TSV, SemanticWikiText, RDFXML, BibTex, ExpressionParser, ExpressionScanner, Expression, ExpressionCollection, Path, Operator, FunctionCall, ControlCall, Constant, Controls, FunctionUtilities, Functions, UI, UIContext, Lens, LensRegistry, ControlPanel, Formatter, FormatParser, FormatScanner, Coordinator, Coder, ColorCoder, DefaultColorCoder, OrderedColorCoder, SizeCoder, ColorGradientCoder, SizeGradientCoder, IconCoder, Facet, ListFacet, TextSearchFacet, AlphaRangeFacet, NumericRangeFacet, HierarchicalFacet, CloudFacet, SliderFacet, View, ViewPanel, OrderedViewFrame, TileView, ThumbnailView, TabularView, ToolboxWidget, ResizableDivWidget, ResetHistoryWidget, OptionWidget, Logo, LegendWidget, LegendGradientWidget, BookmarkWidget, CollectionSummaryWidget) {
     Exhibit.Backwards = Backwards;
     Exhibit.Backwards.Attributes = Attributes;
     Exhibit._ = _;
@@ -169,6 +170,7 @@ define([
     Exhibit.NumericRangeFacet = NumericRangeFacet;
     Exhibit.HierarchicalFacet = HierarchicalFacet;
     Exhibit.CloudFacet = CloudFacet;
+    Exhibit.SliderFacet = SliderFacet;
     Exhibit.View = View;
     Exhibit.ViewPanel = ViewPanel;
     Exhibit.OrderedViewFrame = OrderedViewFrame;

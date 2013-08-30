@@ -68,6 +68,9 @@ requirejs.config({
         "lib/jquery.history.shim": {
             "deps": ["lib/jquery.history"]
         },
+        "lib/jquery.nouislider": {
+            "deps": ["lib/jquery"]
+        },
         "openlayers": {
             "exports": "OpenLayers"
         },

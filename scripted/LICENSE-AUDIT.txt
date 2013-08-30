@@ -147,3 +147,10 @@ Flot
  * scripted/src/extensions/flot/lib/
   * jquery.flot.js
   * jquery.flot.pie.js
+
+noUiSlider
+----------
+ * http://refreshless.com/nouislider/
+ * 3.2.1
+ * WTFPL
+ * scripted/src/lib/jquery.nouislider.js
