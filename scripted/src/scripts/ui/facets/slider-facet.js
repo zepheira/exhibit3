@@ -51,11 +51,8 @@ define([
         };
 
         this._onRootItemsChanged = function() {
-            if (typeof self._range !== "undefined") {
-                self._range = {
-                    "min": null,
-                    "max": null
-                };
+            if (typeof self._rangeIndex !== "undefined") {
+                delete self._rangeIndex;
             }
         };
         $(uiContext.getCollection().getElement()).bind(
@@ -64,8 +61,7 @@ define([
         );
     };
     
-    SliderFacet._settingsSpecs = {
-        "scroll": { "type": "boolean", "defaultValue": true },
+    SliderFacet._settingSpecs = {
         "precision": { "type": "float", "defaultValue": 1 },
         "histogram": { "type": "boolean", "defaultValue": true },
         "height": { "type": "int", "defaultValue": 14 },
@@ -157,8 +153,8 @@ define([
      */
     SliderFacet._configure = function(facet, configuration) {
         var selection, i, segment, property;
-        SettingsUtilities.collectSettings(configuration, SliderFacet._settingsSpecs, facet._settings);
-        
+        SettingsUtilities.collectSettings(configuration, facet.getSettingSpecs(), facet._settings);
+
         if (typeof configuration.expression !== "undefined") {
             facet.setExpressionString(configuration.expression);
             facet.setExpression(ExpressionParser.parse(configuration.expression));
@@ -205,11 +201,11 @@ define([
 
         this._cache.dispose();
         this._cache = null;
+        this._slider = null;
         this._dom = null;
         this._settings = null;
         this._range = null;
         this._maxRange = null;
-        this._slider = null;
         this._rangeIndex = null;
     };
 
@@ -217,7 +213,8 @@ define([
      *
      */
     SliderFacet.prototype._initializeUI = function() {
-        var self = this;
+        var self, onSlide, label;
+        self = this;
         
         this._dom = $.simileDOM(
             "string",
@@ -227,27 +224,22 @@ define([
                 '</div>' +
                 (self._settings.histogram ? 
                  '<div class="exhibit-slider-histogram" id="histogram"></div>' : '') +
+                '<form id="sliderForm">'+
                 '<div class="exhibit-slider noUiSlider" id="slider"></div>' +
                 '<div class="exhibit-slider-display">' +
-                (self._settings.inputText ?
-                 '<input type="text" id="minDisplay"></input> - <input type="text" id="maxDisplay"></input>' : '<span id="minDisplay"></span> - <span id="maxDislpay"></span>') + 
-                '</div>'
+                '<input type="text" id="minDisplay"></input> - <input type="text" id="maxDisplay"></input>' + 
+                '</div>' +
+                '</form>'
         );
 
-        var onSlide = function(values) {
-            if (self._settings.inputText) {
-                $(self._dom.minDisplay).val(values[0]);
-                $(self._dom.maxDisplay).val(values[1]);
-            } else {
-                $(self._dom.minDisplay).text(values[0]);
-                $(self._dom.maxDisplay).text(values[1]);
-            }
-        };
-        
+        if (!self._settings.inputText) {
+            $(self._dom.minDisplay).prop("disabled", "disabled");
+            $(self._dom.maxDisplay).prop("disabled", "disabled");
+        }
+
         this._slider = $(this._dom.slider)
             .css({
-                "width": this._settings.width,
-                "height": this._settings.height
+                "width": this._settings.width
             })
             .noUiSlider({
                 "range": [self._maxRange.min, self._maxRange.max],
@@ -255,18 +247,29 @@ define([
                 "handles": 2,
                 "connect": true,
                 "orientation": self._settings.horizontal ? "horizontal" : "vertical",
-                "slide": function() {
-                    var values = $(this).val();
-                    onSlide(values);
-                    self.changeRange({"min": values[0], "max": values[1]});
+                "serialization": {
+                    "resolution": self._settings.precision,
+                    "to": [self._dom.minDisplay, self._dom.maxDisplay]
                 }
             });
 
-        onSlide([this._maxRange.min, this._maxRange.max]);
+        onSlide = function(evt) {
+            var values = $(self._slider).val();
+            label = _("%facets.numeric.rangeWords", values[0], values[1]);
+            EHistory.pushComponentState(
+                self,
+                Facet.getRegistryKey(),
+                {"range": {"min": values[0], "max": values[1]}},
+                _("%facets.facetSelectOnlyActionTitle", label, self.getLabel()),
+                true
+            );
+        };
+
+        $(self._dom.sliderForm).on("change", onSlide);
 
         this._histogram = Histogram.create(this._dom.histogram, this._settings.width, this._settings.height);
 
-        // @@@ make sure slider and histo line up
+        // @@@ make vertical work
     };
     
     /**
@@ -280,28 +283,30 @@ define([
      * @param {} items
      */
     SliderFacet.prototype.update = function(items) {
-        // @@@
+        var data, n, range, missingCount, database, path, i, rangeIndex;
         if (this._settings.histogram) {
-		    var data = [];
-		    var n = 75; //number of bars on histogram
-		    var range = (this._maxRange.max - this._maxRange.min)/n //range represented by each bar
-	        var missingCount=0;
-		    var database = this.getUIContext().getDatabase();
+		    data = [];
+            // number of bars on histogram
+		    n = 75;
+            // range represented by each bar
+		    range = (this._maxRange.max - this._maxRange.min) / n;
+	        missingCount = 0;
+		    database = this.getUIContext().getDatabase();
 	        
 	        if (this._showMissing) {
 	            missingCount = this._cache.getItemsMissingValue(items).size();
 	        }
 	        if (this.getExpression().isPath()) {
-		        var path = this.getExpression().getPath();
+		        path = this.getExpression().getPath();
 			
-			    for (var i=0; i<n; i++) {
+			    for (i = 0; i < n; i++) {
 			        data[i] = path.rangeBackward(this._maxRange.min+i*range, this._maxRange.min+(i+1)*range, false, items,database).values.size()+missingCount;
 				}
 		    } else {
 		        this._buildRangeIndex();
-		        var rangeIndex  = this._rangeIndex;
+		        rangeIndex = this._rangeIndex;
 		        
-		        for (var i=0; i<n; i++){ 
+		        for (i = 0; i < n; i++){ 
 		            data[i] = rangeIndex.getSubjectsInRange(this._maxRange.min+i*range, this._maxRange.min+(i+1)*range, false, null, items).size()+missingCount;
 			    }
 		    }
@@ -390,7 +395,7 @@ define([
      * @param {Number} range.min
      * @param {Number} range.max
      */
-    SliderFacet.prototype.changeRange = function(range) {
+    SliderFacet.prototype.applyRestrictions = function(range) {
         this._range = range;
         this._notifyCollection();
     };
@@ -408,9 +413,71 @@ define([
     SliderFacet.prototype.clearAllRestrictions = function() {
         this._slider.val([this._maxRange.min, this._maxRange.max]);
         this._range = this._maxRange;
+        this._notifyCollection();
     };
 
-    // @@@ history compatibility
+    /**
+     *
+     */
+    SliderFacet.prototype.exportEmptyState = function() {
+        return this._exportState(true);
+    };
+
+    /**
+     *
+     */
+    SliderFacet.prototype.exportState = function() {
+        return this._exportState(false);
+    };
+
+    /**
+     * @param {Boolean} empty
+     * @returns {Object}
+     */
+    SliderFacet.prototype._exportState = function(empty) {
+        var r = {
+            "min": null,
+            "max": null
+        };
+        
+        if (!empty) {
+            r = this._range;
+        }
+
+        return {
+            "range": r
+        };
+    };
+
+    /**
+     * @param {Object} state
+     * @param {Object} state.range
+     */
+    SliderFacet.prototype.importState = function(state) {
+        if (this.stateDiffers(state)) {
+            if (state.range.min === null) {
+                this.clearAllRestrictions();
+            } else {
+                this.applyRestrictions(state.range);
+            }
+        }
+    };
+
+    /**
+     * @param {Object} state
+     * @param {Object} state.range
+     */
+    SliderFacet.prototype.stateDiffers = function(state) {
+        if ((state.range.min === null && this._range.min !== null) || (state.range.min !== null && this._range.min === null)) {
+            return true;
+        } else if (state.range.min !== null && this._range.min !== null) {
+            if (state.range.min !== this._range.min || state.range.max !== this._range.max) {
+                return true;
+            }
+        }
+
+        return false;
+    };
 
     return SliderFacet;
 });
