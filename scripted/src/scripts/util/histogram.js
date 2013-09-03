@@ -51,7 +51,6 @@ define([
             
             for (i = 0; i < len; i++) {
                 height = Math.ceil(data[i] * ratio);
-                console.log(height);
                 bar = $("<div>")
                     .width(width)
                     .height(height)
