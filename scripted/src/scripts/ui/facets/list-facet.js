@@ -30,8 +30,9 @@ var ListFacet = function(containerElmt, uiContext) {
     this._colorCoder = null;
     this._valueSet = new Set();
     this._selectMissing = false;
-	this._delayedUpdateItems = null;
+    this._delayedUpdateItems = null;
     this._dom = null;
+    this._cache = null;
     this._orderMap = null;
 };
 
