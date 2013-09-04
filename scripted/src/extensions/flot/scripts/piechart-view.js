@@ -3,7 +3,6 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-// @@@ Break out to common utilities as other chart types are added.
 // @@@ ordering - alpha, numeric, or explicit
 
 define([
@@ -16,10 +15,11 @@ define([
     "scripts/util/views",
     "scripts/ui/ui-context",
     "scripts/ui/views/view",
+    "scripts/ui/coordinator",
+    "scripts/ui/coders/coder",
     "scripts/ui/coders/default-color-coder",
-    "../lib/jquery.flot",
     "../lib/jquery.flot.pie"
-], function($, Exhibit, FlotExtension, Set, AccessorsUtilities, SettingsUtilities, ViewUtilities, UIContext, View, DefaultColorCoder) {
+], function($, Exhibit, FlotExtension, Set, AccessorsUtilities, SettingsUtilities, ViewUtilities, UIContext, View, Coordinator, Coder, DefaultColorCoder) {
     /**
      * @class
      * @constructor
@@ -46,6 +46,7 @@ define([
         this._selectListener = null;
         this._colorCoder = null;
         this._plot = null;
+        this._itemIDToSlice = {};
 
         this._onItemsChanged = function() {
             view._reconstruct(); 
@@ -161,6 +162,7 @@ define([
         this._dom.dispose();
         this._dom = null;
 
+        this._itemIDToSlice = null;
         this._plot = null;
 
         this._dispose();
@@ -173,7 +175,7 @@ define([
         var selectCoordinator, self;
         if (typeof this._accessors.getColorKey !== "undefined") {
             if (typeof this._settings.colorCoder !== "undefined") {
-                this._colorCoder = this.getUIContext().getMain().getComponent(this._settings.colorCoder);
+                this._colorCoder = this.getUIContext().getMain().getRegistry().get(Coder.getRegistryKey(), this._settings.colorCoder);
             }
             
             if (this._colorCoder === null) {
@@ -181,7 +183,7 @@ define([
             }
         }
         if (typeof this._settings.selectCoordinator !== "undefined") {
-            selectCoordinator = this.getUIContext().getMain().getComponent(this._settings.selectCoordinator);
+            selectCoordinator = this.getUIContext().getMain().getRegistry().get(Coordinator.getRegistryKey(), this._settings.selectCoordinator);
             if (selectCoordinator !== null) {
                 self = this;
                 this._selectListener = selectCoordinator.addListener(function(o) {
@@ -223,10 +225,36 @@ define([
     };
 
     /**
+     * @static
+     * @param {Number} x
+     * @param {Number} y
+     * @param {String} label
+     * @param {String} pct
+     */
+    PieChartView.showTooltip = function(x, y, label, pct) {
+        $('<div id="exhibit-piechartview-tooltip"><strong>' + label + '</strong> (' + pct + '%)</div>').css({
+            "top": y + 5,
+            "left": x + 5,
+        }).appendTo("body");
+    };
+
+    /**
+     * @static
+     * @param {Number} x
+     * @param {Number} y
+     */
+    PieChartView.moveTooltip = function(x, y) {
+        $("#exhibit-piechartview-tooltip").css({
+            "top": y + 5,
+            "left": x + 5
+        });
+    };
+
+    /**
      * @param {Array} chartData
      */
     PieChartView.prototype._reconstructChart = function(chartData) {
-        var self, settings, plotDiv, opts, showTooltip, moveTooltip, colorCoder, columns;
+        var self, settings, plotDiv, opts, colorCoder, columns;
 
         self = this;
         settings = self._settings;
@@ -252,22 +280,8 @@ define([
                 "label": colorCoder.getOthersLabel() + " (&lt;" + settings.threshold + "%)"
             }
         };
-        
+        console.log('preplot');
         self._plot = $.plot($(plotDiv), chartData, opts);
-
-        showTooltip = function(x, y, label, pct) {
-            $('<div id="exhibit-piechartview-tooltip"><strong>' + label + '</strong> (' + pct + '%)</div>').css({
-                "top": y + 5,
-                "left": x + 5,
-            }).appendTo("body");
-        };
-
-        moveTooltip = function(x, y) {
-            $("#exhibit-piechartview-tooltip").css({
-                "top": y + 5,
-                "left": x + 5
-            });
-        };
 
         if (settings.hoverEffect) {
             $(plotDiv).data("previous", -1);
@@ -280,9 +294,9 @@ define([
                         self._plot.unhighlight();
                         self._plot.highlight(obj.series, obj.datapoint);
                         pct = parseFloat(obj.series.percent).toFixed(2);
-                        showTooltip(pos.pageX, pos.pageY, obj.series.label, pct);
+                        PieChartView.showTooltip(pos.pageX, pos.pageY, obj.series.label, pct);
                     } else {
-                        moveTooltip(pos.pageX, pos.pageY);
+                        PieChartView.moveTooltip(pos.pageX, pos.pageY);
                     }
                 } else {
                     self._plot.unhighlight();
@@ -340,6 +354,7 @@ define([
                     } else {
                         chartData[v].data++;
                     }
+                    self._itemIDToSlice[itemID] = v;
                 } else {
                     unplottableItems.push(itemID);
                 }
@@ -360,9 +375,24 @@ define([
      * @param {Array} selection.itemIDs
      */
     PieChartView.prototype._select = function(selection) {
-        // @@@ Cannot really fire off a selector from the chart side, but
-        //     if a selector from another view is fired off, show which
-        //     slice it belongs to, in some fashion.
+        var itemID, pct, selected, series, i, point, plot;
+        itemID = selection.itemIDs[0];
+        selected = this._itemIDToSlice[itemID];
+        if (typeof selected !== "undefined" && selected !== null) {
+            series = this._plot.getData();
+            for (i = 0; i < series.length; i++) {
+                if (series[i].label === selected) {
+                    $("#exhibit-piechartview-tooltip").remove();
+                    this._plot.unhighlight();
+                    // Flot's highlighting is currently broken in 0.8.1 and is scheduled for a fix in 0.9
+                    // this._plot.highlight(i, 0);
+                    
+                    // Flot does not yet offer a way to map data to page coordinates in a pie chart
+                    // pct = parseFloat(series[i].percent).toFixed(2);
+                    // PieChartView.showTooltip(point.left, point.top, selected, pct);
+                }
+            }
+        }
     };
 
     return PieChartView;
