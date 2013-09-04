@@ -32,10 +32,12 @@ define([
     "scripts/data/expression-parser",
     "scripts/ui/ui-context",
     "scripts/ui/views/view",
+    "scripts/ui/coordinator",
+    "scripts/ui/coders/coder",
     "scripts/ui/formatter",
     "scripts/ui/coders/default-color-coder",
     "lib/jquery.simile.dom"
-], function($, Exhibit, OpenLayers, MapExtension, Marker, Debug, Set, AccessorsUtilities, SettingsUtilities, ViewUtilities, ExpressionParser, UIContext, View, Formatter, DefaultColorCoder) {
+], function($, Exhibit, OpenLayers, MapExtension, Marker, Debug, Set, AccessorsUtilities, SettingsUtilities, ViewUtilities, ExpressionParser, UIContext, View, Coordinator, Coder, Formatter, DefaultColorCoder) {
     var OLMapView = function(containerElmt, uiContext) {
         OLMapView._initialize();
 
@@ -332,7 +334,7 @@ define([
         exhibit = this.getUIContext().getMain();
         if (this._accessors.getColorKey !== null) {
             if (this._settings.colorCoder !== null) {
-                this._colorCoder = exhibit.getComponent(this._settings.colorCoder);
+                this._colorCoder = this.getUIContext().getMain().getRegistry().get(Coder.getRegistryKey(), this._settings.colorCoder);
             }
         
             if (this._colorCoder === null) {
@@ -341,7 +343,7 @@ define([
         }
         if (this._accessors.getSizeKey !== null) {
             if (this._settings.sizeCoder !== null) {
-                this._sizeCoder = exhibit.getComponent(this._settings.sizeCoder);
+                this._sizeCoder = this.getUIContext().getMain().getRegistry().get(Coder.getRegistryKey(), this._settings.sizeCoder);
                 if (typeof this._settings.markerScale !== "undefined" && this._settings.markerScale !== null) {
                     this._sizeCoder._settings.markerScale = this._settings.markerScale;
                 }
@@ -349,11 +351,11 @@ define([
         }
         if (this._accessors.getIconKey !== null) {  
             if (this._settings.iconCoder !== null) {
-                this._iconCoder = exhibit.getComponent(this._settings.iconCoder);
+                this._iconCoder = this.getUIContext().getMain().getRegistry().get(Coder.getRegistryKey(), this._settings.iconCoder);
             }
         }
         if (typeof this._settings.selectCoordinator !== "undefined") {
-            selectCoordinator = exhibit.getComponent(this._settings.selectCoordinator);
+            selectCoordinator = this.getUIContext().getMain().getRegistry().get(Coordinator.getRegistryKey(), this._settings.selectCoordinator);
             if (selectCoordinator !== null) {
                 self = this;
                 this._selectListener = selectCoordinator.addListener(function(o) {

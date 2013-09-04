@@ -20,8 +20,10 @@ define([
     "scripts/data/expression-parser",
     "scripts/ui/ui-context",
     "scripts/ui/views/view",
+    "scripts/ui/coordinator",
+    "scripts/ui/coders/coder",
     "scripts/ui/coders/default-color-coder"
-], function($, Exhibit, google, MapExtension, Marker, Debug, Set, AccessorsUtilities, SettingsUtilities, ViewUtilities, ExpressionParser, UIContext, View, DefaultColorCoder) {
+], function($, Exhibit, google, MapExtension, Marker, Debug, Set, AccessorsUtilities, SettingsUtilities, ViewUtilities, ExpressionParser, UIContext, View, Coordinator, Coder, DefaultColorCoder) {
 /**
  * @class
  * @constructor
@@ -380,7 +382,7 @@ MapView.prototype._internalValidate = function() {
     exhibit = this.getUIContext().getMain();
     if (typeof this._accessors.getColorKey !== "undefined" && this._accessors.getColorKey !== null) {
         if (typeof this._settings.colorCoder !== "undefined" && this._settings.colorCoder !== null) {
-            this._colorCoder = exhibit.getComponent(this._settings.colorCoder);
+            this._colorCoder = this.getUIContext().getMain().getRegistry().get(Coder.getRegistryKey(), this._settings.colorCoder);
         }
         if (typeof this._colorCoder === "undefined" || this._colorCoder === null) {
             this._colorCoder = new DefaultColorCoder(this.getUIContext());
@@ -388,7 +390,7 @@ MapView.prototype._internalValidate = function() {
     }
     if (typeof this._accessors.getSizeKey !== "undefined" && this._accessors.getSizeKey !== null) {  
         if (typeof this._settings.sizeCoder !== "undefined" && this._settings.sizeCoder !== null) {
-            this._sizeCoder = exhibit.getComponent(this._settings.sizeCoder);
+            this._sizeCoder = this.getUIContext().getMain().getRegistry().get(Coder.getRegistryKey(), this._settings.sizeCoder);
             if (typeof this._settings.markerScale !== "undefined" && this._settings.markerScale !== null) {
                 this._sizeCoder._settings.markerScale = this._settings.markerScale;
             }
@@ -396,11 +398,11 @@ MapView.prototype._internalValidate = function() {
     }
     if (typeof this._accessors.getIconKey !== "undefined" && this._accessors.getIconKey !== null) {  
         if (typeof this._settings.iconCoder !== "undefined" && this._settings.iconCoder !== null) {
-            this._iconCoder = exhibit.getComponent(this._settings.iconCoder);
+            this._iconCoder = this.getUIContext().getMain().getRegistry().get(Coder.getRegistryKey(), this._settings.iconCoder);
         }
     }
     if (typeof this._settings.selectCoordinator !== "undefined") {
-        selectCoordinator = exhibit.getComponent(this._settings.selectCoordinator);
+        selectCoordinator = this.getUIContext().getMain().getRegistry().get(Coordinator.getRegistryKey(), this._settings.selectCoordinator);
         if (selectCoordinator !== null) {
             self = this;
             this._selectListener = selectCoordinator.addListener(function(o) {

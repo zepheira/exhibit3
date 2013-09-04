@@ -16,8 +16,10 @@ define([
     "scripts/util/views",
     "scripts/ui/ui-context",
     "scripts/ui/views/view",
+    "scripts/ui/coordinator",
+    "scripts/ui/coders/coder",
     "scripts/ui/coders/default-color-coder"
-], function($, Exhibit, Timeline, TimeExtension, Set, DateTime, AccessorsUtilities, SettingsUtilities, ViewUtilities, UIContext, View, DefaultColorCoder) {
+], function($, Exhibit, Timeline, TimeExtension, Set, DateTime, AccessorsUtilities, SettingsUtilities, ViewUtilities, UIContext, View, Coordinator, Coder, DefaultColorCoder) {
 /**
  * @class
  * @constructor
@@ -229,7 +231,7 @@ TimelineView.prototype._internalValidate = function() {
     var selectCoordinator, self;
     if (typeof this._accessors.getColorKey !== "undefined") {
         if (typeof this._settings.colorCoder !== "undefined") {
-            this._colorCoder = this.getUIContext().getMain().getComponent(this._settings.colorCoder);
+            this._colorCoder = this.getUIContext().getMain().getRegistry().get(Coder.getRegistryKey(), this._settings.colorCoder);
         }
 
         if (this._colorCoder === null) {
@@ -239,11 +241,11 @@ TimelineView.prototype._internalValidate = function() {
     if (typeof this._accessors.getIconKey !== "undefined") {
         this._iconCoder = null;
         if (typeof this._settings.iconCoder !== "undefined") {
-            this._iconCoder = this.getUIContext().getMain().getComponent(this._settings.iconCoder);
+            this._iconCoder = this.getUIContext().getMain().getRegistry().get(Coder.getRegistryKey(), this._settings.iconCoder);
         }
     }
     if (typeof this._settings.selectCoordinator !== "undefined") {
-        selectCoordinator = this.getUIContext().getMain().getComponent(this._settings.selectCoordinator);
+        selectCoordinator = this.getUIContext().getMain().getRegistry().get(Coordinator.getRegistryKey(), this._settings.selectCoordinator);
         if (selectCoordinator !== null) {
             self = this;
             this._selectListener = selectCoordinator.addListener(function(o) {
