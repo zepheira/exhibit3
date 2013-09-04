@@ -51,17 +51,17 @@
 	}
 }
 	.noUiSlider {
-		border: 1px solid #908d84;
+		border: 1px solid #999;
 		border-radius: 3px;
 	}
 	.noUiSlider.connect a,
 	.noUiSlider.connect.lower {
-		background: #b2a98f;
+		background: #bbb;
 	}
 	.noUiSlider,
 	.noUiSlider.connect.lower a {
-		background: #d9d7cb;
-		box-shadow: inset 0px 1px 7px #b6b4a8
+		background: #ddd;
+		box-shadow: inset 0px 1px 7px #bbb;
 	}
 	.noUiSlider.disabled,
 	.noUiSlider.disabled.connect.lower a {
@@ -71,9 +71,9 @@
 	.noUiSlider div {
 		height: 18px;
 		width: 18px;
-		border: 1px solid #99968f;
+		border: 1px solid #999;
 		border-radius: 3px;
-		background: #efefe7;
+		background: #eee;
 	}
 	.noUiSlider.disabled div {
 		background: transparent;
