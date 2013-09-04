@@ -177,6 +177,9 @@
     <antcall target="extension-bundle">
       <param name="extension" value="time"/>
     </antcall>
+    <antcall target="extension-bundle">
+      <param name="extension" value="flot"/>
+    </antcall>
     <antcall target="map-extension-bundle">
       <param name="extension" value="map"/>
     </antcall>
@@ -189,7 +192,7 @@
 
 
 
-
+  <!-- Build all the things -->
   <target name="omnibundle" description="Bundle everything, standalone">
     <!-- @@@ to do -->
   </target>
@@ -215,6 +218,9 @@
     <copy file="${bundle}/exhibit-bundle.css" todir="${src}/styles"/>
     <antcall target="publish-extension-local">
       <param name="extension" value="time"/>
+    </antcall>
+    <antcall target="publish-extension-local">
+      <param name="extension" value="flot"/>
     </antcall>
     <antcall target="publish-extension-local">
       <param name="extension" value="map"/>
@@ -367,6 +373,9 @@
     <delete file="${src}/styles/exhibit-bundle.css"/>
     <antcall target="clean-publish-extension">
       <param name="extension" value="time"/>
+    </antcall>
+    <antcall target="clean-publish-extension">
+      <param name="extension" value="flot"/>
     </antcall>
     <antcall target="clean-publish-extension">
       <param name="extension" value="map"/>
