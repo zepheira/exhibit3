@@ -338,33 +338,33 @@ define([
 
         if (currentSize > 0) {
             currentSet = collection.getRestrictedItems();
-        }
-
-        currentSet.visit(function(itemID) {
-            var color;
-            accessors.getGrouping(itemID, database, function(v) {
-                if (v !== null) {
-                    if (typeof chartData[v] === "undefined") {
-                        color = colorCoder.translate(v);
-                        chartData[v] = {"label": v, "data": 1 };
-                        if (color !== null) {
-                            chartData[v].color = color;
+            currentSet.visit(function(itemID) {
+                var color;
+                accessors.getGrouping(itemID, database, function(v) {
+                    if (v !== null) {
+                        if (typeof chartData[v] === "undefined") {
+                            color = colorCoder.translate(v);
+                            chartData[v] = {"label": v, "data": 1 };
+                            if (color !== null) {
+                                chartData[v].color = color;
+                            }
+                        } else {
+                            chartData[v].data++;
                         }
+                        self._itemIDToSlice[itemID] = v;
                     } else {
-                        chartData[v].data++;
+                        unplottableItems.push(itemID);
                     }
-                    self._itemIDToSlice[itemID] = v;
-                } else {
-                    unplottableItems.push(itemID);
-                }
+                });
             });
-        });
+        }
 
         for (k in chartData) {
             if (chartData.hasOwnProperty(k)) {
                 plottableData.push(chartData[k]);
             }
         }
+
         this._reconstructChart(plottableData);
         this._dom.setUnplottableMessage(currentSize, unplottableItems);
     };
