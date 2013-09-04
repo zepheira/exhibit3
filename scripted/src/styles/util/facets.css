@@ -209,16 +209,21 @@ div.exhibit-facet-childrenContainer {
  */
 
 div.exhibit-slider {
-    margin: 0.5em 0;
+    margin: 4px 9px;
 }
 
 div.exhibit-slider-histogram {
     background: #eee;
+    margin: 0 9px;
     position: relative;
 }
 
 div.exhibit-slider-histogram div { 
     background: #999;
+}
+
+.exhibit-slider-display {
+    margin: 10px 9px 5px 0;
 }
 
 .exhibit-slider-display input {

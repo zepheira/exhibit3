@@ -18,12 +18,20 @@ define([
      * @param {Number} height
      * @returns {jQuery}
      */
-    Histogram.create = function(el, width, height) {
-        var histo = $(el)
-            .css({
-                "width": width,
-                "height": height
-            });
+    Histogram.create = function(el, width, height, horizontal) {
+        var cssOpts, histo;
+        cssOpts = horizontal ? {
+            "width": width,
+            "height": height
+        } : {
+            "width": height,
+            "height": width,
+            "float": "left",
+            "position": "relative",
+            "top": 4,
+            "left": 14
+        };
+        histo = $(el).css(cssOpts);
         return histo;
     };
 

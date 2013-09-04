@@ -213,7 +213,7 @@ define([
      *
      */
     SliderFacet.prototype._initializeUI = function() {
-        var self, onSlide, label;
+        var self, onSlide, label, cssOpts;
         self = this;
         
         this._dom = $.simileDOM(
@@ -237,10 +237,17 @@ define([
             $(self._dom.maxDisplay).prop("disabled", "disabled");
         }
 
+        cssOpts = this._settings.horizontal ? {
+            "width": this._settings.width
+        } : {
+            "height": this._settings.width,
+            "position": "relative",
+            "top": 0,
+            "left": 0
+        };
+
         this._slider = $(this._dom.slider)
-            .css({
-                "width": this._settings.width
-            })
+            .css(cssOpts)
             .noUiSlider({
                 "range": [self._maxRange.min, self._maxRange.max],
                 "start": [self._maxRange.min, self._maxRange.max],
@@ -267,7 +274,7 @@ define([
 
         $(self._dom.sliderForm).on("change", onSlide);
 
-        this._histogram = Histogram.create(this._dom.histogram, this._settings.width, this._settings.height);
+        this._histogram = Histogram.create(this._dom.histogram, this._settings.width, this._settings.height, this._settings.horizontal);
 
         // @@@ make vertical work
     };
