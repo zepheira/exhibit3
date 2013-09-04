@@ -11,14 +11,13 @@ define(["lib/jquery", "./ui-context"], function($, UIContext) {
      * @param {Exhibit.UIContext} uiContext
      */
     var Coordinator = function(uiContext, div) {
-        this._uiContext = uiContext;
         this._listeners = [];
 
         var _div, _id, _uiContext, _registered, self, _setIdentifier;
         self = this;
         _div = div;
         _id = null;
-        _uiContext = null;
+        _uiContext = uiContext;
         _registered = false;
 
         this.getID = function() {
