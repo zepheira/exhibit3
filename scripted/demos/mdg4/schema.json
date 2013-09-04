@@ -2,11 +2,11 @@
     "properties": {
         "mortality1990": {
             "valueType": "number",
-            "label": "mortality (1990)"
+            "label": "Mortality (1990)"
         },
         "mortality2011": {
             "valueType": "number",
-            "label": "mortality (2011)"
+            "label": "Mortality (2011)"
         },
         "delta": {
             "valueType": "number",
