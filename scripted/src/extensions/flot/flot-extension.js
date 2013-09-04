@@ -11,7 +11,8 @@ define([
     "./scripts/piechart-view",
     "./scripts/barchart-view",
     "i18n!ext/flot/nls/locale",
-    "scripts/util/debug"
+    "scripts/util/debug",
+    "./lib/jquery.flot"
 ], function(module, $, Exhibit, FlotExtension, PieChartView, BarChartView, Locale, Debug) {
     FlotExtension.PieChartView = PieChartView;
     FlotExtension.BarChartView = BarChartView;

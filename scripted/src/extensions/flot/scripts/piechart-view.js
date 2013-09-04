@@ -280,7 +280,6 @@ define([
                 "label": colorCoder.getOthersLabel() + " (&lt;" + settings.threshold + "%)"
             }
         };
-        console.log('preplot');
         self._plot = $.plot($(plotDiv), chartData, opts);
 
         if (settings.hoverEffect) {

@@ -78,7 +78,7 @@ requirejs.config({
             "deps": ["lib/jquery"]
         },
         "extensions/flot/lib/jquery.flot.pie": {
-            "deps": ["extensions/flot/lib/jquery.flot.pie"]
+            "deps": ["extensions/flot/lib/jquery.flot"]
         }
     }
 });
