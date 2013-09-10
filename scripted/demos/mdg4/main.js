@@ -12,6 +12,7 @@ require(["../api/configs/dev-config.js"], function() {
         Exhibit.FlotExtension = FlotExtension;
         Exhibit.PieChartView = FlotExtension.PieChartView;
         Exhibit.BarChartView = FlotExtension.BarChartView;
+        Exhibit.ScatterPlotView = FlotExtension.ScatterPlotView;
         $(document).trigger("scriptsLoaded.exhibit");
     });
 });
