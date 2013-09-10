@@ -148,6 +148,13 @@ Flot
   * jquery.flot.js
   * jquery.flot.pie.js
 
+Axis Labels Plugin for flot
+----
+ * https://github.com/markrcote/flot-axislabels
+ * fcfde41709057b1087288e20f49f0e8a75025845
+ * MIT License
+ * src/extensions/flot/lib/jquery.flot.axislabels.js
+
 noUiSlider
 ----------
  * http://refreshless.com/nouislider/
