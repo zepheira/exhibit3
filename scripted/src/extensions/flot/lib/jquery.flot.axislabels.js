@@ -114,6 +114,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
         ctx.translate(x, y);
         ctx.rotate(angle);
+        ctx.fillStyle = "#000000";
         ctx.fillText(this.opts.axisLabel, 0, 0);
         ctx.restore();
     };
@@ -253,7 +254,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         var offsets = this.calculateOffsets(box);
         this.elem = $('<div class="axisLabels ' + this.axisName +
                       'Label" style="position:absolute; ' +
-                      'color: ' + this.opts.color + '; ' +
+                      'color: #000000; ' +
                       this.transforms(offsets.degrees, offsets.x, offsets.y) +
                       '">' + this.opts.axisLabel + '</div>');
         this.plot.getPlaceholder().append(this.elem);
