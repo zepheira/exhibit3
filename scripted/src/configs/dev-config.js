@@ -79,6 +79,9 @@ requirejs.config({
         },
         "extensions/flot/lib/jquery.flot.pie": {
             "deps": ["extensions/flot/lib/jquery.flot"]
+        },
+        "extensions/flot/lib/jquery.flot.axislabels": {
+            "deps": ["extensions/flot/lib/jquery.flot"]
         }
     }
 });
