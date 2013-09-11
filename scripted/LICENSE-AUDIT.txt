@@ -147,6 +147,7 @@ Flot
  * scripted/src/extensions/flot/lib/
   * jquery.flot.js
   * jquery.flot.pie.js
+  * jquery.flot.navigatex.js
 
 Axis Labels Plugin for flot
 ----
