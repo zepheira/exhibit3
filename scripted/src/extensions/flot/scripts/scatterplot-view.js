@@ -3,25 +3,11 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-// @@@ color - assemble colorKey related points into a series
-// @@@ legend for more than one series, plus setting to show / hide
+// @@@ use legend widget? not a great way to get why a color was chosen back
+//     from coder; either use it or add a method to return actual key
 // @@@ click to open up lens
 // @@@ listener behaves differently, highlight / open itemID, not series
-// @@@ add zoom control
-
-// @@@ axis autolabel? from facets:
-/**
-    if (typeof settings.xLabel === "undefined") {
-        if (facet.getExpression() !== null && facet.getExpression().isPath()) {
-            segment = facet.getExpression().getPath().getLastSegment();
-            property = facet.getUIContext().getDatabase().getProperty(segment.pr
-operty);
-            if (typeof property !== "undefined" && property !== null) {
-                facet._settings.facetLabel = segment.forward ? property.getLabel() : property.getReverseLabel();
-            }
-        }
-     }
-*/
+// @@@ need zoom / pan? controls, way to reset to original window
 
 define([
     "lib/jquery",
@@ -34,7 +20,8 @@ define([
     "scripts/ui/ui-context",
     "scripts/ui/views/view",
     "scripts/ui/coders/default-color-coder",
-    "../lib/jquery.flot.axislabels"
+    "../lib/jquery.flot.axislabels",
+    "../lib/jquery.flot.navigate"
 ], function($, Exhibit, FlotExtension, Set, AccessorsUtilities, SettingsUtilities, ViewUtilities, UIContext, View, DefaultColorCoder) {
     /**
      * @class
@@ -60,23 +47,9 @@ define([
             },
             "getColorKey": null
         };
-
-        this._colors = [
-            "FF9000",
-            "5D7CBA",
-            "A97838",
-            "8B9BBA",
-            "FFC77F",
-            "003EBA",
-            "29447B",
-            "543C1C"
-        ];
-        this._mixColor = "FFFFFF";
         
-        this._colorKeyCache = new Object();
-        this._maxColor = 0;
-
         this._dom = null;
+        this._tooltipID = null;
         this._selectListener = null;
         this._colorCoder = null;
         this._plot = null;
@@ -101,6 +74,9 @@ define([
         "plotWidth": { "type": "int", "defaultValue": 800 },
         "pointFill": { "type": "boolean", "defaultValue": true },
         "pointRadius": { "type" : "int", "defaultValue": 3 },
+        "hoverEffect": { "type": "boolean", "defaultValue": true },
+        "showLegend": { "type": "boolean", "defaultValue": true },
+        "showZoomControls": { "type": "boolean", "defaultValue": true },
 
         "plotHeight": { "type": "int", "defaultValue": 400 },
         "bubbleWidth": { "type": "int", "defaultValue": 400 },
@@ -113,7 +89,6 @@ define([
         "yAxisType": { "type": "enum", "defaultValue": "linear", "choices": [ "linear", "log" ] },
         "xLabel": { "type": "text", "defaultValue": null },
         "yLabel": { "type": "text", "defaultValue": null },
-        "hoverEffect": { "type": "boolean", "defaultValue": true },
         "color": { "type": "text", "defaultValue": "#0000aa" },
         "colorCoder": { "type": "text", "defaultValue": null },
         "selectCoordinator": { "type": "text",  "defaultValue": null },
@@ -301,6 +276,8 @@ define([
             "width": self._settings.plotWidth,
             "height": self._settings.plotHeight
         });
+
+        self._tooltipID = "#exhibit-" + self.getID() + "-scatterplotview-tooltip";
         
         self._initializeViewUI();
         
@@ -315,12 +292,18 @@ define([
 
         self = this;
         settings = self._settings;
-        console.log(settings);
+
         plotDiv = self._dom.plotContainer;
         colorCoder = self._colorCoder;
         opts = {
             "legend": {
-                "show": false
+                "show": settings.showLegend && chartData.data.length > 1
+            },
+            "zoom": {
+                "interactive": true
+            },
+            "pan": {
+                "interactive": true
             },
             "xaxis": {
                 "axisLabel": settings.xLabel,
@@ -344,8 +327,6 @@ define([
             }
         };
 
-        // @@@fillColor in points, color in series should match if fill is true
-
         if (settings.xAxisType === "log") {
             opts.xaxis.transform = function(v) {
                 return v === 0 ? null : Math.log(v);
@@ -364,17 +345,21 @@ define([
             };
         }
 
-        self._plot = $.plot($(plotDiv), [chartData.data], opts);
-        // @@@ maybe make div id based on view registry key
-        showTooltip = function(x, y, label, xVal, yVal) {
-            $('<div id="exhibit-scatterplotview-tooltip"><strong>' + label + '</strong> (' + xVal + "," + yVal + ')</div>').css({
+        self._plot = $.plot($(plotDiv), chartData.data, opts);
+        showTooltip = function(x, y, labels, xVal, yVal) {
+            var i, str;
+            str = "";
+            for (i = 0; i < labels.length; i++) {
+                str += '<p><strong>' + labels[i] + '</strong> (' + xVal + ',' + yVal + ')</p>';
+            }
+            $('<div id="' + self._tooltipID.substr(1) + '" class="exhibit-scatterplotview-tooltip">' + str + '</div>').css({
                 "top": y + 5,
                 "left": x + 5,
             }).appendTo("body");
         };
 
         moveTooltip = function(x, y) {
-            $("#exhibit-scatterplotview-tooltip").css({
+            $(self._tooltipID).css({
                 "top": y + 5,
                 "left": x + 5
             });
@@ -383,10 +368,12 @@ define([
         if (settings.hoverEffect) {
             $(plotDiv).data("previous", -1);
             $(plotDiv).bind("plothover", function(evt, pos, obj) {
+                var key;
                 if (obj) {
-                    if ($(plotDiv).data("previous") !== obj.dataIndex) {
-                        $(plotDiv).data("previous", obj.dataIndex);
-                        $("#exhibit-scatterplotview-tooltip").remove();
+                    key = obj.seriesIndex + ":" + obj.dataIndex;
+                    if ($(plotDiv).data("previous") !== key) {
+                        $(plotDiv).data("previous", key);
+                        $(self._tooltipID).remove();
                         self._plot.unhighlight();
                         self._plot.highlight(obj.series, obj.datapoint);
                         showTooltip(pos.pageX, pos.pageY, obj.series.data[obj.dataIndex][2], obj.datapoint[0], obj.datapoint[1]);
@@ -395,14 +382,14 @@ define([
                     }
                 } else {
                     self._plot.unhighlight();
-                    $("#exhibit-scatterplotview-tooltip").remove();
+                    $(self._tooltipID).remove();
                     $(plotDiv).data("previous", -1); 
                 }
             });
             
             $(plotDiv).bind("mouseout", function(evt) {
                 self._plot.unhighlight();
-                $("#exhibit-scatterplotview-tooltip").remove();
+                $(self._tooltipID).remove();
                 $(plotDiv).data("previous", -1);
             });
 
@@ -414,7 +401,7 @@ define([
      *
      */
     ScatterPlotView.prototype._reconstruct = function() {
-        var self, collection, database, settings, accessors, currentSize, unplottableItems, currentSet, hasColorKey, xyToData, xAxisMin, xAxisMax, yAxisMin, yAxisMax, colorCoder, plottableData, k, i;
+        var self, collection, database, settings, accessors, currentSize, unplottableItems, currentSet, hasColorKey, xyToData, xyKey, colorCoder, plottableData, k, i, colorCodingFlags, series, color, items;
 
         self = this;
         collection = this.getUIContext().getCollection();
@@ -423,7 +410,7 @@ define([
         accessors = this._accessors;
         colorCoder = this._colorCoder;
 
-        plottableData = {"data": []};
+        plottableData = { "data": [] };
 
         /*
          *  Get the current collection and check if it's empty
@@ -431,7 +418,6 @@ define([
         currentSize = collection.countRestrictedItems();
         unplottableItems = [];
 
-        // @@@ handle multiple items per point
         if (currentSize > 0) {
             currentSet = collection.getRestrictedItems();
             hasColorKey = (self._accessors.getColorKey !== null);
@@ -439,11 +425,11 @@ define([
             xyToData = {};
 
             currentSet.visit(function(itemID) {
-                var xys, colorKeys, j, label;
+                var xys, xyData, colorKeys, j, label;
                 xys = [];
                 self._getXY(itemID, database, function(xy) {
                     if (xy.hasOwnProperty("x") && xy.hasOwnProperty("y")) {
-                        xys.push([xy.x, xy.y]);
+                        xys.push(xy);
                     }
                 });
                 accessors.getPointLabel(itemID, database, function(v) {
@@ -452,10 +438,6 @@ define([
                 });
 
                 if (xys.length > 0) {
-                    for (j = 0; j < xys.length; j++) {
-                        xys[j].push(label);
-                    }
-                    /**
                     colorKeys = null;
                     if (hasColorKey) {
                         colorKeys = new Set();
@@ -463,15 +445,84 @@ define([
                             colorKeys.add(v);
                         });
                     }
-                    for (i = 0; i < xys.length; i++) {
-                        xy = xys[i];
+
+                    for (j = 0; j < xys.length; j++) {
+                        xy = xys[j];
                         xyKey = xy.x + "," + xy.y;
-                    */
-                    plottableData.data = plottableData.data.concat(xys);
+                        if (xyToData.hasOwnProperty(xyKey)) {
+                            xyData = xyToData[xyKey];
+                            xyData.items.push(itemID);
+                            xyData.labels.push(label);
+                            if (hasColorKey) {
+                                xyData.colorKeys.addSet(colorKeys);
+                            }
+                        } else {
+                            xyData = {
+                                "xy": xy,
+                                "items": [ itemID ],
+                                "labels": [ label ]
+                            };
+                            if (hasColorKey) {
+                                xyData.colorKeys = colorKeys;
+                            }
+                            xyToData[xyKey] = xyData;
+                        }
+                    }
                 } else {
                     unplottableItems.push(itemID);
                 }
             });
+        }
+
+        colorCodingFlags = {
+            "mixed": false,
+            "missing": false,
+            "others": false,
+            "keys": new Set()
+        };
+
+        series = {};
+
+        for (xyKey in xyToData) {
+            if (xyToData.hasOwnProperty(xyKey)) {
+                items = xyToData[xyKey].items;
+                color = settings.color;
+                if (hasColorKey) {
+                    color = self._colorCoder.translateSet(xyToData[xyKey].colorKeys, colorCodingFlags);
+                }
+                if (series.hasOwnProperty(color)) {
+                    series[color].push([
+                        xyToData[xyKey].xy.x,
+                        xyToData[xyKey].xy.y,
+                        xyToData[xyKey].labels,
+                        xyToData[xyKey].items
+                    ]);
+                } else {
+                    series[color] = [[
+                        xyToData[xyKey].xy.x,
+                        xyToData[xyKey].xy.y,
+                        xyToData[xyKey].labels,
+                        xyToData[xyKey].items
+                    ]];
+                }
+            }
+        }
+
+        for (color in series) {
+            if (series.hasOwnProperty(color)) {
+                seriesOpts = {
+                    // @@@ no way to properly get key back
+                    // "label": key,
+                    "data": series[color],
+                    "color": color
+                };
+                if (settings.pointFill) {
+                    seriesOpts.points = {
+                        "fillColor": color
+                    };
+                }
+                plottableData.data.push(seriesOpts);
+            }
         }
 
         this._reconstructChart(plottableData);
@@ -490,7 +541,7 @@ define([
             series = this._plot.getData();
             for (i = 0; i < series.length; i++) {
                 if (series[i].label === selected) {
-                    $("#exhibit-scatterplotview-tooltip").remove();
+                    $(this._tooltipID).remove();
                     this._plot.unhighlight();
                     // Flot's highlighting is currently broken in 0.8.1 and is scheduled for a fix in 0.9
                     // this._plot.highlight(i, 0);
