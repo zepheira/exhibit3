@@ -17,23 +17,41 @@ define([
  */
 var ViewUtilities = {};
 
-/**
- * @static
- * @param {Element} anchorElmt
- * @param {Array} arrayOfItemIDs
- * @param {Exhibit.UIContext} uiContext
- */
-ViewUtilities.openBubbleForItems = function(anchorElmt, arrayOfItemIDs, uiContext) {
-    var coords, bubble;
-    coords = $(anchorElmt).offset();
-    bubble = $.simileBubble("createBubbleForPoint",
-        coords.left + Math.round(anchorElmt.offsetWidth / 2), 
-        coords.top + Math.round(anchorElmt.offsetHeight / 2), 
-        uiContext.getSetting("bubbleWidth"), // px
-        uiContext.getSetting("bubbleHeight") // px
-    );
-    ViewUtilities.fillBubbleWithItems(bubble.content, arrayOfItemIDs, null, uiContext);
-};
+    /**
+     * @static
+     * @param {Number} x
+     * @param {Number} y
+     * @param {Array} arrayOfItemIDs
+     * @param {Exhibit.UIContext} uiContext
+     */
+    ViewUtilities.openBubbleForItemsAtPoint = function(x, y, arrayOfItemIDs, uiContext) {
+        var bubble;
+        bubble = $.simileBubble(
+            "createBubbleForPoint",
+            x,
+            y,
+            uiContext.getSetting("bubbleWidth"), // px
+            uiContext.getSetting("bubbleHeight") // px
+        );
+        ViewUtilities.fillBubbleWithItems(bubble.content, arrayOfItemIDs, null, uiContext);
+    };
+
+    /**
+     * @static
+     * @param {Element} anchorElmt
+     * @param {Array} arrayOfItemIDs
+     * @param {Exhibit.UIContext} uiContext
+     */
+    ViewUtilities.openBubbleForItems = function(anchorElmt, arrayOfItemIDs, uiContext) {
+        var coords;
+        coords = $(anchorElmt).offset();
+        ViewUtilities.openBubbleForItemsAtPoint(
+            coords.left + Math.round(anchorElmt.offsetWidth / 2),
+            coords.top + Math.round(anchorElmt.offsetHeight / 2),
+            arrayOfItemIDs,
+            uiContext
+        );
+    };
 
 /**
  * @@@ possibly take and return jQuery instead of elements

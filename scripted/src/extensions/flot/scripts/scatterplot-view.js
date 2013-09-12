@@ -3,8 +3,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-// @@@ click to open up lens
-// @@@ listener behaves differently, highlight / open itemID, not series
+// @@@ resizing
 
 define([
     "lib/jquery",
@@ -51,6 +50,8 @@ define([
         this._selectListener = null;
         this._colorCoder = null;
         this._plot = null;
+        this._bound = false;
+        this._itemIDToPoint = {};
 
         this._originalWindow = {
             "x": {
@@ -325,7 +326,8 @@ define([
                 "max": (settings.yAxisMax === Number.NEGATIVE_INFINITY) ? null : settings.yAxisMax
             },
             "grid": {
-                "hoverable": true
+                "hoverable": true,
+                "clickable": true
             },
             "series": {
                 "points": {
@@ -355,39 +357,42 @@ define([
         }
 
         self._plot = $.plot($(plotDiv), chartData.data, opts);
-        self._originalWindow.x.min = self._plot.getXAxes()[0].min;
-        self._originalWindow.x.max = self._plot.getXAxes()[0].max;
-        self._originalWindow.y.min = self._plot.getYAxes()[0].min;
-        self._originalWindow.y.max = self._plot.getYAxes()[0].max;
+
+        if (settings.showZoomControls) {
+            self._originalWindow.x.min = self._plot.getXAxes()[0].min;
+            self._originalWindow.x.max = self._plot.getXAxes()[0].max;
+            self._originalWindow.y.min = self._plot.getYAxes()[0].min;
+            self._originalWindow.y.max = self._plot.getYAxes()[0].max;
         
-        $('<div class="flot-chartControl zoomIn" title="' + _("%ScatterPlotView.zoomIn") + '">+</div>')
-            .on("click", function(evt) {
-                evt.preventDefault();
-                self._plot.zoom({"amount": 1.5});
-            })
-            .appendTo(self._dom.plotContainer);
+            $('<div class="flot-chartControl zoomIn" title="' + _("%ScatterPlotView.zoomIn") + '">+</div>')
+                .on("click", function(evt) {
+                    evt.preventDefault();
+                    self._plot.zoom({"amount": 1.5});
+                })
+                .appendTo(self._dom.plotContainer);
 
-        $('<div class="flot-chartControl zoomReset" title=' + _ ("%ScatterPlotView.zoomReset") + '"">&middot;</div>')
-            .on("click", function(evt) {
-                var xaxis, yaxis;
-                evt.preventDefault();
-                xaxis = self._plot.getXAxes()[0];
-                yaxis = self._plot.getYAxes()[0];
-                xaxis.options.min = self._originalWindow.x.min;
-                xaxis.options.max = self._originalWindow.x.max;
-                yaxis.options.min = self._originalWindow.y.min;
-                yaxis.options.max = self._originalWindow.y.max;
-                self._plot.setupGrid();
-                self._plot.draw();
-            })
-            .appendTo(self._dom.plotContainer);
-
-        $('<div class="flot-chartControl zoomOut" title="' + _("%ScatterPlotView.zoomOut") + '">-</div>')
-            .on("click", function(evt) {
-                evt.preventDefault();
-                self._plot.zoomOut();
-            })
-            .appendTo(self._dom.plotContainer);
+            $('<div class="flot-chartControl zoomReset" title=' + _ ("%ScatterPlotView.zoomReset") + '"">&middot;</div>')
+                .on("click", function(evt) {
+                    var xaxis, yaxis;
+                    evt.preventDefault();
+                    xaxis = self._plot.getXAxes()[0];
+                    yaxis = self._plot.getYAxes()[0];
+                    xaxis.options.min = self._originalWindow.x.min;
+                    xaxis.options.max = self._originalWindow.x.max;
+                    yaxis.options.min = self._originalWindow.y.min;
+                    yaxis.options.max = self._originalWindow.y.max;
+                    self._plot.setupGrid();
+                    self._plot.draw();
+                })
+                .appendTo(self._dom.plotContainer);
+            
+            $('<div class="flot-chartControl zoomOut" title="' + _("%ScatterPlotView.zoomOut") + '">-</div>')
+                .on("click", function(evt) {
+                    evt.preventDefault();
+                    self._plot.zoomOut();
+                })
+                .appendTo(self._dom.plotContainer);
+        }
 
         showTooltip = function(x, y, labels, xVal, yVal) {
             var i, str;
@@ -408,7 +413,7 @@ define([
             });
         };
 
-        if (settings.hoverEffect) {
+        if (settings.hoverEffect && !self._bound) {
             $(plotDiv).data("previous", -1);
             $(plotDiv).bind("plothover", function(evt, pos, obj) {
                 var key;
@@ -435,9 +440,16 @@ define([
                 $(self._tooltipID).remove();
                 $(plotDiv).data("previous", -1);
             });
-
-            // No need to call unbind later, .empty() does that already.
         }
+
+        if (!self._bound) {
+            $(plotDiv).bind("plotclick", function(evt, pos, obj) {
+                ViewUtilities.openBubbleForItemsAtPoint(pos.pageX, pos.pageY, obj.series.data[obj.dataIndex][2], self.getUIContext());
+            });
+        }
+
+        // No need to call unbind later, .empty() does that already.
+        self._bound = true;
     };
 
     /**
@@ -549,6 +561,9 @@ define([
                         xyToData[xyKey].items
                     ]];
                 }
+                for (i = 0; i < xyToData[xyKey].items; i++) {
+                    self._itemIDToPoint[xyToData[xyKey].items[i]] = [color, xyToData[xyKey].xy];
+                }
             }
         }
 
@@ -598,17 +613,17 @@ define([
      * @param {Array} selection.itemIDs
      */
     ScatterPlotView.prototype._select = function(selection) {
+        // @@@ listener behaves differently, highlight + open itemID
         var itemID, pct, selected, series, i, point, plot;
         itemID = selection.itemIDs[0];
-        selected = this._itemIDToSlice[itemID];
+        selected = this._itemIDToPoint[itemID];
         if (typeof selected !== "undefined" && selected !== null) {
             series = this._plot.getData();
             for (i = 0; i < series.length; i++) {
-                if (series[i].label === selected) {
+                if (series[i].color === selected[1]) {
                     $(this._tooltipID).remove();
                     this._plot.unhighlight();
-                    // Flot's highlighting is currently broken in 0.8.1 and is scheduled for a fix in 0.9
-                    // this._plot.highlight(i, 0);
+                    this._plot.highlight(i, 0);
                     
                     // Flot does not yet offer a way to map data to page coordinates in a pie chart
                     // pct = parseFloat(series[i].percent).toFixed(2);

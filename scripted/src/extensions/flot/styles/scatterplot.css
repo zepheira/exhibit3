@@ -6,6 +6,10 @@
     opacity: 0.8;
 }
 
+.exhibit-scatterplotview-tooltip p {
+    margin: 0.1em;
+}
+
 .flot-chartControl {
     position: absolute;
     right: 10px;
