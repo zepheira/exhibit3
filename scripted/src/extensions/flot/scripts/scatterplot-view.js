@@ -14,12 +14,13 @@ define([
     "scripts/util/accessors",
     "scripts/util/settings",
     "scripts/util/views",
+    "scripts/util/localizer",
     "scripts/ui/ui-context",
     "scripts/ui/views/view",
     "scripts/ui/coders/default-color-coder",
     "../lib/jquery.flot.axislabels",
     "../lib/jquery.flot.navigate"
-], function($, Exhibit, FlotExtension, Set, AccessorsUtilities, SettingsUtilities, ViewUtilities, UIContext, View, DefaultColorCoder) {
+], function($, Exhibit, FlotExtension, Set, AccessorsUtilities, SettingsUtilities, ViewUtilities, _, UIContext, View, DefaultColorCoder) {
     /**
      * @class
      * @constructor
@@ -50,6 +51,17 @@ define([
         this._selectListener = null;
         this._colorCoder = null;
         this._plot = null;
+
+        this._originalWindow = {
+            "x": {
+                "min": null,
+                "max": null
+            },
+            "y": {
+                "min": null,
+                "max": null
+            }
+        };
 
         this._onItemsChanged = function() {
             view._reconstruct(); 
@@ -296,7 +308,8 @@ define([
                 "show": false
             },
             "zoom": {
-                "interactive": true
+                "interactive": true,
+                "amount": 1.5
             },
             "pan": {
                 "interactive": true
@@ -342,24 +355,37 @@ define([
         }
 
         self._plot = $.plot($(plotDiv), chartData.data, opts);
+        self._originalWindow.x.min = self._plot.getXAxes()[0].min;
+        self._originalWindow.x.max = self._plot.getXAxes()[0].max;
+        self._originalWindow.y.min = self._plot.getYAxes()[0].min;
+        self._originalWindow.y.max = self._plot.getYAxes()[0].max;
         
-        // @@@ add tooltips to each control
-        $('<div class="flot-chartControl zoomIn">+</div>')
+        $('<div class="flot-chartControl zoomIn" title="' + _("%ScatterPlotView.zoomIn") + '">+</div>')
             .on("click", function(evt) {
-                self._plot.zoom({amount: 1.5});
                 evt.preventDefault();
+                self._plot.zoom({"amount": 1.5});
             })
             .appendTo(self._dom.plotContainer);
-        $('<div class="flot-chartControl zoomReset">&middot;</div>')
+
+        $('<div class="flot-chartControl zoomReset" title=' + _ ("%ScatterPlotView.zoomReset") + '"">&middot;</div>')
             .on("click", function(evt) {
-                // @@@ reset viewport to pre-defined
+                var xaxis, yaxis;
                 evt.preventDefault();
+                xaxis = self._plot.getXAxes()[0];
+                yaxis = self._plot.getYAxes()[0];
+                xaxis.options.min = self._originalWindow.x.min;
+                xaxis.options.max = self._originalWindow.x.max;
+                yaxis.options.min = self._originalWindow.y.min;
+                yaxis.options.max = self._originalWindow.y.max;
+                self._plot.setupGrid();
+                self._plot.draw();
             })
             .appendTo(self._dom.plotContainer);
-        $('<div class="flot-chartControl zoomOut">-</div>')
+
+        $('<div class="flot-chartControl zoomOut" title="' + _("%ScatterPlotView.zoomOut") + '">-</div>')
             .on("click", function(evt) {
+                evt.preventDefault();
                 self._plot.zoomOut();
-                evt.preventDefault();
             })
             .appendTo(self._dom.plotContainer);
 
