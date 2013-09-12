@@ -3,11 +3,8 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-// @@@ use legend widget? not a great way to get why a color was chosen back
-//     from coder; either use it or add a method to return actual key
 // @@@ click to open up lens
 // @@@ listener behaves differently, highlight / open itemID, not series
-// @@@ need zoom / pan? controls, way to reset to original window
 
 define([
     "lib/jquery",
@@ -75,7 +72,6 @@ define([
         "pointFill": { "type": "boolean", "defaultValue": true },
         "pointRadius": { "type" : "int", "defaultValue": 3 },
         "hoverEffect": { "type": "boolean", "defaultValue": true },
-        "showLegend": { "type": "boolean", "defaultValue": true },
         "showZoomControls": { "type": "boolean", "defaultValue": true },
 
         "plotHeight": { "type": "int", "defaultValue": 400 },
@@ -257,7 +253,7 @@ define([
     ScatterPlotView.prototype._initializeUI = function() {
         var self, plotDiv, legendWidgetSettings;
         self = this;
-        legendWidgetSettings = {};
+        legendWidgetSettings = (typeof self._colorCoder.gradient !== "undefined") ? "gradient" : {};
         
         $(self.getContainer()).empty();
 
@@ -297,7 +293,7 @@ define([
         colorCoder = self._colorCoder;
         opts = {
             "legend": {
-                "show": settings.showLegend && chartData.data.length > 1
+                "show": false
             },
             "zoom": {
                 "interactive": true
@@ -346,6 +342,27 @@ define([
         }
 
         self._plot = $.plot($(plotDiv), chartData.data, opts);
+        
+        // @@@ add tooltips to each control
+        $('<div class="flot-chartControl zoomIn">+</div>')
+            .on("click", function(evt) {
+                self._plot.zoom({amount: 1.5});
+                evt.preventDefault();
+            })
+            .appendTo(self._dom.plotContainer);
+        $('<div class="flot-chartControl zoomReset">&middot;</div>')
+            .on("click", function(evt) {
+                // @@@ reset viewport to pre-defined
+                evt.preventDefault();
+            })
+            .appendTo(self._dom.plotContainer);
+        $('<div class="flot-chartControl zoomOut">-</div>')
+            .on("click", function(evt) {
+                self._plot.zoomOut();
+                evt.preventDefault();
+            })
+            .appendTo(self._dom.plotContainer);
+
         showTooltip = function(x, y, labels, xVal, yVal) {
             var i, str;
             str = "";
@@ -401,7 +418,7 @@ define([
      *
      */
     ScatterPlotView.prototype._reconstruct = function() {
-        var self, collection, database, settings, accessors, currentSize, unplottableItems, currentSet, hasColorKey, xyToData, xyKey, colorCoder, plottableData, k, i, colorCodingFlags, series, color, items;
+        var self, collection, database, settings, accessors, currentSize, unplottableItems, currentSet, hasColorKey, xyToData, xyKey, colorCoder, plottableData, k, i, colorCodingFlags, series, color, items, legendWidget, keys;
 
         self = this;
         collection = this.getUIContext().getCollection();
@@ -417,6 +434,7 @@ define([
          */
         currentSize = collection.countRestrictedItems();
         unplottableItems = [];
+        this._dom.legendWidget.clear();
 
         if (currentSize > 0) {
             currentSet = collection.getRestrictedItems();
@@ -511,8 +529,6 @@ define([
         for (color in series) {
             if (series.hasOwnProperty(color)) {
                 seriesOpts = {
-                    // @@@ no way to properly get key back
-                    // "label": key,
                     "data": series[color],
                     "color": color
                 };
@@ -522,6 +538,28 @@ define([
                     };
                 }
                 plottableData.data.push(seriesOpts);
+            }
+        }
+
+        if (hasColorKey) {
+            legendWidget = self._dom.legendWidget;
+            // @@@ if using an ordered coder, use that order, not alpha
+            keys = colorCodingFlags.keys.toArray().sort();
+            if (typeof colorCoder._gradientPoints !== "undefined" && colorCoder._gradientPoints !== null) {
+                legendWidget.addGradient(colorCoder._gradientPoints);
+            } else {
+                for (i = 0; i < keys.length; i++) {
+                    legendWidget.addEntry(colorCoder.translate(keys[i]), keys[i]);
+                }
+			    if (colorCodingFlags.others) {
+				    legendWidget.addEntry(colorCoder.getOthersColor(), colorCoder.getOthersLabel());
+			    }
+			    if (colorCodingFlags.mixed) {
+				    legendWidget.addEntry(colorCoder.getMixedColor(), colorCoder.getMixedLabel());
+			    }
+			    if (colorCodingFlags.missing) {
+				    legendWidget.addEntry(colorCoder.getMissingColor(), colorCoder.getMissingLabel());
+			    }
             }
         }
 
