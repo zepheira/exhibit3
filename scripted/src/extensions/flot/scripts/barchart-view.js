@@ -3,11 +3,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-// @@@ x-axis label setting
-// @@@ y-axis label setting
 // @@@ highlight action gone? don't really care...
-// @@@ adapt coordinator selector
-// @@@ click pops up list of items
 // @@@ ordering - alpha, numeric, or explicit
 // @@@ add use with raw data mode, not grouping mode
 
@@ -23,6 +19,7 @@ define([
     "scripts/ui/ui-context",
     "scripts/ui/views/view",
     "scripts/ui/coders/default-color-coder",
+    "../lib/jquery.flot.axislabels"
 ], function($, Exhibit, FlotExtension, FlotUtilities, Set, AccessorsUtilities, SettingsUtilities, ViewUtilities, UIContext, View, DefaultColorCoder) {
     /**
      * @class
@@ -54,6 +51,7 @@ define([
         this._tooltipID = null;
         this._bound = false;
         this._itemIDToSeries = {};
+        this._seriesToItemIDs = {};
 
         this._onItemsChanged = function() {
             view._reconstruct(); 
@@ -72,6 +70,8 @@ define([
      */
     BarChartView._settingSpecs = {
         "height": { "type": "int", "defaultValue": 640 },
+        "xLabel": { "type": "text", "defaultValue": null },
+        "yLabel": { "type": "text", "defaultValue": null },
         "hoverEffect": { "type": "boolean", "defaultValue": true },
         "colorCoder": { "type": "text", "defaultValue": null },
         "selectCoordinator": { "type": "text",  "defaultValue": null },
@@ -166,6 +166,8 @@ define([
     
         this._dom.dispose();
         this._dom = null;
+        this._itemIDToSeries = null;
+        this._seriesToItemIDs = null;
 
         this._plot = null;
 
@@ -233,7 +235,7 @@ define([
      * @param {Array} chartData
      */
     BarChartView.prototype._reconstructChart = function(chartData) {
-        var self, settings, plotDiv, opts, makeArgs, tooltipFormatter, colorCoder;
+        var self, settings, plotDiv, opts, makeArgs, tooltipFormatter, itemsAccessor, colorCoder;
 
         self = this;
         settings = self._settings;
@@ -244,11 +246,16 @@ define([
                 "show": false
             },
             "grid": {
-                "hoverable": true
+                "hoverable": true,
+                "clickable": true
             },
             "xaxis": {
                 "ticks": chartData.labels,
-                "tickLength": 0
+                "tickLength": 0,
+                "axisLabel": settings.xLabel
+            },
+            "yaxis": {
+                "axisLabel": settings.yLabel
             }
         };
 
@@ -262,13 +269,16 @@ define([
             return '<strong>' + args[0] + '</strong> (' + args[1] + ')';
         };
 
+        itemsAccessor = function(obj) {
+            return self._seriesToItemIDs[obj.series.label];
+        };
+
         if (settings.hoverEffect && !self._bound) {
             FlotUtilities.setupHover(plotDiv, self, makeArgs, tooltipFormatter);
         }
 
         if (!self._bound) {
-            // @@@ add item IDS to series
-            // FlotUtilities.setupClick(plotDiv, self, itemsAccessor);
+            FlotUtilities.setupClick(plotDiv, self, itemsAccessor);
         }
 
         // No need to call unbind later, .empty() does that already.
@@ -322,6 +332,12 @@ define([
                         } else {
                             chartData[v].data[0][1] = chartData[v].data[0][1] + 1;
                         }
+                        self._itemIDToSeries[itemID] = v;
+                        if (typeof self._seriesToItemIDs[v] !== "undefined") {
+                            self._seriesToItemIDs[v].push(itemID);
+                        } else {
+                            self._seriesToItemIDs[v] = [itemID];
+                        }
                     } else {
                         unplottableItems.push(itemID);
                     }
@@ -346,7 +362,6 @@ define([
      * @param {Array} selection.itemIDs
      */
     BarChartView.prototype._select = function(selection) {
-        // @@@ adapt to barchart, from pie chart
         var itemID, pct, selected, series, i, point, plot;
         itemID = selection.itemIDs[0];
         selected = this._itemIDToSeries[itemID];
@@ -356,12 +371,7 @@ define([
                 if (series[i].label === selected) {
                     FlotUtilities.removeTooltip(this._tooltipID);
                     this._plot.unhighlight();
-                    // Flot's highlighting is currently broken in 0.8.1 and is scheduled for a fix in 0.9
-                    // this._plot.highlight(i, 0);
-                    
-                    // Flot does not yet offer a way to map data to page coordinates in a pie chart
-                    // pct = parseFloat(series[i].percent).toFixed(2);
-                    // PieChartView.showTooltip(point.left, point.top, selected, pct);
+                    // see piechart-view for more on why this doesn't yet work
                 }
             }
         }
