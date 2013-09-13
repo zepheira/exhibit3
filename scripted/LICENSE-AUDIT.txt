@@ -146,8 +146,9 @@ Flot
  * MIT License
  * scripted/src/extensions/flot/lib/
   * jquery.flot.js
-  * jquery.flot.pie.js
+  * jquery.flot.axislabels.js
   * jquery.flot.navigate.js
+  * jquery.flot.pie.js
   * jquery.flot.resize.js
  * Note that some of these plugins include jQuery plugins themselves,
    which are also distributed under the MIT license.
