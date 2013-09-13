@@ -1,29 +1,3 @@
-.exhibit-scatterplotview-tooltip {
-    position: absolute;
-    background: #ddd;
-    border: 1px solid #bbb;
-    padding: 2px;
-    opacity: 0.8;
-}
-
-.exhibit-scatterplotview-tooltip p {
-    margin: 0.1em;
-}
-
-.flot-chartControl {
-    position: absolute;
-    right: 10px;
-    background-color: #eee;
-    border: 1px solid #999;
-    opacity: 0.5;
-    width: 15px;
-    height: 15px;
-    line-height: 15px;
-    cursor: pointer;
-    text-align: center;
-    font-size: 0.9;
-}
-
 .zoomIn {
     top: 9px;
 }

@@ -7,6 +7,7 @@ define([
     "lib/jquery",
     "exhibit",
     "./flot-base",
+    "./utils",
     "scripts/util/set",
     "scripts/util/accessors",
     "scripts/util/settings",
@@ -16,9 +17,8 @@ define([
     "scripts/ui/views/view",
     "scripts/ui/coders/default-color-coder",
     "../lib/jquery.flot.axislabels",
-    "../lib/jquery.flot.navigate",
-    "../lib/jquery.flot.resize"
-], function($, Exhibit, FlotExtension, Set, AccessorsUtilities, SettingsUtilities, ViewUtilities, _, UIContext, View, DefaultColorCoder) {
+    "../lib/jquery.flot.navigate"
+], function($, Exhibit, FlotExtension, FlotUtilities, Set, AccessorsUtilities, SettingsUtilities, ViewUtilities, _, UIContext, View, DefaultColorCoder) {
     /**
      * @class
      * @constructor
@@ -287,8 +287,7 @@ define([
             "width": "100%",
             "height": self._settings.plotHeight
         });
-
-        self._tooltipID = "#exhibit-" + self.getID() + "-scatterplotview-tooltip";
+        self._tooltipID = FlotUtilities.makeTooltipID(self, "scatterplotview");
         
         self._initializeViewUI();
         
@@ -299,7 +298,7 @@ define([
      * @param {Array} chartData
      */
     ScatterPlotView.prototype._reconstructChart = function(chartData) {
-        var self, settings, plotDiv, opts, showTooltip, moveTooltip, colorCoder;
+        var self, settings, plotDiv, opts, tooltipFormatter, makeArgs, itemsAccessor, colorCoder;
 
         self = this;
         settings = self._settings;
@@ -396,63 +395,33 @@ define([
                 .appendTo(self._dom.plotContainer);
         }
 
-        showTooltip = function(x, y, labels, xVal, yVal) {
-            var i, str;
-            str = "";
-            for (i = 0; i < labels.length; i++) {
-                str += '<p><strong>' + labels[i] + '</strong> (' + xVal + ',' + yVal + ')</p>';
-            }
-            $('<div id="' + self._tooltipID.substr(1) + '" class="exhibit-scatterplotview-tooltip">' + str + '</div>').css({
-                "top": y + 5,
-                "left": x + 5,
-            }).appendTo("body");
+        makeArgs = function(obj) {
+            return [obj.series.data[obj.dataIndex][2], obj.datapoint[0], obj.datapoint[1]];
         };
 
-        moveTooltip = function(x, y) {
-            $(self._tooltipID).css({
-                "top": y + 5,
-                "left": x + 5
-            });
+        tooltipFormatter = function(args) {
+            var i, str;
+            str = "";
+            for (i = 0; i < args[0].length; i++) {
+                str += '<p><strong>' + args[0][i] + '</strong> (' + args[1] + ',' + args[2] + ')</p>';
+            }
+            return str;
+        };
+
+        itemsAccessor = function(obj) {
+            return obj.series.data[obj.dataIndex][2];
         };
 
         if (settings.hoverEffect && !self._bound) {
-            $(plotDiv).data("previous", -1);
-            $(plotDiv).bind("plothover", function(evt, pos, obj) {
-                var key;
-                if (obj) {
-                    key = obj.seriesIndex + ":" + obj.dataIndex;
-                    if ($(plotDiv).data("previous") !== key) {
-                        $(plotDiv).data("previous", key);
-                        $(self._tooltipID).remove();
-                        self._plot.unhighlight();
-                        self._plot.highlight(obj.series, obj.datapoint);
-                        showTooltip(pos.pageX, pos.pageY, obj.series.data[obj.dataIndex][2], obj.datapoint[0], obj.datapoint[1]);
-                    } else {
-                        moveTooltip(pos.pageX, pos.pageY);
-                    }
-                } else {
-                    self._plot.unhighlight();
-                    $(self._tooltipID).remove();
-                    $(plotDiv).data("previous", -1); 
-                }
-            });
-            
-            $(plotDiv).bind("mouseout", function(evt) {
-                self._plot.unhighlight();
-                $(self._tooltipID).remove();
-                $(plotDiv).data("previous", -1);
-            });
+            FlotUtilities.setupHover(plotDiv, self, makeArgs, tooltipFormatter);
         }
 
         if (!self._bound) {
-            $(plotDiv).bind("plotclick", function(evt, pos, obj) {
-                if (obj !== null) {
-                    ViewUtilities.openBubbleForItemsAtPoint(pos.pageX, pos.pageY, obj.series.data[obj.dataIndex][2], self.getUIContext());
-                }
-            });
+            FlotUtilities.setupClick(plotDiv, self, itemsAccessor);
         }
 
         // No need to call unbind later, .empty() does that already.
+
         self._bound = true;
     };
 
@@ -621,6 +590,7 @@ define([
         itemID = selection.itemIDs[0];
         selected = this._itemIDToPoint[itemID];
         if (typeof selected !== "undefined" && selected !== null) {
+            FlotUtilities.removeTooltip(this._tooltipID);
             point = this._plot.p2c(selected[1]);
             offset = this._plot.offset()
             ViewUtilities.openBubbleForItemsAtPoint(point.left + offset.left, point.top + offset.top, [itemID], this.getUIContext());

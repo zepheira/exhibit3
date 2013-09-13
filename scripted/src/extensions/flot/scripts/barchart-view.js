@@ -3,18 +3,19 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-// @@@ x-axis label
-// @@@ y-axis label
-// @@@ highlight? don't really care
-// @@@ click pops up list of items?
+// @@@ x-axis label setting
+// @@@ y-axis label setting
+// @@@ highlight action gone? don't really care...
+// @@@ adapt coordinator selector
+// @@@ click pops up list of items
 // @@@ ordering - alpha, numeric, or explicit
-// @@@ coordinator
-// @@@ use with raw data mode, not grouping mode
+// @@@ add use with raw data mode, not grouping mode
 
 define([
     "lib/jquery",
     "exhibit",
     "./flot-base",
+    "./utils",
     "scripts/util/set",
     "scripts/util/accessors",
     "scripts/util/settings",
@@ -22,9 +23,7 @@ define([
     "scripts/ui/ui-context",
     "scripts/ui/views/view",
     "scripts/ui/coders/default-color-coder",
-    "../lib/jquery.flot",
-    "../lib/jquery.flot.pie"
-], function($, Exhibit, FlotExtension, Set, AccessorsUtilities, SettingsUtilities, ViewUtilities, UIContext, View, DefaultColorCoder) {
+], function($, Exhibit, FlotExtension, FlotUtilities, Set, AccessorsUtilities, SettingsUtilities, ViewUtilities, UIContext, View, DefaultColorCoder) {
     /**
      * @class
      * @constructor
@@ -38,6 +37,7 @@ define([
             containerElmt,
             uiContext
         ));
+
         this.addSettingSpecs(BarChartView._settingSpecs);
 
         this._accessors = {
@@ -51,6 +51,9 @@ define([
         this._selectListener = null;
         this._colorCoder = null;
         this._plot = null;
+        this._tooltipID = null;
+        this._bound = false;
+        this._itemIDToSeries = {};
 
         this._onItemsChanged = function() {
             view._reconstruct(); 
@@ -69,7 +72,6 @@ define([
      */
     BarChartView._settingSpecs = {
         "height": { "type": "int", "defaultValue": 640 },
-        "width": { "type": "int", "defaultValue": 480 },
         "hoverEffect": { "type": "boolean", "defaultValue": true },
         "colorCoder": { "type": "text", "defaultValue": null },
         "selectCoordinator": { "type": "text",  "defaultValue": null },
@@ -199,7 +201,7 @@ define([
      *
      */
     BarChartView.prototype._initializeUI = function() {
-        var self, plotDiv;
+        var self, plotDiv, legendWidgetSettings;
         self = this;
         legendWidgetSettings = {};
         
@@ -217,9 +219,10 @@ define([
         );    
 
         $(self._dom.plotContainer).css({
-            "width": self._settings.width,
+            "width": "100%",
             "height": self._settings.height
         });
+        self._tooltipID = FlotUtilities.makeTooltipID(self, "barchartview");
         
         self._initializeViewUI();
         
@@ -230,7 +233,7 @@ define([
      * @param {Array} chartData
      */
     BarChartView.prototype._reconstructChart = function(chartData) {
-        var self, settings, plotDiv, opts, showTooltip, moveTooltip, colorCoder;
+        var self, settings, plotDiv, opts, makeArgs, tooltipFormatter, colorCoder;
 
         self = this;
         settings = self._settings;
@@ -250,48 +253,26 @@ define([
         };
 
         self._plot = $.plot($(plotDiv), chartData.data, opts);
-        showTooltip = function(x, y, label, value) {
-            $('<div id="exhibit-barchartview-tooltip"><strong>' + label + '</strong> (' + value + ')</div>').css({
-                "top": y + 5,
-                "left": x + 5,
-            }).appendTo("body");
+
+        makeArgs = function(obj) {
+            return [obj.series.label, obj.datapoint[1]];
         };
 
-        moveTooltip = function(x, y) {
-            $("#exhibit-barchartview-tooltip").css({
-                "top": y + 5,
-                "left": x + 5
-            });
+        tooltipFormatter = function(args) {
+            return '<strong>' + args[0] + '</strong> (' + args[1] + ')';
         };
 
-        if (settings.hoverEffect) {
-            $(plotDiv).data("previous", -1);
-            $(plotDiv).bind("plothover", function(evt, pos, obj) {
-                if (obj) {
-                    if ($(plotDiv).data("previous") !== obj.seriesIndex) {
-                        $(plotDiv).data("previous", obj.seriesIndex);
-                        $("#exhibit-barchartview-tooltip").remove();
-                        self._plot.unhighlight();
-                        self._plot.highlight(obj.series, obj.datapoint);
-                        showTooltip(pos.pageX, pos.pageY, obj.series.label, obj.datapoint[1]);
-                    } else {
-                        moveTooltip(pos.pageX, pos.pageY);
-                    }
-                } else {
-                    self._plot.unhighlight();
-                    $("#exhibit-barchartview-tooltip").remove();
-                    $(plotDiv).data("previous", -1); 
-                }
-            });
-            
-            $(plotDiv).bind("mouseout", function(evt) {
-                self._plot.unhighlight();
-                $("#exhibit-barchartview-tooltip").remove();
-                $(plotDiv).data("previous", -1);
-            });
-
-            // No need to call unbind later, .empty() does that already.
+        if (settings.hoverEffect && !self._bound) {
+            FlotUtilities.setupHover(plotDiv, self, makeArgs, tooltipFormatter);
         }
+
+        if (!self._bound) {
+            // @@@ add item IDS to series
+            // FlotUtilities.setupClick(plotDiv, self, itemsAccessor);
+        }
+
+        // No need to call unbind later, .empty() does that already.
+        self._bound = true;
     };
 
     /**
@@ -318,36 +299,35 @@ define([
 
         if (currentSize > 0) {
             currentSet = collection.getRestrictedItems();
-        }
-
-        currentSet.visit(function(itemID) {
-            var color;
-            accessors.getGrouping(itemID, database, function(v) {
-                if (v !== null) {
-                    if (typeof chartData[v] === "undefined") {
-                        color = colorCoder.translate(v);
-                        chartData[v] = {
-                            "label": v,
-                            "data": [[0, 1]],
-                            "bars": {
-                                "show": true,
-                                "fill": true,
-                                "align": "center",
-                                "lineWidth": 0
+            currentSet.visit(function(itemID) {
+                var color;
+                accessors.getGrouping(itemID, database, function(v) {
+                    if (v !== null) {
+                        if (typeof chartData[v] === "undefined") {
+                            color = colorCoder.translate(v);
+                            chartData[v] = {
+                                "label": v,
+                                "data": [[0, 1]],
+                                "bars": {
+                                    "show": true,
+                                    "fill": true,
+                                    "align": "center",
+                                    "lineWidth": 0
+                                }
+                            };
+                            if (color !== null) {
+                                chartData[v].color = color;
+                                chartData[v].bars.fillColor = color;
                             }
-                        };
-                        if (color !== null) {
-                            chartData[v].color = color;
-                            chartData[v].bars.fillColor = color;
+                        } else {
+                            chartData[v].data[0][1] = chartData[v].data[0][1] + 1;
                         }
                     } else {
-                        chartData[v].data[0][1] = chartData[v].data[0][1] + 1;
+                        unplottableItems.push(itemID);
                     }
-                } else {
-                    unplottableItems.push(itemID);
-                }
+                });
             });
-        });
+        }
 
         i = 0;
         for (k in chartData) {
@@ -366,9 +346,25 @@ define([
      * @param {Array} selection.itemIDs
      */
     BarChartView.prototype._select = function(selection) {
-        // @@@ Cannot really fire off a selector from the chart side, but
-        //     if a selector from another view is fired off, show which
-        //     slice it belongs to, in some fashion.
+        // @@@ adapt to barchart, from pie chart
+        var itemID, pct, selected, series, i, point, plot;
+        itemID = selection.itemIDs[0];
+        selected = this._itemIDToSeries[itemID];
+        if (typeof selected !== "undefined" && selected !== null) {
+            series = this._plot.getData();
+            for (i = 0; i < series.length; i++) {
+                if (series[i].label === selected) {
+                    FlotUtilities.removeTooltip(this._tooltipID);
+                    this._plot.unhighlight();
+                    // Flot's highlighting is currently broken in 0.8.1 and is scheduled for a fix in 0.9
+                    // this._plot.highlight(i, 0);
+                    
+                    // Flot does not yet offer a way to map data to page coordinates in a pie chart
+                    // pct = parseFloat(series[i].percent).toFixed(2);
+                    // PieChartView.showTooltip(point.left, point.top, selected, pct);
+                }
+            }
+        }
     };
 
     return BarChartView;

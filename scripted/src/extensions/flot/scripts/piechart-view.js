@@ -3,12 +3,13 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-// @@@ ordering - alpha, numeric, or explicit
+// @@@ in-chart / legend ordering - alpha, numeric, or explicit
 
 define([
     "lib/jquery",
     "exhibit",
     "./flot-base",
+    "./utils",
     "scripts/util/set",
     "scripts/util/accessors",
     "scripts/util/settings",
@@ -19,7 +20,7 @@ define([
     "scripts/ui/coders/coder",
     "scripts/ui/coders/default-color-coder",
     "../lib/jquery.flot.pie"
-], function($, Exhibit, FlotExtension, Set, AccessorsUtilities, SettingsUtilities, ViewUtilities, UIContext, View, Coordinator, Coder, DefaultColorCoder) {
+], function($, Exhibit, FlotExtension, FlotUtilities, Set, AccessorsUtilities, SettingsUtilities, ViewUtilities, UIContext, View, Coordinator, Coder, DefaultColorCoder) {
     /**
      * @class
      * @constructor
@@ -46,6 +47,8 @@ define([
         this._selectListener = null;
         this._colorCoder = null;
         this._plot = null;
+        this._bound = false;
+        this._tooltipID = null;
         this._itemIDToSlice = {};
 
         this._onItemsChanged = function() {
@@ -65,7 +68,6 @@ define([
      */
     PieChartView._settingSpecs = {
         "height": { "type": "int", "defaultValue": 640 },
-        "width": { "type": "int", "defaultValue": 480 },
         "threshold": { "type": "int", "defaultValue": 1 },
         "hoverEffect": { "type": "boolean", "defaultValue": true },
         "colorCoder": { "type": "text", "defaultValue": null },
@@ -212,49 +214,24 @@ define([
                 } 
             },
             legendWidgetSettings
-        );    
+        );
 
         $(self._dom.plotContainer).css({
-            "width": self._settings.width,
+            "width": "100%",
             "height": self._settings.height
         });
-        
+        self._tooltipID = FlotUtilities.makeTooltipID(self, "piechartview");
+
         self._initializeViewUI();
         
         this._reconstruct();
     };
 
     /**
-     * @static
-     * @param {Number} x
-     * @param {Number} y
-     * @param {String} label
-     * @param {String} pct
-     */
-    PieChartView.showTooltip = function(x, y, label, pct) {
-        $('<div id="exhibit-piechartview-tooltip"><strong>' + label + '</strong> (' + pct + '%)</div>').css({
-            "top": y + 5,
-            "left": x + 5,
-        }).appendTo("body");
-    };
-
-    /**
-     * @static
-     * @param {Number} x
-     * @param {Number} y
-     */
-    PieChartView.moveTooltip = function(x, y) {
-        $("#exhibit-piechartview-tooltip").css({
-            "top": y + 5,
-            "left": x + 5
-        });
-    };
-
-    /**
      * @param {Array} chartData
      */
     PieChartView.prototype._reconstructChart = function(chartData) {
-        var self, settings, plotDiv, opts, colorCoder, columns;
+        var self, settings, plotDiv, opts, colorCoder, columns, makeArgs, tooltipFormatter;
 
         self = this;
         settings = self._settings;
@@ -280,38 +257,30 @@ define([
                 "label": colorCoder.getOthersLabel() + " (&lt;" + settings.threshold + "%)"
             }
         };
+
         self._plot = $.plot($(plotDiv), chartData, opts);
 
-        if (settings.hoverEffect) {
-            $(plotDiv).data("previous", -1);
-            $(plotDiv).bind("plothover", function(evt, pos, obj) {
-                var pct;
-                if (obj) {
-                    if ($(plotDiv).data("previous") !== obj.seriesIndex) {
-                        $(plotDiv).data("previous", obj.seriesIndex);
-                        $("#exhibit-piechartview-tooltip").remove();
-                        self._plot.unhighlight();
-                        self._plot.highlight(obj.series, obj.datapoint);
-                        pct = parseFloat(obj.series.percent).toFixed(2);
-                        PieChartView.showTooltip(pos.pageX, pos.pageY, obj.series.label, pct);
-                    } else {
-                        PieChartView.moveTooltip(pos.pageX, pos.pageY);
-                    }
-                } else {
-                    self._plot.unhighlight();
-                    $("#exhibit-piechartview-tooltip").remove();
-                    $(plotDiv).data("previous", -1); 
-                }
-            });
-            
-            $(plotDiv).bind("mouseout", function(evt) {
-                self._plot.unhighlight();
-                $("#exhibit-piechartview-tooltip").remove();
-                $(plotDiv).data("previous", -1);
-            });
+        makeArgs = function(obj) {
+            var pct;
+            pct = parseFloat(obj.series.percent).toFixed(2);
+            return [obj.series.label, pct];
+        };
 
-            // No need to call unbind later, .empty() does that already.
+        tooltipFormatter = function(args) {
+            return '<strong>' + args[0] + '</strong> (' + args[1] + '%)';
+        };
+
+        if (settings.hoverEffect && !self._bound) {
+            FlotUtilities.setupHover(plotDiv, self, makeArgs, tooltipFormatter);
         }
+
+        if (!self._bound) {
+            // @@@ include items per slice
+            // FlotUtilities.setupClick(plotDiv, self, itemsAccessor);
+        }
+
+        // No need to call unbind later, .empty() does that already.
+        self._bound = true;
     };
 
     /**
@@ -381,7 +350,7 @@ define([
             series = this._plot.getData();
             for (i = 0; i < series.length; i++) {
                 if (series[i].label === selected) {
-                    $("#exhibit-piechartview-tooltip").remove();
+                    FlotUtilities.removeTooltip(self._tooltipID);
                     this._plot.unhighlight();
                     // Flot's highlighting is currently broken in 0.8.1 and is scheduled for a fix in 0.9
                     // this._plot.highlight(i, 0);
