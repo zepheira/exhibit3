@@ -50,6 +50,7 @@ define([
         this._bound = false;
         this._tooltipID = null;
         this._itemIDToSlice = {};
+        this._sliceToItemIDs = {};
 
         this._onItemsChanged = function() {
             view._reconstruct(); 
@@ -231,7 +232,7 @@ define([
      * @param {Array} chartData
      */
     PieChartView.prototype._reconstructChart = function(chartData) {
-        var self, settings, plotDiv, opts, colorCoder, columns, makeArgs, tooltipFormatter;
+        var self, settings, plotDiv, opts, colorCoder, columns, makeArgs, tooltipFormatter, itemsAccessor;
 
         self = this;
         settings = self._settings;
@@ -245,7 +246,8 @@ define([
                 "noColumns": columns
             },
             "grid": {
-                "hoverable": true
+                "hoverable": true,
+                "clickable": true
             }
         };
 
@@ -270,13 +272,16 @@ define([
             return '<strong>' + args[0] + '</strong> (' + args[1] + '%)';
         };
 
+        itemsAccessor = function(obj) {
+            return self._sliceToItemIDs[obj.series.label];
+        };
+
         if (settings.hoverEffect && !self._bound) {
             FlotUtilities.setupHover(plotDiv, self, makeArgs, tooltipFormatter);
         }
 
         if (!self._bound) {
-            // @@@ include items per slice
-            // FlotUtilities.setupClick(plotDiv, self, itemsAccessor);
+            FlotUtilities.setupClick(plotDiv, self, itemsAccessor);
         }
 
         // No need to call unbind later, .empty() does that already.
@@ -313,7 +318,10 @@ define([
                     if (v !== null) {
                         if (typeof chartData[v] === "undefined") {
                             color = colorCoder.translate(v);
-                            chartData[v] = {"label": v, "data": 1 };
+                            chartData[v] = {
+                                "label": v,
+                                "data": 1
+                            };
                             if (color !== null) {
                                 chartData[v].color = color;
                             }
@@ -321,6 +329,11 @@ define([
                             chartData[v].data++;
                         }
                         self._itemIDToSlice[itemID] = v;
+                        if (typeof self._sliceToItemIDs[v] !== "undefined") {
+                            self._sliceToItemIDs[v].push(itemID);
+                        } else {
+                            self._sliceToItemIDs[v] = [itemID];
+                        }
                     } else {
                         unplottableItems.push(itemID);
                     }
