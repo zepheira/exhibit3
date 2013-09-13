@@ -3,8 +3,6 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-// @@@ resizing
-
 define([
     "lib/jquery",
     "exhibit",
@@ -18,7 +16,8 @@ define([
     "scripts/ui/views/view",
     "scripts/ui/coders/default-color-coder",
     "../lib/jquery.flot.axislabels",
-    "../lib/jquery.flot.navigate"
+    "../lib/jquery.flot.navigate",
+    "../lib/jquery.flot.resize"
 ], function($, Exhibit, FlotExtension, Set, AccessorsUtilities, SettingsUtilities, ViewUtilities, _, UIContext, View, DefaultColorCoder) {
     /**
      * @class
@@ -81,7 +80,6 @@ define([
      */
     ScatterPlotView._settingSpecs = {
         // These are new relative to the homebrew scatter plot view
-        "plotWidth": { "type": "int", "defaultValue": 800 },
         "pointFill": { "type": "boolean", "defaultValue": true },
         "pointRadius": { "type" : "int", "defaultValue": 3 },
         "hoverEffect": { "type": "boolean", "defaultValue": true },
@@ -195,6 +193,9 @@ define([
         var accessors;
         AccessorsUtilities.createAccessors(configuration, ScatterPlotView._accessorSpecs, view._accessors);
         SettingsUtilities.collectSettings(configuration, view.getSettingSpecs(), view._settings);
+
+        view.getUIContext().putSetting("bubbleWidth", view._settings.bubbleWidth);
+        view.getUIContext().putSetting("bubbleHeight", view._settings.bubbleHeight);
         
         accessors = view._accessors;
         view._getXY = function(itemID, database, visitor) {
@@ -275,14 +276,15 @@ define([
             this.getUIContext(), 
             this._settings.showSummary && this._settings.showHeader,
             {
-                "onResize": function() { 
-                } 
+                "onResize": function() {
+                    
+                }
             },
             legendWidgetSettings
-        );    
+        );
 
         $(self._dom.plotContainer).css({
-            "width": self._settings.plotWidth,
+            "width": "100%",
             "height": self._settings.plotHeight
         });
 
@@ -444,7 +446,9 @@ define([
 
         if (!self._bound) {
             $(plotDiv).bind("plotclick", function(evt, pos, obj) {
-                ViewUtilities.openBubbleForItemsAtPoint(pos.pageX, pos.pageY, obj.series.data[obj.dataIndex][2], self.getUIContext());
+                if (obj !== null) {
+                    ViewUtilities.openBubbleForItemsAtPoint(pos.pageX, pos.pageY, obj.series.data[obj.dataIndex][2], self.getUIContext());
+                }
             });
         }
 
@@ -561,8 +565,8 @@ define([
                         xyToData[xyKey].items
                     ]];
                 }
-                for (i = 0; i < xyToData[xyKey].items; i++) {
-                    self._itemIDToPoint[xyToData[xyKey].items[i]] = [color, xyToData[xyKey].xy];
+                for (i = 0; i < items.length; i++) {
+                    self._itemIDToPoint[items[i]] = [color, xyToData[xyKey].xy];
                 }
             }
         }
@@ -613,23 +617,14 @@ define([
      * @param {Array} selection.itemIDs
      */
     ScatterPlotView.prototype._select = function(selection) {
-        // @@@ listener behaves differently, highlight + open itemID
-        var itemID, pct, selected, series, i, point, plot;
+        var itemID, selected, point, offset;
         itemID = selection.itemIDs[0];
         selected = this._itemIDToPoint[itemID];
         if (typeof selected !== "undefined" && selected !== null) {
-            series = this._plot.getData();
-            for (i = 0; i < series.length; i++) {
-                if (series[i].color === selected[1]) {
-                    $(this._tooltipID).remove();
-                    this._plot.unhighlight();
-                    this._plot.highlight(i, 0);
-                    
-                    // Flot does not yet offer a way to map data to page coordinates in a pie chart
-                    // pct = parseFloat(series[i].percent).toFixed(2);
-                    // PieChartView.showTooltip(point.left, point.top, selected, pct);
-                }
-            }
+            point = this._plot.p2c(selected[1]);
+            offset = this._plot.offset()
+            ViewUtilities.openBubbleForItemsAtPoint(point.left + offset.left, point.top + offset.top, [itemID], this.getUIContext());
+            // @@@ also highlight when correctly supported in Flot 0.9
         }
     };
 
