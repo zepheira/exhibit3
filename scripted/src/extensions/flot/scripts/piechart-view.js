@@ -3,7 +3,7 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-// @@@ in-chart / legend ordering - alpha, numeric, or explicit
+// in-chart / legend ordering - alpha, numeric, or explicit
 
 define([
     "lib/jquery",

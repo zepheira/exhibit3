@@ -3,9 +3,8 @@
  * @author <a href="mailto:ryanlee@zepheira.com">Ryan Lee</a>
  */
 
-// @@@ highlight action gone? don't really care...
-// @@@ ordering - alpha, numeric, or explicit
-// @@@ add use with raw data mode, not grouping mode
+// highlight action gone? unclear why, may be related to pending Flot 0.9
+// add use with raw data mode, not grouping mode
 
 define([
     "lib/jquery",
@@ -75,6 +74,8 @@ define([
         "hoverEffect": { "type": "boolean", "defaultValue": true },
         "colorCoder": { "type": "text", "defaultValue": null },
         "selectCoordinator": { "type": "text",  "defaultValue": null },
+        // coder does nothing yet
+        "orderBy": { "type": "enum", "defaultValue": "count", "choices": [ "count", "alphabetical", "coder" ] },
         "showHeader": { "type": "boolean", "defaultValue": true },
         "showSummary": { "type": "boolean", "defaultValue": true },
         "showFooter": { "type": "boolean", "defaultValue": true }
@@ -289,7 +290,7 @@ define([
      *
      */
     BarChartView.prototype._reconstruct = function() {
-        var self, collection, database, settings, accessors, currentSize, unplottableItems, currentSet, colorCoder, chartData, plottableData, k, i;
+        var self, collection, database, settings, accessors, currentSize, unplottableItems, currentSet, colorCoder, chartData, plottableData, k, i, alphaSorter, numberSorter, sortHelper, sorted;
 
         self = this;
         collection = this.getUIContext().getCollection();
@@ -300,6 +301,8 @@ define([
 
         chartData = {};
         plottableData = {"labels": [], "data": []};
+        alphaSorter = new Set();
+        numberSorter = {};
 
         /*
          *  Get the current collection and check if it's empty
@@ -313,6 +316,7 @@ define([
                 var color;
                 accessors.getGrouping(itemID, database, function(v) {
                     if (v !== null) {
+                        alphaSorter.add(v);
                         if (typeof chartData[v] === "undefined") {
                             color = colorCoder.translate(v);
                             chartData[v] = {
@@ -345,14 +349,40 @@ define([
             });
         }
 
-        i = 0;
-        for (k in chartData) {
-            if (chartData.hasOwnProperty(k)) {
-                plottableData.labels.push([i, k]);
-                chartData[k].data[0][0] = i++;
-                plottableData.data.push(chartData[k]);
+        if (settings.orderBy === "count") {
+            for (k in chartData) {
+                if (chartData.hasOwnProperty(k)) {
+                    if (typeof numberSorter[chartData[k].data[0][1]] !== "undefined") {
+                        numberSorter[chartData[k].data[0][1]].push(k);
+                    } else {
+                        numberSorter[chartData[k].data[0][1]] = [k];
+                    }
+                }
             }
+            sorted = [];
+            sortHelper = [];
+            for (k in numberSorter) {
+                if (numberSorter.hasOwnProperty(k)) {
+                    sortHelper.push(k);
+                }
+            }
+            sortHelper.sort(function(a, b) {
+                return b - a;
+            });
+            for (i = 0; i < sortHelper.length; i++) {
+                numberSorter[sortHelper[i]].sort();
+                sorted = sorted.concat(numberSorter[sortHelper[i]]);
+            }
+        } else if (settings.orderBy === "alphabetical") {
+            sorted = alphaSorter.toArray().sort();
         }
+
+        for (i = 0; i < sorted.length; i++) {
+            plottableData.labels.push([i, sorted[i]]);
+            chartData[sorted[i]].data[0][0] = i;
+            plottableData.data.push(chartData[sorted[i]]);
+        }
+
         this._reconstructChart(plottableData);
         this._dom.setUnplottableMessage(currentSize, unplottableItems);
     };
