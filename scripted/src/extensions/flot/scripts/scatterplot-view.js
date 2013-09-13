@@ -232,6 +232,7 @@ define([
         this._dom = null;
 
         this._plot = null;
+        this._itemIDToPoint = null;
 
         this._dispose();
     };

@@ -166,6 +166,7 @@ define([
         this._dom = null;
 
         this._itemIDToSlice = null;
+        this._sliceToItemIDs = null;
         this._plot = null;
 
         this._dispose();
