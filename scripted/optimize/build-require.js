@@ -6,8 +6,7 @@
         "nls": "nls",
         "i18n": "lib/i18n"
     },
-    "exclude": ["lib/jquery"]
-,
+    "exclude": ["lib/jquery"],
     "shim": {
         "lib/jquery": {
             "exports": "jQuery"
