@@ -146,7 +146,6 @@ Flot
  * MIT License
  * scripted/src/extensions/flot/lib/
   * jquery.flot.js
-  * jquery.flot.axislabels.js
   * jquery.flot.navigate.js
   * jquery.flot.pie.js
   * jquery.flot.resize.js
@@ -154,7 +153,7 @@ Flot
    which are also distributed under the MIT license.
 
 Axis Labels Plugin for flot
-----
+---------------------------
  * https://github.com/markrcote/flot-axislabels
  * fcfde41709057b1087288e20f49f0e8a75025845
  * MIT License
