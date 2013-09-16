@@ -82,6 +82,12 @@ requirejs.config({
         },
         "extensions/flot/lib/jquery.flot.axislabels": {
             "deps": ["extensions/flot/lib/jquery.flot"]
+        },
+        "extensions/flot/lib/jquery.flot.navigate": {
+            "deps": ["extensions/flot/lib/jquery.flot"]
+        },
+        "extensions/flot/lib/jquery.flot.resize": {
+            "deps": ["extensions/flot/lib/jquery.flot"]
         }
     }
 });
