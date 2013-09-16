@@ -474,7 +474,7 @@ define([
             prefix = conf.prefix;
         } else {
             url = null;
-            targets = ["exhibit-api.js", "exhibit-bundle.js"];
+            targets = ["/exhibit-api.js", "/exhibit-bundle.js"];
             for (i = 0; i < targets.length; i++) {
                 target = targets[i];
                 url = Exhibit.findScript(document, target);
@@ -488,6 +488,10 @@ define([
                 params = Exhibit.parseURLParameters(url, Exhibit.params, Exhibit.paramTypes);
                 Exhibit.params = params;
             }
+        }
+
+        if (prefix.substr(-1) !== "/") {
+            prefix += "/";
         }
 
         Exhibit.urlPrefix = prefix;

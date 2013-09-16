@@ -33,7 +33,7 @@ define([
             for (i = 0; i < targets.length; i++) {
                 url = Exhibit.findScript(document, targets[i]);
                 if (url !== null) {
-                    prefix = url.substr(0, url.indexOf(targets[i]) + 1);
+                    prefix = url.substr(0, url.indexOf(targets[i]));
                     break;
                 }
             }
@@ -43,6 +43,10 @@ define([
             }
         }
     
+        if (prefix.substr(-1) !== "/") {
+            prefix += "/";
+        }
+
         FlotExtension.urlPrefix = prefix;
         if (conf !== null) {
             FlotExtension.params = conf;

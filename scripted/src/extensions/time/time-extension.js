@@ -50,7 +50,7 @@ define([
         } else if (conf !== null && conf.hasOwnProperty("prefix")) {
             prefix = conf.prefix;
         } else {
-            targets = ["time-extension.js", "time-extension-bundle.js"];
+            targets = ["/time-extension.js", "/time-extension-bundle.js"];
             for (i = 0; i < targets.length; i++) {
                 url = Exhibit.findScript(document, targets[i]);
                 if (url !== null) {
@@ -64,6 +64,10 @@ define([
             }
         }
     
+        if (prefix.substr(-1) !== "/") {
+            prefix += "/";
+        }
+
         TimeExtension.urlPrefix = prefix;
         if (typeof Exhibit_TimeExtension_parameters !== "undefined") {
             TimeExtension.params = Exhibit.parseURLParameters(Exhibit_TimeExtension_parameters, TimeExtension.params, TimeExtension.paramTypes);
