@@ -193,8 +193,30 @@
 
 
   <!-- Build all the things -->
-  <target name="omnibundle" description="Bundle everything, standalone">
-    <!-- @@@ to do -->
+  <target name="omnibundle" description="Bundle everything, require-dependent. Not published locally.">
+    <fileset dir="${src}/nls/" includes="**/*.js" id="locales"/>
+    <pathconvert dirsep="/" refid="locales" property="localelist" pathsep=",">
+      <map from="${basedir}/${src}/" to=""/>
+      <globmapper from="*.js" to="*"/>
+    </pathconvert>
+
+    <fileset dir="${src}/extensions" id="elocales">
+      <include name="map/nls/**/*.js"/>
+      <include name="time/nls/**/*.js"/>
+      <include name="openlayers/nls/**/*.js"/>
+      <include name="flot/nls/**/*.js"/>
+    </fileset>
+    <pathconvert dirsep="/" refid="elocales" property="elocalelist" pathsep=",">
+      <map from="${basedir}/${src}/extensions/map" to="ext/map"/>
+      <map from="${basedir}/${src}/extensions/openlayers" to="ext/openlayers"/>
+      <map from="${basedir}/${src}/extensions/time" to="ext/time"/>
+      <map from="${basedir}/${src}/extensions/flot" to="ext/flot"/>
+      <globmapper from="*.js" to="*"/>
+    </pathconvert>
+
+    <exec dir="." executable="node">
+      <arg line="${rjs.dir}/r.js -o ${rjs.dir}/omnibuild.js out=${build}/exhibit.js deps=${localelist},${elocalelist}"/>
+    </exec>
   </target>
 
 
