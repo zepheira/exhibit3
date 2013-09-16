@@ -67,11 +67,15 @@ ResizableDivWidget.prototype._initializeUI = function() {
     this._resizerDiv = $(this._div).children().get(1);
 
     $(this._resizerDiv).bind("mousedown", function(evt) {
+        if (self._dragging) {
+            return;
+        }
         self._dragging = true;
         self._height = $(self._contentDiv).height();
         self._origin = { "x": evt.pageX, "y": evt.pageY };
 
         self._ondrag = function(evt2) {
+            console.log('ondrag');
             var height = self._height + evt2.pageY - self._origin.y;
             evt.preventDefault();
             evt.stopPropagation();
@@ -82,14 +86,24 @@ ResizableDivWidget.prototype._initializeUI = function() {
         };
         $(document).bind("mousemove", self._ondrag);
 
-        self._dragdone = function(evt) {
+        self._dragdone = function(evt2) {
+            console.log('dragdone');
             self._dragging = false;
             $(document).unbind("mousemove", self._ondrag);
+            $(document).unbind("mouseup", self._dragdone);
+            $(document).unbind("keyup", self._escapedone);
             if (typeof self._configuration.onResize === "function") {
                 self._configuration.onResize();
             }
         };
-        $(self._resizerDiv).one("mouseup", self._dragdone);
+        $(document).one("mouseup", self._dragdone);
+
+        self._escapedone = function(evt2) {
+            if (evt2.keyCode == 27) {
+                self._dragdone(evt2);
+            }
+        };
+        $(document).one("keyup", self._escapedone);
     });
 };
 
