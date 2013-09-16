@@ -38,6 +38,14 @@ define([
 ], function(module, $, Exhibit, TimeExtension, TimelineView, Locale, Debug) {
     TimeExtension.TimelineView = TimelineView;
 
+    /**
+     * @param {Exhibit} ex
+     */
+    TimeExtension.register = function(ex) {
+        ex.TimeExtension = TimeExtension;
+        ex.TimelineView = TimelineView;
+    };
+
     TimeExtension.setup = function() {
         var url, i, conf, prefix, targets;
 

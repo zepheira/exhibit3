@@ -26,6 +26,14 @@ define([
     MapExtension.bundledCssFile = "styles/openlayers-extension-bundle.css";
     MapExtension.openLayersVersion = "2.13.1";
 
+    /**
+     * @param {Exhibit} ex
+     */
+    MapExtension.register = function(ex) {
+        ex.MapExtension = MapExtension;
+        ex.OLMapView = OLMapView;
+    };
+
     MapExtension.setup = function() {
         var prefix, url, i, conf, targets, keyArg;
         

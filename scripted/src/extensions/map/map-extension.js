@@ -21,7 +21,14 @@ define([
     MapExtension.Painter = Painter;
     MapExtension.Canvas = Canvas;
     MapExtension.Marker = Marker;
-    MapExtension.MapView = MapView;
+
+    /**
+     * @param {Exhibit} ex
+     */
+    MapExtension.register = function(ex) {
+        ex.MapExtension = MapExtension;
+        ex.MapView = MapView;
+    };
 
     MapExtension.setup = function() {
         var prefix, url, i, conf, targets, keyArg;

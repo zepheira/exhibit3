@@ -15,9 +15,15 @@ define([
     "scripts/util/debug",
     "./lib/jquery.flot"
 ], function(module, $, Exhibit, FlotExtension, PieChartView, BarChartView, ScatterPlotView, Locale, Debug) {
-    FlotExtension.PieChartView = PieChartView;
-    FlotExtension.BarChartView = BarChartView;
-    FlotExtension.ScatterPlotView = ScatterPlotView;
+    /**
+     * @param {Exhibit} ex
+     */
+    FlotExtension.register = function(ex) {
+        ex.FlotExtension = FlotExtension;
+        ex.PieChartView = PieChartView;
+        ex.BarChartView = BarChartView;
+        ex.ScatterPlotView = ScatterPlotView;
+    };    
 
     FlotExtension.setup = function() {
         var url, i, conf, prefix, targets;
