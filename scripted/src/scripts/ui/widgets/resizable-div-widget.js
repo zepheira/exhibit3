@@ -75,7 +75,6 @@ ResizableDivWidget.prototype._initializeUI = function() {
         self._origin = { "x": evt.pageX, "y": evt.pageY };
 
         self._ondrag = function(evt2) {
-            console.log('ondrag');
             var height = self._height + evt2.pageY - self._origin.y;
             evt.preventDefault();
             evt.stopPropagation();
@@ -87,7 +86,6 @@ ResizableDivWidget.prototype._initializeUI = function() {
         $(document).bind("mousemove", self._ondrag);
 
         self._dragdone = function(evt2) {
-            console.log('dragdone');
             self._dragging = false;
             $(document).unbind("mousemove", self._ondrag);
             $(document).unbind("mouseup", self._dragdone);
