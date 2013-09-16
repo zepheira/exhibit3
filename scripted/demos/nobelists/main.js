@@ -6,8 +6,7 @@ require(["../api/configs/dev-config.js"], function() {
     });
     require(["lib/jquery", "exhibit", "ext/time/time-extension"], function($, Exhibit, TimeExtension) {
         window.Exhibit = Exhibit;
-        Exhibit.TimeExtension = TimeExtension;
-        Exhibit.TimelineView = TimeExtension.TimelineView;
+        TimeExtension.register(Exhibit);
         $(document).trigger("scriptsLoaded.exhibit");
     });
 });

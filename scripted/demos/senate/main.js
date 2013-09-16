@@ -7,8 +7,7 @@ define('gmaps', ['async!https://maps.googleapis.com/maps/api/js?v=3&sensor=false
 require(["../api/configs/dev-config.js"], function() {
     require(["lib/jquery", "exhibit", "ext/map/map-extension"], function($, Exhibit, MapExtension) {
         window.Exhibit = Exhibit;
-        Exhibit.MapExtension = MapExtension;
-        Exhibit.MapView = MapExtension.MapView;
+        MapExtension.register(Exhibit);
         $(document).trigger("scriptsLoaded.exhibit");
     });
 });

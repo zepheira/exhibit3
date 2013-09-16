@@ -12,10 +12,8 @@ require(["../api/configs/dev-config.js"], function() {
     });
     require(["lib/jquery", "exhibit", "ext/map/map-extension", "ext/time/time-extension"], function($, Exhibit, MapExtension, TimeExtension) {
         window.Exhibit = Exhibit;
-        Exhibit.MapExtension = MapExtension;
-        Exhibit.MapView = MapExtension.MapView;
-        Exhibit.TimeExtension = TimeExtension;
-        Exhibit.TimelineView = TimeExtension.TimelineView;
+        MapExtension.register(Exhibit);
+        TimeExtension.register(Exhibit);
         $(document).trigger("scriptsLoaded.exhibit");
     });
 });
