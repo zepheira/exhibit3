@@ -484,7 +484,7 @@ UIUtilities.createPopupMenuDom = function(element) {
 
 /**
  * Add the close property to dom, a function taking a jQuery event that
- * simulates the UI for closing a dialog.  THe dialog can either be modal
+ * simulates the UI for closing a dialog.  The dialog can either be modal
  * (takes over the window focus) or modeless (will be closed if something
  * other than it is focused).
  *
