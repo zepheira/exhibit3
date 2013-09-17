@@ -5,7 +5,7 @@
  */
 
 define(["lib/jquery"], function($) {
-    var pngFail, defaultBubbleConfig, methods, _init;
+    var pngFail, defaultBubbleConfig, methods, _init, tracker, trackerIdx, closeTracked;
 
     pngFail = (/MSIE ((5\.5)|6)/.test(navigator.userAgent) && navigator.platform === "Win32");
 
@@ -29,6 +29,35 @@ define(["lib/jquery"], function($) {
         extraPadding:                   20
     };
 
+    trackerIdx = 0;
+    tracker = {};
+
+    closeTracked = function(checkParent, checkChildren, trackerID) {
+        var t;
+        for (t in tracker) {
+            if (tracker.hasOwnProperty(t)) {
+                if (checkParent) {
+                    if (t !== trackerID) {
+                        tracker[t].close();
+                        delete tracker[t];
+                    }
+                } else if (checkChildren) {
+                    if (tracker[t].parent === trackerID) {
+                        tracker[t].close();
+                        delete tracker[t];
+                    }                    
+                } else {
+                    tracker[t].close();
+                    delete tracker[t];
+                }
+            }
+        }
+    };
+
+    $(document).on("closeBubbles.simileAjax", function(evt) {
+        closeTracked(false, false);
+    });
+
     methods = {
         "configure": function(options) {
             var opt;
@@ -38,7 +67,7 @@ define(["lib/jquery"], function($) {
                 }
             }
         },
-        "createBubbleForContentAndPoint": function(div, pageX, pageY, contentWidth, orientation, maxHeight) {
+        "createBubbleForContentAndPoint": function(div, pageX, pageY, contentWidth, orientation, maxHeight, parentTracker) {
             if (typeof contentWidth !== "number") {
                 contentWidth = 300;
             }
@@ -63,7 +92,7 @@ define(["lib/jquery"], function($) {
                     scrollDivW = width - 25;
                 }
        
-                bubble = methods.createBubbleForPoint(pageX, pageY, width, height, orientation);
+                bubble = methods.createBubbleForPoint(pageX, pageY, width, height, orientation, parentTracker);
         
                 div.remove();
                 div.css("position", "static");
@@ -83,8 +112,10 @@ define(["lib/jquery"], function($) {
                 }
             }, 200);
         },
-        "createBubbleForPoint": function(pageX, pageY, contentWidth, contentHeight, orientation) {
-            var bubbleConfig, pnTransparencyClassSuffix, bubbleWidth, bubbleHeight, generatePngSensitiveClass, div, divInnerContainer, bubble, close, layer, createBorder, divContentContainer, divClose;
+        "createBubbleForPoint": function(pageX, pageY, contentWidth, contentHeight, orientation, parentTracker) {
+            var bubbleConfig, pnTransparencyClassSuffix, bubbleWidth, bubbleHeight, generatePngSensitiveClass, div, divInnerContainer, bubble, close, layer, createBorder, divContentContainer, divClose, t, trackerID;
+
+            closeTracked(true, false, parentTracker);
 
             contentWidth = parseInt(contentWidth, 10);
             contentHeight = parseInt(contentHeight, 10);
@@ -116,18 +147,21 @@ define(["lib/jquery"], function($) {
             /*
              *  Create layer for bubble
              */
-            close = function() { 
+            close = function() {
+                var t;
                 if (!bubble._closed) {
                     $(bubble._div).remove();
                     bubble._doc = null;
                     bubble._div = null;
                     bubble._content = null;
                     bubble._closed = true;
+                    closeTracked(false, true, bubble._tracker);
+                    delete tracker[bubble._tracker];
+                    bubble._tracker = null;
                 }
             };
             bubble = { _closed: false };
             bubble._div = div.get(0);
-            // @@@ not entirely correct, former layers material
             bubble.close = function() { close(); };
             
             /*
@@ -266,8 +300,17 @@ define(["lib/jquery"], function($) {
                     div.css("left", (pageX + bubbleConfig.arrowGraphicTargetOffset) + "px");
                 }
             }());
-            
+
+            trackerID = "t" + trackerIdx;
+            div.data("tracker", trackerID);
             $(document.body).append(div);
+
+            bubble._tracker = trackerID;
+            tracker[trackerID] = {
+                "close": bubble.close,
+                "parent": parentTracker
+            };
+            trackerIdx++;
             
             return bubble;            
         },

@@ -262,7 +262,7 @@ UIUtilities.calculatePopupPosition = function(elmt) {
  * @param {Object} opts
  */
 UIUtilities.showItemInPopup = function(itemID, elmt, uiContext, opts) {
-    var itemLensDiv, lensOpts;
+    var itemLensDiv, lensOpts, tracker;
 
     $(document).trigger("closeAllModeless.exhibit");
 
@@ -285,12 +285,21 @@ UIUtilities.showItemInPopup = function(itemID, elmt, uiContext, opts) {
     }
 
     uiContext.getLensRegistry().createLens(itemID, itemLensDiv, uiContext, lensOpts);
-    
-    $.simileBubble("createBubbleForContentAndPoint",
+
+    tracker = null;
+    if ($(elmt).parents(".simileAjax-bubble-container").length > 0) {
+        tracker = $(elmt).parents(".simileAjax-bubble-container").data("tracker");
+    }
+
+    $.simileBubble(
+        "createBubbleForContentAndPoint",
         itemLensDiv, 
         opts.coords.x,
         opts.coords.y, 
-        uiContext.getSetting("bubbleWidth")
+        uiContext.getSetting("bubbleWidth"),
+        null,
+        null,
+        tracker
     );
 };
 
