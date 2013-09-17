@@ -9,6 +9,7 @@ define([
     "require",
     "module",
     "lib/jquery",
+    "scripts/util/localizer",
     "scripts/util/debug",
     "exhibit",
     "./scripts/base",
@@ -17,7 +18,7 @@ define([
     "./scripts/painter",
     "i18n!ext/map/nls/locale",
     "./scripts/map-view"
-], function(require, module, $, _, Exhibit, MapExtension, Painter, Marker, Canvas, Locale, MapView) {
+], function(require, module, $, _, Debug, Exhibit, MapExtension, Painter, Marker, Canvas, Locale, MapView) {
     MapExtension.Painter = Painter;
     MapExtension.Canvas = Canvas;
     MapExtension.Marker = Marker;
