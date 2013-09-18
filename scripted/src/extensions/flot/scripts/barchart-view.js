@@ -310,6 +310,11 @@ define([
         currentSize = collection.countRestrictedItems();
         unplottableItems = [];
 
+        // Three phases to assemble plotting data:
+        // 1. Count items per property value into buckets
+        // 2. Sort buckets per settings (numbers take more cycles)
+        // 3. Use bucket order to number series and make into plottable form
+
         if (currentSize > 0) {
             currentSet = collection.getRestrictedItems();
             currentSet.visit(function(itemID) {
@@ -350,6 +355,7 @@ define([
         }
 
         if (settings.orderBy === "count") {
+            sortHelper = new Set();
             for (k in chartData) {
                 if (chartData.hasOwnProperty(k)) {
                     if (typeof numberSorter[chartData[k].data[0][1]] !== "undefined") {
@@ -357,16 +363,11 @@ define([
                     } else {
                         numberSorter[chartData[k].data[0][1]] = [k];
                     }
+                    sortHelper.add(chartData[k].data[0][1]);
                 }
             }
             sorted = [];
-            sortHelper = [];
-            for (k in numberSorter) {
-                if (numberSorter.hasOwnProperty(k)) {
-                    sortHelper.push(k);
-                }
-            }
-            sortHelper.sort(function(a, b) {
+            sortHelper = sortHelper.toArray().sort(function(a, b) {
                 return b - a;
             });
             for (i = 0; i < sortHelper.length; i++) {
