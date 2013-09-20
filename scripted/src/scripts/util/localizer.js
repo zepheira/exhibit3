@@ -43,7 +43,7 @@ define([
             key = args.shift();
             s = Localizer._locale[key];
             if (typeof s !== "undefined" && typeof s !== "object") {
-                return vsprintf(s, args);
+                return vsprintf.vsprintf(s, args);
             } else {
                 return s;
             }
