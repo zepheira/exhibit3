@@ -14,7 +14,8 @@
         "i18n": "lib/i18n",
         "async": "lib/async",
         "openlayers": "extensions/openlayers/lib/OpenLayers",
-        "timeline": "empty:",
+        "timeline": "../tools/timeline/api/timeline-bundle",
+        "simile-ajax": "../tools/ajax/api/simile-ajax-bundle",
         "gmaps": "empty:"
     },
     "shim": {

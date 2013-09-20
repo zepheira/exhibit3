@@ -194,6 +194,7 @@
 
   <!-- Build all the things -->
   <target name="omnibundle" description="Bundle everything, require-dependent. Not published locally.">
+    <echo>You must symlink timeline/src/webapp/ and simile-ajax/src/webapp/ into the tools/ directory as timeline/ and ajax/ for this build target to work.</echo>
     <fileset dir="${src}/nls/" includes="**/*.js" id="locales"/>
     <pathconvert dirsep="/" refid="locales" property="localelist" pathsep=",">
       <map from="${basedir}/${src}/" to=""/>
