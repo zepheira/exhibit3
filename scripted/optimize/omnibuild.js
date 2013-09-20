@@ -7,6 +7,10 @@
         "ext/openlayers/openlayers-extension",
         "ext/flot/flot-extension"
     ],
+    "wrap": {
+        "startFile": "omni-start.frag",
+        "endFile": "omni-end.frag"
+    },
     "paths": {
         "ext": "extensions",
         "lib": "lib",
@@ -21,9 +25,6 @@
     "shim": {
         "lib/jquery": {
             "exports": "jQuery"
-        },
-        "lib/sprintf": {
-            "exports": "vsprintf"
         },
         "lib/base64": {
             "exports": "Base64"
@@ -40,21 +41,6 @@
         },
         "openlayers": {
             "exports": "OpenLayers"
-        },
-        "extensions/flot/lib/jquery.flot": {
-            "deps": ["lib/jquery"]
-        },
-        "extensions/flot/lib/jquery.flot.pie": {
-            "deps": ["extensions/flot/lib/jquery.flot"]
-        },
-        "extensions/flot/lib/jquery.flot.axislabels": {
-            "deps": ["extensions/flot/lib/jquery.flot"]
-        },
-        "extensions/flot/lib/jquery.flot.navigate": {
-            "deps": ["extensions/flot/lib/jquery.flot"]
-        },
-        "extensions/flot/lib/jquery.flot.resize": {
-            "deps": ["extensions/flot/lib/jquery.flot"]
         }
     }
 })

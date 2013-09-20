@@ -16,9 +16,6 @@
         "lib/jquery": {
             "exports": "jQuery"
         },
-        "lib/sprintf": {
-            "exports": "vsprintf"
-        },
         "lib/base64": {
             "exports": "Base64"
         },
