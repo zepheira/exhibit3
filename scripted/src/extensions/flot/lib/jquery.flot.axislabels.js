@@ -26,6 +26,16 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+(function(root, factory){
+    if (typeof define === 'function' && define.amd)
+        // AMD
+        define(["lib/jquery", "./jquery.flot"], factory);
+    else
+        // Browser globals
+        factory($);
+}(this, function ($){
+    var jQuery = $;
+
 (function ($) {
     var options = { };
 
@@ -450,3 +460,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         version: '2.0b0'
     });
 })(jQuery);
+
+    return $.plot;
+}));

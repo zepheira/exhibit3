@@ -79,6 +79,16 @@ can set the default in the options.
 
 */
 
+(function(root, factory){
+    if (typeof define === 'function' && define.amd)
+        // AMD
+        define(["lib/jquery", "./jquery.flot"], factory);
+    else
+        // Browser globals
+        factory($);
+}(this, function($){
+    var jQuery = $;
+
 // First two dependencies, jquery.event.drag.js and
 // jquery.mousewheel.js, we put them inline here to save people the
 // effort of downloading them.
@@ -344,3 +354,6 @@ Licensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-L
         version: '1.3'
     });
 })(jQuery);
+
+    return $.plot;
+}));

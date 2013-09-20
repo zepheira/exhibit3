@@ -55,6 +55,16 @@ More detail and specific examples can be found in the included HTML file.
 
 */
 
+(function(root, factory){
+    if (typeof define === 'function' && define.amd)
+        // AMD
+        define(["lib/jquery", "./jquery.flot"], factory);
+    else
+        // Browser globals
+        factory($);
+}(this, function ($){
+    var jQuery = $;
+
 (function($) {
 
 	// Maximum redraw attempts when fitting labels within the plot
@@ -815,3 +825,6 @@ More detail and specific examples can be found in the included HTML file.
 	});
 
 })(jQuery);
+
+    return $.plot;
+}));
