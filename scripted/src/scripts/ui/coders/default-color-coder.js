@@ -45,6 +45,47 @@ DefaultColorCoder._map = {};
  */
 DefaultColorCoder._nextColor = 0;
 
+    /**
+     * Given the final set of keys, return the key (used for translating to
+     * color).  Will never return "others", this coder always supplies a color.
+     * @param {Exhibit.Set} keys
+     * @returns {Object|String} May be either the key or an object with
+     *     property "flag", which is one of "missing" or "mixed".
+     */
+    DefaultColorCoder.prototype.chooseKey = function(keys) {
+        var key, keysArr;
+        if (keys.size === 0) {
+            key = { "flag": "missing" };
+        }
+
+        keysArr = keys.toArray();
+        if (keysArr.length > 1) {
+            key = { "flag": "mixed" };
+        } else {
+            key = keysArr[0];
+        }
+        return key;
+    };
+
+    /**
+     * Given a set of flags and keys that were already determined,
+     * translate to the appropriate color.
+     * @param {String} key
+     * @param {Object} flags
+     * @param {Boolean} flags.missing
+     * @param {Boolean} flags.others
+     * @param {Boolean} flags.mixed
+     */
+    DefaultColorCoder.prototype.translateFinal = function(key, flags) {
+        if (flags.missing) {
+            return this.getMissingColor();
+        } else if (flags.mixed) {
+            return this.getMixedColor();
+        } else {
+            return DefaultColorCoder._map[key];
+        }
+    };
+
 /**
  * @param {String} key
  * @param {Object} flags

@@ -156,6 +156,52 @@ SizeCoder.prototype._addEntry = function(kase, key, size) {
     }
 };
 
+    /**
+     * Given the final set of keys, return the key (used for translating to
+     * size).
+     * @param {Exhibit.Set} keys
+     * @returns {Object|String} May be either the key or an object with
+     *     property "flag", which is one of "missing", "others", or "mixed".
+     */
+    SizeCoder.prototype.chooseKey = function(keys) {
+        var key, keysArr;
+        if (keys.size === 0) {
+            key = { "flag": "missing" };
+        }
+
+        keysArr = keys.toArray();
+        if (keysArr.length > 1) {
+            key = { "flag": "mixed" };
+        } else {
+            key = keysArr[0];
+            if (typeof this._map[key] === "undefined") {
+                key = { "flag": "others" };
+            }
+        }
+        return key;
+    };
+
+    /**
+     * Given a set of flags and keys that were already determined,
+     * translate to the appropriate size.
+     * @param {String} key
+     * @param {Object} flags
+     * @param {Boolean} flags.missing
+     * @param {Boolean} flags.others
+     * @param {Boolean} flags.mixed
+     */
+    SizeCoder.prototype.translateFinal = function(key, flags) {
+        if (flags.others) {
+            return this.getOthersSize();
+        } else if (flags.missing) {
+            return this.getMissingSize();
+        } else if (flags.mixed) {
+            return this.getMixedSize();
+        } else {
+            return this._map[key].size;
+        }
+    };
+
 /**
  * @param {String} key
  * @param {Object} flags

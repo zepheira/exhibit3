@@ -430,7 +430,7 @@ define([
      *
      */
     ScatterPlotView.prototype._reconstruct = function() {
-        var self, collection, database, settings, accessors, currentSize, unplottableItems, currentSet, hasColorKey, xyToData, xyKey, colorCoder, plottableData, k, i, colorCodingFlags, series, color, items, legendWidget, keys;
+        var self, collection, database, settings, accessors, currentSize, unplottableItems, currentSet, hasColorKey, xyToData, xyKey, colorCoder, plottableData, k, i, colorCodingFlags, series, color, items, legendWidget, keys, finalColorKey, entryFlags;
 
         self = this;
         collection = this.getUIContext().getCollection();
@@ -517,18 +517,20 @@ define([
             if (xyToData.hasOwnProperty(xyKey)) {
                 items = xyToData[xyKey].items;
                 color = settings.color;
+                finalColorKey = "default";
                 if (hasColorKey) {
                     color = self._colorCoder.translateSet(xyToData[xyKey].colorKeys, colorCodingFlags);
+                    finalColorKey = self._colorCoder.chooseKey(xyToData[xyKey].colorKeys);
                 }
-                if (series.hasOwnProperty(color)) {
-                    series[color].push([
+                if (series.hasOwnProperty(finalColorKey)) {
+                    series[finalColorKey].push([
                         xyToData[xyKey].xy.x,
                         xyToData[xyKey].xy.y,
                         xyToData[xyKey].labels,
                         xyToData[xyKey].items
                     ]);
                 } else {
-                    series[color] = [[
+                    series[finalColorKey] = [[
                         xyToData[xyKey].xy.x,
                         xyToData[xyKey].xy.y,
                         xyToData[xyKey].labels,
@@ -536,23 +538,8 @@ define([
                     ]];
                 }
                 for (i = 0; i < items.length; i++) {
-                    self._itemIDToPoint[items[i]] = [color, xyToData[xyKey].xy];
+                    self._itemIDToPoint[items[i]] = xyToData[xyKey].xy;
                 }
-            }
-        }
-
-        for (color in series) {
-            if (series.hasOwnProperty(color)) {
-                seriesOpts = {
-                    "data": series[color],
-                    "color": color
-                };
-                if (settings.pointFill) {
-                    seriesOpts.points = {
-                        "fillColor": color
-                    };
-                }
-                plottableData.data.push(seriesOpts);
             }
         }
 
@@ -578,6 +565,46 @@ define([
             }
         }
 
+        for (finalColorKey in series) {
+            if (series.hasOwnProperty(finalColorKey)) {
+                entryFlags = null;
+                entryFlags = {
+                    "missing": false,
+                    "mixed": false,
+                    "others": false,
+                    "keys": new Set()
+                };
+                if (typeof finalColorKey === "object") {
+                    switch(finalColorKey.flag) {
+                    case "missing":
+                        entryFlags.missing = true;
+                        break;
+                    case "mixed":
+                        entryFlags.mixed = true;
+                        break;
+                    case "others":
+                        entryFlags.others = true;
+                        break;
+                    }
+                } else {
+                    // Need to call this for default color coder, which
+                    // does not set up colors unless translate is called
+                    // for a key.
+                    colorCoder.translate(finalColorKey, entryFlags);
+                }
+                seriesOpts = {
+                    "data": series[finalColorKey],
+                    "color": colorCoder.translateFinal(finalColorKey, entryFlags)
+                };
+                if (settings.pointFill) {
+                    seriesOpts.points = {
+                        "fillColor": colorCoder.translateFinal(finalColorKey, entryFlags)
+                    };
+                }
+                plottableData.data.push(seriesOpts);
+            }
+        }
+
         this._reconstructChart(plottableData);
         this._dom.setUnplottableMessage(currentSize, unplottableItems);
     };
@@ -592,7 +619,7 @@ define([
         selected = this._itemIDToPoint[itemID];
         if (typeof selected !== "undefined" && selected !== null) {
             FlotUtilities.removeTooltip(this._tooltipID);
-            point = this._plot.p2c(selected[1]);
+            point = this._plot.p2c(selected);
             offset = this._plot.offset()
             ViewUtilities.openBubbleForItemsAtPoint(point.left + offset.left, point.top + offset.top, [itemID], this.getUIContext());
             // @@@ also highlight when correctly supported in Flot 0.9

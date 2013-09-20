@@ -146,7 +146,7 @@ OrderedColorCoder.createFromDOM = function(configElmt, uiContext) {
         });
 	    if (coder.getOthersIsDefault()) {
 	        coder._addEntry(
-		        "other",
+		        "others",
 		        coder.getOthersLabel(),
 		        coder.getOthersColor());
 	    }
@@ -184,7 +184,7 @@ OrderedColorCoder._configure = function(coder, configuration) {
         }
 	    if (this.getOthersIsDefault()) {
 	        coder._addEntry(
-		        "other",
+		        "others",
 		        this.getOthersLabel(),
 		        this.getOthersColor());
 	    }
@@ -250,6 +250,72 @@ OrderedColorCoder.prototype._addEntry = function(kase, key, color) {
 	    }
     }
 };
+
+
+    /**
+     * Given the final set of keys, return the key (used for translating to
+     * color).  Never returns mixed, returns the highest or lowest priority
+     * key, per configuration.
+     * @param {Exhibit.Set} keys
+     * @returns {Object|String} May be either the key or an object with
+     *     property "flag", which is one of "missing", or "others".
+     */
+    OrderedColorCoder.prototype.chooseKey = function(keys) {
+        var key, keysArr, lastKey, self, keyOrder, lastKeyOrder;
+        if (keys.size === 0) {
+            key = { "flag": "missing" };
+        }
+
+        keysArr = keys.toArray();
+        self = this;
+        lastKey = null;
+        if (keysArr.length > 1) {
+            keys.visit(function(key) {
+                if (lastKey === null) {
+                    lastKey = key;
+                }
+	            keyOrder = self._order.get(key);
+	            lastKeyOrder = self._order.get(lastKey);
+	            if (self._usePriority === "highest") {
+		            if (keyOrder < lastKeyOrder) {
+		                lastKey = key;
+		            }
+	            } else if (self._usePriority === "lowest") {
+		            if (keyOrder > lastKeyOrder) {
+		                lastKey = key;
+		            }
+	            } else {
+		            return false;
+	            }
+                return true;
+            });
+            return lastKey;
+        } else {
+            key = keysArr[0];
+            if (typeof this._map[key] === "undefined") {
+                key = { "flag": "others" };
+            }
+        }
+        return key;
+    };
+
+    /**
+     * Given a set of flags and keys that were already determined,
+     * translate to the appropriate color.
+     * @param {String} key
+     * @param {Object} flags
+     * @param {Boolean} flags.missing
+     * @param {Boolean} flags.others
+     */
+    OrderedColorCoder.prototype.translateFinal = function(key, flags) {
+        if (flags.others) {
+            return this.getOthersColor();
+        } else if (flags.missing) {
+            return this.getMissingColor();
+        } else {
+            return this._map[key].color;
+        }
+    };
 
 /**
  * @param {String} key

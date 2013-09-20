@@ -180,6 +180,53 @@ SizeGradientCoder.prototype._addEntry = function(kase, key, size) {
 	}
 };
 
+    /**
+     * Given the final set of keys, return the key (used for translating to
+     * size).
+     * @param {Exhibit.Set} keys
+     * @returns {Object|String} May be either the key or an object with
+     *     property "flag", which is one of "missing", "others", or "mixed".
+     */
+    SizeGradientCoder.prototype.chooseKey = function(keys) {
+        var key, keysArr, gradientPoints;
+        gradientPoints = this._gradientPoints;
+        if (keys.size === 0) {
+            key = { "flag": "missing" };
+        }
+
+        keysArr = keys.toArray();
+        if (keysArr.length > 1) {
+            key = { "flag": "mixed" };
+        } else {
+            key = keysArr[0];
+            if (key < gradientPoints[0].value || key > gradientPoints[gradientPoints.length - 1].value) {
+                key = { "flag": "others" };
+            }
+        }
+        return key;
+    };
+
+    /**
+     * Given a set of flags and keys that were already determined,
+     * translate to the appropriate size.
+     * @param {String} key
+     * @param {Object} flags
+     * @param {Boolean} flags.missing
+     * @param {Boolean} flags.others
+     * @param {Boolean} flags.mixed
+     */
+    SizeGradientCoder.prototype.translateFinal = function(key, flags) {
+        if (flags.others) {
+            return this.getOthersSize();
+        } else if (flags.missing) {
+            return this.getMissingSize();
+        } else if (flags.mixed) {
+            return this.getMixedSize();
+        } else {
+            return this.translate(key);
+        }
+    };
+
 /**
  * @param {String} key
  * @param {Object} flags
