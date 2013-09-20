@@ -61,9 +61,9 @@ define([
         }
         
         if (FlotExtension.params.bundle) {
-            Exhibit.includeCssFiles(document, FlotExtension.urlPrefix, FlotExtension.cssFiles);
-        } else {
             Exhibit.includeCssFile(document, FlotExtension.urlPrefix + FlotExtension.bundledCssFile);
+        } else {
+            Exhibit.includeCssFiles(document, FlotExtension.urlPrefix, FlotExtension.cssFiles);
         }
     };
 

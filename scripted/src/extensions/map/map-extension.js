@@ -71,9 +71,9 @@ define([
         }
         
         if (MapExtension.params.bundle) {
-            Exhibit.includeCssFiles(document, MapExtension.urlPrefix, MapExtension.cssFiles);
-        } else {
             Exhibit.includeCssFile(document, MapExtension.urlPrefix + MapExtension.bundledCssFile);
+        } else {
+            Exhibit.includeCssFiles(document, MapExtension.urlPrefix, MapExtension.cssFiles);
         }
 
         if (Exhibit.params.gmapKey !== null) {

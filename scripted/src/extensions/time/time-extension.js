@@ -86,9 +86,9 @@ define([
         }
         
         if (TimeExtension.params.bundle) {
-            Exhibit.includeCssFiles(document, TimeExtension.urlPrefix, TimeExtension.cssFiles);
-        } else {
             Exhibit.includeCssFile(document, TimeExtension.urlPrefix + TimeExtension.bundledCssFile);
+        } else {
+            Exhibit.includeCssFiles(document, TimeExtension.urlPrefix, TimeExtension.cssFiles);
         }
     };
 
