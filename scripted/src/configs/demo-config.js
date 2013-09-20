@@ -15,46 +15,36 @@
 
 requirejs.config({
     "baseUrl": "/exhibit/api/",
-    "urlArgs": "bust=" + (new Date()).getTime(),
     "config": {
         "exhibit": {
             "prefix": "/exhibit/api/",
-            "bundle": false
+            "bundle": true
         },
         "timeline": {
             "prefix": "/timeline/api/",
             "ajax": "/ajax/api/",
-            "bundle": false
+            "bundle": true
         },
         "ext/time/time-extension": {
-            "bundle": false,
+            "bundle": true,
             "prefix": "/exhibit/api/extensions/time/"
         },
         "ext/map/map-extension": {
-            "bundle": false,
+            "bundle": true,
             "prefix": "/exhibit/api/extensions/map/"
         },
         "ext/openlayers/openlayers-extension": {
-            "bundle": false,
+            "bundle": true,
             "prefix": "/exhibit/api/extensions/openlayers/"
         },
         "ext/flot/flot-extension": {
-            "bundle": false,
+            "bundle": true,
             "prefix": "/exhibit/api/extensions/flot/"
         }
     },
     "paths": {
-        "lib": "lib",
-        "nls": "nls",
-        "ext": "extensions",
-        "map": "extensions/map/scripts",
-        "time": "extensions/time/scripts",
-        "invalid-json": "extensions/invalid-json/scripts",
         "async": "lib/async",
-        "i18n": "lib/i18n",
-        "timeline": "/timeline/api/timeline-bundle",
-        "simile-ajax": "/ajax/api/simile-ajax-bundle",
-        "openlayers": "extensions/openlayers/lib/OpenLayers"
+        "i18n": "lib/i18n"
     },
     "shim": {
         "lib/jquery": {
