@@ -95,7 +95,7 @@ base64.js
 
 sprintf.js
 ----------
- * http://www.diveintojavascript.com/projects/javascript-sprintf
+ * https://github.com/ablagoev/sprintf.js/blob/71cc0c5fed8f96d12218e0011e595f9b62077d2c/src/sprintf.js
  * Modified BSD
  * scripted/src/lib/sprintf.js
 
@@ -149,6 +149,7 @@ Flot
   * jquery.flot.navigate.js
   * jquery.flot.pie.js
   * jquery.flot.resize.js
+ * These have been modified with AMD wrappers.
  * Note that some of these plugins include jQuery plugins themselves,
    which are also distributed under the MIT license.
 
@@ -158,6 +159,7 @@ Axis Labels Plugin for flot
  * fcfde41709057b1087288e20f49f0e8a75025845
  * MIT License
  * src/extensions/flot/lib/jquery.flot.axislabels.js
+ * Has been modified with AMD wrappers.
 
 noUiSlider
 ----------
