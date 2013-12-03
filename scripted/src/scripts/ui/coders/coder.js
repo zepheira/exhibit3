@@ -167,7 +167,7 @@ Coder.registerComponent = function(evt, reg) {
     }
 };
 
-$(document).one(
+$(document).on(
     "registerComponents.exhibit",
     Coder.registerComponent
 );
