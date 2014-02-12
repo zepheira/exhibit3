@@ -137,7 +137,7 @@ define([
         "showFooter":       { "type": "boolean",  "defaultValue": true      },
         "showToolbox":      { "type": "boolean",  "defaultValue": true      },
         "mapURL":           { "type": "text",     "defaultValue": "http://otile1.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.png" },
-        "aerialURL":        { "type": "text",     "defaultValue": "http://otile2.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg" }
+        "aerialURL":        { "type": "text",     "defaultValue": "http://otile2.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg" },
         "mapAttribution":   { "type": "text",     "defaultValue": "&copy; <a href='http://www.openstreetmap.org/copyright' target='_blank'>OpenStreetMap</a> contributors. Tiles Courtesy of <a href='http://www.mapquest.com/' target='_blank'>MapQuest</a> <img src='http://developer.mapquest.com/content/osm/mq_logo.png'>" },
         "aerialAttribution":{ "type": "text",     "defaultValue": "Portions Courtesy NASA/JPL-Caltech and U.S. Depart. of Agriculture, Farm Service Agency. Tiles Courtesy of <a href='http://www.mapquest.com/' target='_blank'>MapQuest</a> <img src='http://developer.mapquest.com/content/osm/mq_logo.png'>" }
     };
