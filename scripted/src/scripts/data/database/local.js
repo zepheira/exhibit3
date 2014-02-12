@@ -29,16 +29,16 @@ var LocalImpl = function() {
     this._types = {};
     this._properties = {};
     this._propertyArray = {};
-    
+
     this._spo = {};
     this._ops = {};
     this._items = new Set();
-    
+
     /*
      *  Predefined types and properties
      */
     var itemType, labelProperty, typeProperty, uriProperty;
-     
+
     itemType = new Type("Item");
     itemType._custom = {
         "label":       _("%database.itemType.label"),
@@ -57,7 +57,7 @@ var LocalImpl = function() {
     labelProperty._groupingLabel        = _("%database.labelProperty.groupingLabel");
     labelProperty._reverseGroupingLabel = _("%database.labelProperty.reverseGroupingLabel");
     this._properties.label              = labelProperty;
-    
+
     typeProperty = new Property("type", this);
     typeProperty._uri = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
     typeProperty._valueType             = "text";
@@ -68,7 +68,7 @@ var LocalImpl = function() {
     typeProperty._groupingLabel         = _("%database.typeProperty.groupingLabel");
     typeProperty._reverseGroupingLabel  = _("%database.typeProperty.reverseGroupingLabel");
     this._properties.type               = typeProperty;
-    
+
     uriProperty = new Property("uri", this);
     uriProperty._uri = "http://simile.mit.edu/2006/11/exhibit#uri";
     uriProperty._valueType              = "url";
@@ -116,7 +116,7 @@ LocalImpl.prototype.loadData = function(o, baseURI) {
 
 /**
  * Load just the types from a data object.
- * 
+ *
  * @param {Object} typeEntries The "types" subsection of Exhibit JSON.
  * @param {String} baseURI The base URI for normalizing URIs in the object.
  */
@@ -130,7 +130,7 @@ LocalImpl.prototype.loadTypes = function(typeEntries, baseURI) {
         } else if (lastChar !== "/" && lastChar !== ":") {
             baseURI += "/";
         }
-    
+
         for (typeID in typeEntries) {
             if (typeEntries.hasOwnProperty(typeID)) {
                 if (typeof typeID === "string") {
@@ -142,17 +142,17 @@ LocalImpl.prototype.loadTypes = function(typeEntries, baseURI) {
                             type = new Type(typeID);
                             this._types[typeID] = type;
                         }
-            
+
                         for (p in typeEntry) {
                             if (typeEntry.hasOwnProperty(p)) {
                                 type._custom[p] = typeEntry[p];
                             }
                         }
-                        
+
                         if (typeof type._custom.uri === "undefined") {
                             type._custom.uri = baseURI + "type#" + encodeURIComponent(typeID);
                         }
-                        
+
                         if (typeof type._custom.label === "undefined") {
                             type._custom.label = typeID;
                         }
@@ -160,7 +160,7 @@ LocalImpl.prototype.loadTypes = function(typeEntries, baseURI) {
                 }
             }
         }
-        
+
         $(document).trigger('onAfterLoadingTypes.exhibit');
     } catch(e) {
         Debug.exception(e, _("%database.error.loadTypesFailure"));
@@ -184,7 +184,7 @@ LocalImpl.prototype.loadProperties = function(propertyEntries, baseURI) {
         } else if (lastChar !== "/" && lastChar !== ":") {
             baseURI += "/";
         }
-    
+
         for (propertyID in propertyEntries) {
             if (propertyEntries.hasOwnProperty(propertyID)) {
                 if (typeof propertyID === "string") {
@@ -196,7 +196,7 @@ LocalImpl.prototype.loadProperties = function(propertyEntries, baseURI) {
                             property = new Property(propertyID, this);
                             this._properties[propertyID] = property;
                         }
-            
+
                         property._uri = typeof propertyEntry.uri !== "undefined" ?
                             propertyEntry.uri :
                             (baseURI + "property#" + encodeURIComponent(propertyID));
@@ -204,7 +204,7 @@ LocalImpl.prototype.loadProperties = function(propertyEntries, baseURI) {
                         property._valueType = typeof propertyEntry.valueType !== "undefined" ?
                             propertyEntry.valueType :
                             "text";
-            
+
                         property._label = typeof propertyEntry.label !== "undefined" ?
                             propertyEntry.label :
                             propertyID;
@@ -212,7 +212,7 @@ LocalImpl.prototype.loadProperties = function(propertyEntries, baseURI) {
                         property._pluralLabel = typeof propertyEntry.pluralLabel !== "undefined" ?
                             propertyEntry.pluralLabel :
                             property._label;
-            
+
                         property._reverseLabel = typeof propertyEntry.reverseLabel !== "undefined" ?
                             propertyEntry.reverseLabel :
                             ("!" + property._label);
@@ -220,7 +220,7 @@ LocalImpl.prototype.loadProperties = function(propertyEntries, baseURI) {
                         property._reversePluralLabel = typeof propertyEntry.reversePluralLabel !== "undefined" ?
                             propertyEntry.reversePluralLabel :
                             ("!" + property._pluralLabel);
-            
+
                         property._groupingLabel = typeof propertyEntry.groupingLabel !== "undefined" ?
                             propertyEntry.groupingLabel :
                             property._label;
@@ -228,7 +228,7 @@ LocalImpl.prototype.loadProperties = function(propertyEntries, baseURI) {
                         property._reverseGroupingLabel = typeof propertyEntry.reverseGroupingLabel !== "undefined" ?
                             propertyEntry.reverseGroupingLabel :
                             property._reverseLabel;
-            
+
                         if (typeof propertyEntry.origin !== "undefined") {
                             property._origin = propertyEntry.origin;
                         }
@@ -238,7 +238,7 @@ LocalImpl.prototype.loadProperties = function(propertyEntries, baseURI) {
         }
 
         this._propertyArray = null;
-        
+
         $(document).trigger("onAfterLoadingProperties.exhibit");
     } catch(e) {
         Debug.exception(e, _("%database.error.loadPropertiesFailure"));
@@ -260,8 +260,8 @@ LocalImpl.prototype.loadProperties = function(propertyEntries, baseURI) {
 LocalImpl._loadChunked = function(worker, data, size, timeout, complete) {
     var index, length;
     index = 0;
-    length = data.length;
-    (function() {
+    length = data.length,
+    chunker = function() {
         var remnant, currentSize;
         remnant = length - index;
         currentSize = (remnant >= size) ? size : remnant;
@@ -269,22 +269,23 @@ LocalImpl._loadChunked = function(worker, data, size, timeout, complete) {
             while (currentSize-- > 0) {
                 worker(data[index++]);
             }
-            setTimeout(arguments.callee, timeout);
+            setTimeout(chunker, timeout);
         } else if (typeof complete === "function") {
             complete();
         }
-    }());
+    };
+    chunker();
 };
 
 /**
  * Load just the items from the data.
- * 
+ *
  * @param {Object} itemEntries The "items" subsection of Exhibit JSON.
  * @param {String} baseURI The base URI for normalizing URIs in the object.
  */
 LocalImpl.prototype.loadItems = function(itemEntries, baseURI) {
     $(document).trigger("onBeforeLoadingItems.exhibit");
-    var self, lastChar, spo, ops, indexPut, indexTriple, finish, loader;
+    var self, lastChar, indexTriple, finish, loader;
     self = this;
     try {
         lastChar = baseURI.substr(baseURI.length - 1);
@@ -293,15 +294,7 @@ LocalImpl.prototype.loadItems = function(itemEntries, baseURI) {
         } else if (lastChar !== "/" && lastChar !== ":") {
             baseURI += "/";
         }
-        
-        spo = this._spo;
-        ops = this._ops;
-        indexPut = Database._indexPut;
-        indexTriple = function(s, p, o) {
-            indexPut(spo, s, p, o);
-            indexPut(ops, o, p, s);
-        };
-
+        indexTriple = function(s,p,o) { self.addStatement(s,p,o); };
         finish = function() {
             self._propertyArray = null;
             $(document).trigger("onAfterLoadingItems.exhibit");
@@ -334,7 +327,7 @@ LocalImpl.prototype.getType = function(typeID) {
 
 /**
  * Retrieve a database property given an identifier, or null if no such
- * property exists. 
+ * property exists.
  *
  * @param {String} propertyID The property identifier.
  * @returns {Exhibit.Database._Property} The corresponding database property.
@@ -346,7 +339,7 @@ LocalImpl.prototype.getProperty = function(propertyID) {
 };
 
 /**
- * Retrieve all database property identifiers in an array. 
+ * Retrieve all database property identifiers in an array.
  *
  * @returns {Array} The array of property identifiers.
  */
@@ -361,7 +354,7 @@ LocalImpl.prototype.getAllProperties = function() {
             }
         }
     }
-    
+
     return [].concat(this._propertyArray);
 };
 
@@ -415,13 +408,13 @@ LocalImpl.prototype.getNamespaces = function(idToQualifiedName, prefixToBase) {
         if (this._properties.hasOwnProperty(propertyID)) {
             property = this._properties[propertyID];
             uri = property.getURI();
-        
+
             hash = uri.indexOf("#");
             slash = uri.lastIndexOf("/");
             if (hash > 0) {
                 base = uri.substr(0, hash + 1);
                 bases[base] = true;
-            
+
                 idToQualifiedName[propertyID] = {
                     base:       base,
                     localName:  uri.substr(hash + 1)
@@ -429,7 +422,7 @@ LocalImpl.prototype.getNamespaces = function(idToQualifiedName, prefixToBase) {
             } else if (slash > 0) {
                 base = uri.substr(0, slash + 1);
                 bases[base] = true;
-                
+
                 idToQualifiedName[propertyID] = {
                     base:       base,
                     localName:  uri.substr(slash + 1)
@@ -437,11 +430,11 @@ LocalImpl.prototype.getNamespaces = function(idToQualifiedName, prefixToBase) {
             }
         }
     }
-    
+
     baseToPrefix = {};
     letters = "abcdefghijklmnopqrstuvwxyz";
     i = 0;
-    
+
     for (base in bases) {
         if (bases.hasOwnProperty(base)) {
             prefix = letters.substr(i++,1);
@@ -449,7 +442,7 @@ LocalImpl.prototype.getNamespaces = function(idToQualifiedName, prefixToBase) {
             baseToPrefix[base] = prefix;
         }
     }
-    
+
     for (propertyID in idToQualifiedName) {
         if (idToQualifiedName.hasOwnProperty(propertyID)) {
             qname = idToQualifiedName[propertyID];
@@ -460,7 +453,7 @@ LocalImpl.prototype.getNamespaces = function(idToQualifiedName, prefixToBase) {
 
 /**
  * Fill a set with all objects for a given subject-predicate pair.
- * 
+ *
  * @param {String} s The subject identifier.
  * @param {String} p The predicate identifier.
  * @param {Exhibit.Set} [set] The set to fill.
@@ -473,7 +466,7 @@ LocalImpl.prototype.getObjects = function(s, p, set, filter) {
 
 /**
  * Count the distinct, unique objects (any repeated objects count as one)
- * for a subject-predicate pair. 
+ * for a subject-predicate pair.
  *
  * @param {String} s The subject identifier.
  * @param {String} p The prediate identifier.
@@ -486,7 +479,7 @@ LocalImpl.prototype.countDistinctObjects = function(s, p, filter) {
 
 /**
  * Fill a set with all objects for all subject-predicate pairs from a set
- * of subjects. 
+ * of subjects.
  *
  * @param {Exhibit.Set} subjects A set of subject identifiers.
  * @param {String} p The predicate identifier.
@@ -501,7 +494,7 @@ LocalImpl.prototype.getObjectsUnion = function(subjects, p, set, filter) {
 /**
  * Count the distinct, unique objects for subject-predicate pairs for all
  * subjects in a set.  Objects that repeat across subject-predicate pairs
- * are counted for each appearance. 
+ * are counted for each appearance.
  *
  * @param {Exhibit.Set} subjects A set of subject identifiers.
  * @param {String} p The predicate identifier.
@@ -540,7 +533,7 @@ LocalImpl.prototype.countDistinctSubjects = function(o, p, filter) {
 
 /**
  * Fill a set with all subjects for all object-predicate pairs from a set
- * of objects. 
+ * of objects.
  *
  * @param {Exhibit.Set} objects The set of objects.
  * @param {String} p The predicate identifier.
@@ -554,8 +547,8 @@ LocalImpl.prototype.getSubjectsUnion = function(objects, p, set, filter) {
 
 /**
  * Count the distinct, unique subjects for object-predicate pairs for all
- * objects in a set. 
- * 
+ * objects in a set.
+ *
  * @param {Exhibit.Set} objects The set of objects.
  * @param {String} p The predicate identifier.
  * @param {Exhibit.Set} [filter] Only include subjects in this filter.
@@ -574,13 +567,13 @@ LocalImpl.prototype.countDistinctSubjectsUnion = function(objects, p, filter) {
  * @returns {String} One matching object.
  */
 LocalImpl.prototype.getObject = function(s, p) {
-    var hash, array;
+    var hash, subhash;
 
     hash = this._spo[s];
     if (hash) {
-        array = hash[p];
-        if (array) {
-            return array[0];
+        subhash = hash[p];
+        if (subhash) {
+            return subhash[0];
         }
     }
     return null;
@@ -595,20 +588,20 @@ LocalImpl.prototype.getObject = function(s, p) {
  * @returns {String} One matching subject identifier.
  */
 LocalImpl.prototype.getSubject = function(o, p) {
-    var hash, array;
+    var hash, subhash;
 
     hash = this._ops[o];
     if (hash) {
-        array = hash[p];
-        if (array) {
-            return array[0];
+        subhash = hash[p];
+        if (subhash) {
+            return subhash[0];
         }
     }
     return null;
 };
 
 /**
- * Return an array of predicates from triples with the given subject. 
+ * Return an array of predicates from triples with the given subject.
  *
  * @param {String} s The subject identifier.
  * @returns {Array} The predicate identifiers.
@@ -618,7 +611,7 @@ LocalImpl.prototype.getForwardProperties = function(s) {
 };
 
 /**
- * Return an array of predicates from triples for the given object. 
+ * Return an array of predicates from triples for the given object.
  *
  * @param {String} o The object identifier.
  * @returns {Array} The predicate identifiers.
@@ -695,8 +688,8 @@ LocalImpl.prototype.removeStatement = function(s, p, o) {
 
 /**
  * Remove all objects associated with a subject-predicate pair,
- * returning a boolean for success. 
- * 
+ * returning a boolean for success.
+ *
  * @param {String} s The subject identifier.
  * @param {String} p The predicate identifier.
  * @returns {Boolean} True if removed.
@@ -709,8 +702,10 @@ LocalImpl.prototype.removeObjects = function(s, p) {
     if (objects === null) {
         return false;
     } else {
-        for (i = 0; i < objects.length; i++) {
-            indexRemove(this._ops, objects[i], p, s);
+        for (i in objects) {
+            if (objects.hasOwnProperty(i)) {
+                indexRemove(this._ops, objects[i], p, s);
+            }
         }
         return true;
     }
@@ -732,8 +727,10 @@ LocalImpl.prototype.removeSubjects = function(o, p) {
     if (subjects === null) {
         return false;
     } else {
-        for (i = 0; i < subjects.length; i++) {
-            indexRemove(this._spo, subjects[i], p, o);
+        for (i in subjects) {
+            if (subjects.hasOwnProperty(i)) {
+                indexRemove(this._spo, subjects[i], p, o);
+            }
         }
         return true;
     }
@@ -749,14 +746,14 @@ LocalImpl.prototype.removeAllStatements = function() {
         this._spo = {};
         this._ops = {};
         this._items = new Set();
-    
+
         for (propertyID in this._properties) {
             if (this._properties.hasOwnProperty(propertyID)) {
                 this._properties[propertyID]._onNewData();
             }
         }
         this._propertyArray = null;
-        
+
         $(document).trigger("onAfterRemovingAllStatements.exhibit");
     } catch(e) {
         Debug.exception(e, _("%database.error.removeAllStatementsFailure"));
@@ -811,7 +808,7 @@ LocalImpl.prototype._loadItem = function(itemEntry, indexFunction, baseURI) {
                                      JSON.stringify(itemEntry)));
 	    itemEntry.label = "item" + Math.ceil(Math.random()*1000000);
     }
-    
+
     if (typeof itemEntry.label === "undefined") {
         id = itemEntry.id;
         if (!this._items.contains(id)) {
@@ -831,7 +828,7 @@ LocalImpl.prototype._loadItem = function(itemEntry, indexFunction, baseURI) {
         type = typeof itemEntry.type !== "undefined" ?
             itemEntry.type :
             "Item";
-                
+
         isArray = function(obj) {
             if (obj.constructor.toString().indexOf("Array") === -1) {
                 return false;
@@ -855,22 +852,22 @@ LocalImpl.prototype._loadItem = function(itemEntry, indexFunction, baseURI) {
         if (isArray(type)) {
             type = type[0];
         }
-        
+
         this._items.add(id);
-        
+
         indexFunction(id, "uri", uri);
         indexFunction(id, "label", label);
         indexFunction(id, "type", type);
-        
+
         this._ensureTypeExists(type, baseURI);
     }
-    
+
     for (p in itemEntry) {
         if (itemEntry.hasOwnProperty(p)) {
             if (typeof p === "string") {
                 if (p !== "uri" && p !== "label" && p !== "id" && p !== "type") {
                     this._ensurePropertyExists(p, baseURI)._onNewData();
-                                    
+
                     v = itemEntry[p];
                     if (v instanceof Array) {
                         for (j = 0; j < v.length; j++) {
@@ -887,7 +884,7 @@ LocalImpl.prototype._loadItem = function(itemEntry, indexFunction, baseURI) {
 
 /**
  * Called during data load to make sure the schema for any types being added
- * exists, adding it if not. 
+ * exists, adding it if not.
  *
  * @param {String} typeID The type identifier.
  * @param {String} baseURI The base URI to resolve URI fragments against.
@@ -896,17 +893,17 @@ LocalImpl.prototype._ensureTypeExists = function(typeID, baseURI) {
     var type;
     if (typeof this._types[typeID] === "undefined") {
         type = new Type(typeID);
-        
+
         type._custom.uri = baseURI + "type#" + encodeURIComponent(typeID);
         type._custom.label = typeID;
-        
+
         this._types[typeID] = type;
     }
 };
 
 /**
  * Called during data load to make sure the schema for any property
- * being added exists, adding it if not. 
+ * being added exists, adding it if not.
  *
  * @param {String} propertyID The property identifier.
  * @param {String} baseURI The base URI to resolve URI fragments against.
@@ -916,21 +913,21 @@ LocalImpl.prototype._ensurePropertyExists = function(propertyID, baseURI) {
     var property;
     if (typeof this._properties[propertyID] === "undefined") {
         property = new Property(propertyID, this);
-        
+
         property._uri = baseURI + "property#" + encodeURIComponent(propertyID);
         property._valueType = "text";
-        
+
         property._label = propertyID;
         property._pluralLabel = property._label;
-        
+
         property._reverseLabel = _("%database.reverseLabel", property._label);
         property._reversePluralLabel = _("%database.reversePluralLabel", property._pluralLabel);
-        
+
         property._groupingLabel = property._label;
         property._reverseGroupingLabel = property._reverseLabel;
-        
+
         this._properties[propertyID] = property;
-        
+
         this._propertyArray = null;
         return property;
     } else {
@@ -940,7 +937,7 @@ LocalImpl.prototype._ensurePropertyExists = function(propertyID, baseURI) {
 
 /**
  * Fills a set with any values that are contained in the two-level index,
- * index[x][y], only including those in the filter if the filter is provided. 
+ * index[x][y], only including those in the filter if the filter is provided.
  *
  * @param {Object} index The two-level index.
  * @param {String} x The first level key.
@@ -949,21 +946,15 @@ LocalImpl.prototype._ensurePropertyExists = function(propertyID, baseURI) {
  * @param {Exhibit.Set} [filter] Only include values in this filter.
  */
 LocalImpl.prototype._indexFillSet = function(index, x, y, set, filter) {
-    var hash, array, i, z;
+    var hash, subhash, i, z;
     hash = index[x];
     if (typeof hash !== "undefined") {
-        array = hash[y];
-        if (typeof array !== "undefined") {
-            if (filter) {
-                for (i = 0; i < array.length; i++) {
-                    z = array[i];
-                    if (filter.contains(z)) {
-                        set.add(z);
-                    }
-                }
-            } else {
-                for (i = 0; i < array.length; i++) {
-                    set.add(array[i]);
+        subhash = hash[y];
+        if (typeof subhash !== "undefined") {
+            for (z in subhash) {
+                if (subhash.hasOwnProperty(z) &&
+                    (!filter || filter.contains(z))) {
+                    set.add(z);
                 }
             }
         }
@@ -981,20 +972,17 @@ LocalImpl.prototype._indexFillSet = function(index, x, y, set, filter) {
  * @returns {Number} The count of values.
  */
 LocalImpl.prototype._indexCountDistinct = function(index, x, y, filter) {
-    var count, hash, array, i;
+    var count, hash, subhash, z;
     count = 0;
     hash = index[x];
     if (hash) {
-        array = hash[y];
-        if (array) {
-            if (filter) {
-                for (i = 0; i < array.length; i++) {
-                    if (filter.contains(array[i])) {
-                        count++;
-                    }
+        subhash = hash[y];
+        if (subhash) {
+            for (z in subhash) {
+                if (subhash.hasOwnProperty(z) &&
+                    (!filter || filter.contains(z))) {
+                    count++;
                 }
-            } else {
-                count = array.length;
             }
         }
     }
@@ -1036,7 +1024,7 @@ LocalImpl.prototype._getUnion = function(index, xSet, y, set, filter) {
     if (typeof set === "undefined" || set === null) {
         set = new Set();
     }
-    
+
     database = this;
     xSet.visit(function(x) {
         database._indexFillSet(index, x, y, set, filter);
@@ -1124,7 +1112,7 @@ LocalImpl.prototype.labelItemsOfType = function(count, typeID, countStyleClass) 
             .attr("class", countStyleClass)
             .html(count)
     ).append(" " + label);
-    
+
     return span;
 };
 

@@ -546,7 +546,7 @@ ViewPanel.prototype.stateDiffers = function(state) {
     return state.viewIndex !== this._viewIndex;
 };
 
-$(document).one(
+$(document).on(
     "registerComponents.exhibit",
     ViewPanel._registerComponent
 );

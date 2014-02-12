@@ -315,7 +315,7 @@ View.addViewState = function(id, state) {
     }
 };
 
-$(document).one(
+$(document).on(
     "registerComponents.exhibit",
     View.registerComponent
 );

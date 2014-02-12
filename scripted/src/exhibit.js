@@ -421,23 +421,23 @@ define([
                 Exhibit.signals["scriptsLoaded.exhibit"] = true;
             }
         });
-        
+
         if (Exhibit.params.autoCreate) {
             $(document).one("staticComponentsRegistered.exhibit", function(evt) {
                 Exhibit.autoCreate();
             });
         }
-        
-        $(document).one("exhibitConfigured.exhibit", function(evt, ex) {
+
+        $(document).on("exhibitConfigured.exhibit", function(evt, ex) {
             Bookmark.init();
             EHistory.init(ex, Exhibit.params.persist);
         });
-        
+
         // Signal recording
         $(document).one("exhibitConfigured.exhibit", function(evt) {
             Exhibit.signals["exhibitConfigured.exhibit"] = true;
         });
-            
+
         Exhibit.checkBackwardsCompatibility();
         Exhibit.staticRegistry = new Registry(true);
 

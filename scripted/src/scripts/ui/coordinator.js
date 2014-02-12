@@ -177,10 +177,10 @@ define(["lib/jquery", "./ui-context"], function($, UIContext) {
         this._coordinator._fire(this, o);
     };
 
-    $(document).one(
+    $(document).on(
         "registerComponents.exhibit",
         Coordinator.registerComponent
     );
-    
+
     return Coordinator;
 });

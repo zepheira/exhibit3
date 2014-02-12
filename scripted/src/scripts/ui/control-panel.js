@@ -350,11 +350,11 @@ ControlPanel.prototype.reconstruct = function() {
     }
 };
 
-$(document).one(
+$(document).on(
     "registerComponents.exhibit",
     ControlPanel.registerComponent
 );
-    
+
     // end define
     return ControlPanel;
 });
