@@ -172,6 +172,8 @@ define([
 
         this._plot = null;
 
+        $(document).trigger("closeBubbles.simileAjax");
+        
         this._dispose();
     };
 

@@ -371,6 +371,8 @@ MapView.prototype.dispose = function() {
     this._dom.dispose();
     this._dom = null;
 
+    $(document).trigger("closeBubbles.simileAjax");
+
     this._dispose();
 };
 

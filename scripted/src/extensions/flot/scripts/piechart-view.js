@@ -169,6 +169,8 @@ define([
         this._sliceToItemIDs = null;
         this._plot = null;
 
+        $(document).trigger("closeBubbles.simileAjax");
+
         this._dispose();
     };
 

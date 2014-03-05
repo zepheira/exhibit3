@@ -234,6 +234,8 @@ define([
         this._plot = null;
         this._itemIDToPoint = null;
 
+        $(document).trigger("closeBubbles.simileAjax");
+        
         this._dispose();
     };
 
