@@ -262,7 +262,7 @@ define([
 
         onSlide = function(evt) {
             var values = $(self._slider).val();
-            label = _("%facets.numeric.rangeWords", values[0], values[1]);
+            label = _("%facets.numeric.rangeWords", parseFloat(values[0]), parseFloat(values[1]));
             EHistory.pushComponentState(
                 self,
                 Facet.getRegistryKey(),
