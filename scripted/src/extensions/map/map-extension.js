@@ -70,10 +70,16 @@ define([
             MapExtension.params = Exhibit.parseURLParameters(url, MapExtension.params, MapExtension.paramTypes);
         }
         
-        if (MapExtension.params.bundle) {
-            Exhibit.includeCssFile(document, MapExtension.urlPrefix + MapExtension.bundledCssFile);
-        } else {
-            Exhibit.includeCssFiles(document, MapExtension.urlPrefix, MapExtension.cssFiles);
+        if (typeof MapExtension.params.noStyle === "undefined") {
+            MapExtension.params.noStyle = false;
+        }
+        
+        if (!MapExtension.params.noStyle) {
+            if (MapExtension.params.bundle) {
+                Exhibit.includeCssFile(document, MapExtension.urlPrefix + MapExtension.bundledCssFile);
+            } else {
+                Exhibit.includeCssFiles(document, MapExtension.urlPrefix, MapExtension.cssFiles);
+            }
         }
 
         if (Exhibit.params.gmapKey !== null) {

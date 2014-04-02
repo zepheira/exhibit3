@@ -84,11 +84,17 @@ define([
         } else if (url !== null) {
             TimeExtension.params = Exhibit.parseURLParameters(url, TimeExtension.params, TimeExtension.paramTypes);
         }
+
+        if (typeof TimeExtension.params.noStyle === "undefined") {
+            TimeExtension.params.noStyle = false;
+        }
         
-        if (TimeExtension.params.bundle) {
-            Exhibit.includeCssFile(document, TimeExtension.urlPrefix + TimeExtension.bundledCssFile);
-        } else {
-            Exhibit.includeCssFiles(document, TimeExtension.urlPrefix, TimeExtension.cssFiles);
+        if (!TimeExtension.params.noStyle) {
+            if (TimeExtension.params.bundle) {
+                Exhibit.includeCssFile(document, TimeExtension.urlPrefix + TimeExtension.bundledCssFile);
+            } else {
+                Exhibit.includeCssFiles(document, TimeExtension.urlPrefix, TimeExtension.cssFiles);
+            }
         }
     };
 

@@ -73,11 +73,17 @@ define([
         } else if (url !== null) {
             MapExtension.params = Exhibit.parseURLParameters(url, MapExtension.params, MapExtension.paramTypes);
         }
+
+        if (typeof MapExtension.params.noStyle === "undefined") {
+            MapExtension.params.noStyle = false;
+        }
         
-        if (MapExtension.params.bundle) {
-            Exhibit.includeCssFile(document, MapExtension.urlPrefix + MapExtension.bundledCssFile);
-        } else {
-            Exhibit.includeCssFiles(document, MapExtension.urlPrefix, MapExtension.cssFiles);
+        if (!MapExtension.params.noStyle) {
+            if (MapExtension.params.bundle) {
+                Exhibit.includeCssFile(document, MapExtension.urlPrefix + MapExtension.bundledCssFile);
+            } else {
+                Exhibit.includeCssFiles(document, MapExtension.urlPrefix, MapExtension.cssFiles);
+            }
         }
 
         if (typeof MapExtension.params.service === "string") {

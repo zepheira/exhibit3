@@ -467,6 +467,11 @@ define([
         if (conf.hasOwnProperty("autoCreate")) {
             Exhibit.params.autoCreate = conf.autoCreate;
         }
+        if (conf.hasOwnProperty("noStyle")) {
+            Exhibit.params.noStyle = conf.noStyle;
+        } else if (typeof Exhibit.params.noStyle === "undefined") {
+            Exhibit.params.noStyle = false;
+        }
 
         if (typeof Exhibit_urlPrefix === "string") {
             prefix = Exhibit_urlPrefix;
@@ -521,10 +526,12 @@ define([
             Debug.warn(_("%general.error.deprecatedBackstage"));
         }
 
-        if (Exhibit.params.bundle) {
-            Exhibit.includeCssFile(document, Exhibit.urlPrefix + Exhibit.bundledStyle);
-        } else {
-            Exhibit.includeCssFiles(document, Exhibit.urlPrefix, Exhibit.styles);
+        if (!Exhibit.params.noStyle) {
+            if (Exhibit.params.bundle) {
+                Exhibit.includeCssFile(document, Exhibit.urlPrefix + Exhibit.bundledStyle);
+            } else {
+                Exhibit.includeCssFiles(document, Exhibit.urlPrefix, Exhibit.styles);
+            }
         }
         Exhibit.initializeEvents();
     };

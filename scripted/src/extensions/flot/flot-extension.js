@@ -60,10 +60,16 @@ define([
             FlotExtension.params = Exhibit.parseURLParameters(url, FlotExtension.params, FlotExtension.paramTypes);
         }
         
-        if (FlotExtension.params.bundle) {
-            Exhibit.includeCssFile(document, FlotExtension.urlPrefix + FlotExtension.bundledCssFile);
-        } else {
-            Exhibit.includeCssFiles(document, FlotExtension.urlPrefix, FlotExtension.cssFiles);
+        if (typeof FlotExtension.params.noStyle === "undefined") {
+            FlotExtension.params.noStyle = false;
+        }
+        
+        if (!FlotExtension.params.noStyle) {
+            if (FlotExtension.params.bundle) {
+                Exhibit.includeCssFile(document, FlotExtension.urlPrefix + FlotExtension.bundledCssFile);
+            } else {
+                Exhibit.includeCssFiles(document, FlotExtension.urlPrefix, FlotExtension.cssFiles);
+            }
         }
     };
 
